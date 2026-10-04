@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.TransactionsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Spending History"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ================================================= -->
+        <!-- HEADER -->
+        <!-- ================================================= -->
+
+        <Grid
+            Grid.Row="0"
+            Padding="20,18"
+            BackgroundColor="#146B3A"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <!-- BACK -->
+            <Button
+                x:Name="BackButton"
+                Grid.Column="0"
+                Text="←"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                Clicked="BackButton_Clicked" />
+
+
+            <!-- TITLE -->
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0"
+                VerticalOptions="Center"
+                Spacing="2">
+
+                <Label
+                    Text="Spending History"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="View your recorded spending activity"
+                    FontSize="12"
+                    TextColor="#D8F0E2" />
+
+            </VerticalStackLayout>
+
+
+            <!-- REFRESH -->
+            <Button
+                x:Name="RefreshButton"
+                Grid.Column="2"
+                Text="↻"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- ================================================= -->
+        <!-- PAGE CONTENT -->
+        <!-- ================================================= -->
+
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="18">
+
+
+                <!-- ================================================= -->
+                <!-- SUMMARY CARD -->
+                <!-- ================================================= -->
+
+                <Border
+                    x:Name="SummaryCard"
+                    BackgroundColor="White"
+                    Stroke="#E5E5E5"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="15">
+
+                        <Label
+                            Text="Spending Summary"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+
+                        <!-- TOTAL SPENT -->
+                        <Border
+                            BackgroundColor="#FFF1F0"
+                            Stroke="#F0CBC7"
+                            StrokeThickness="1"
+                            Padding="16">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+
+                            <Grid ColumnDefinitions="*,Auto">
+
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    Spacing="4">
+
+                                    <Label
+                                        Text="Total Recorded Spending"
+                                        FontSize="12"
+                                        TextColor="#666666" />
+
+                                    <Label
+                                        x:Name="MoneyOutLabel"
+                                        Text="R 0.00"
+                                        FontSize="24"
+                                        FontAttributes="Bold"
+                                        TextColor="#C0392B" />
+
+                                </VerticalStackLayout>
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="Spent"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#C0392B"
+                                    VerticalOptions="Center" />
+
+                            </Grid>
+
+                        </Border>
+
+
+                        <!-- SECOND SUMMARY ROW -->
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="12">
+
+
+                            <!-- TRANSACTION COUNT -->
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="3">
+
+                                <Label
+                                    Text="Recorded Purchases"
+                                    FontSize="11"
+                                    TextColor="#777777" />
+
+                                <Label
+                                    x:Name="TransactionCountLabel"
+                                    Text="0"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="#1E1E1E" />
+
+                            </VerticalStackLayout>
+
+
+                            <!-- AVERAGE SPENDING -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="3">
+
+                                <Label
+                                    Text="Average Purchase"
+                                    FontSize="11"
+                                    TextColor="#777777" />
+
+                                <Label
+                                    x:Name="NetActivityLabel"
+                                    Text="R 0.00"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="#1E1E1E" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- TRACKING INFORMATION -->
+                <!-- ================================================= -->
+
+                <Border
+                    BackgroundColor="#EAF5EE"
+                    Stroke="#C8DFD0"
+                    StrokeThickness="1"
+                    Padding="15">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="5">
+
+                        <Label
+                            Text="Spending Tracker"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A" />
+
+                        <Label
+                            Text="These records are used for budgeting, reports and spending insights. They do not represent money stored by SpendWise."
+                            FontSize="12"
+                            TextColor="#50645A"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- FILTER -->
+                <!-- ================================================= -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E5E5E5"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Filter Spending"
+                            FontSize="15"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="Choose which spending records you want to view."
+                            FontSize="12"
+                            TextColor="#777777" />
+
+
+                        <!-- VISIBLE FILTER PICKER -->
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            HeightRequest="60"
+                            Padding="8,0">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Picker
+                                x:Name="TransactionFilterPicker"
+                                Title="All Spending"
+                                TitleColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill"
+                                SelectedIndexChanged="TransactionFilterPicker_SelectedIndexChanged">
+
+                                <Picker.Items>
+
+                                    <x:String>All Spending</x:String>
+
+                                    <x:String>Groceries</x:String>
+
+                                    <x:String>Other Purchases</x:String>
+
+                                </Picker.Items>
+
+                            </Picker>
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- LOADING -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout
+                    x:Name="LoadingSection"
+                    IsVisible="False"
+                    HorizontalOptions="Center"
+                    Margin="0,20"
+                    Spacing="10">
+
+                    <ActivityIndicator
+                        x:Name="LoadingIndicator"
+                        IsRunning="False"
+                        Color="#146B3A"
+                        WidthRequest="40"
+                        HeightRequest="40" />
+
+                    <Label
+                        Text="Loading spending activity..."
+                        FontSize="13"
+                        TextColor="#777777"
+                        HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+
+
+                <!-- ================================================= -->
+                <!-- ERROR -->
+                <!-- ================================================= -->
+
+                <Border
+                    x:Name="ErrorCard"
+                    IsVisible="False"
+                    BackgroundColor="#FFF1F0"
+                    Stroke="#E6B8B4"
+                    StrokeThickness="1"
+                    Padding="15">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="5">
+
+                        <Label
+                            Text="Unable to load spending history"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#B42318" />
+
+                        <Label
+                            x:Name="ErrorLabel"
+                            FontSize="12"
+                            TextColor="#B42318"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- SPENDING HEADING -->
+                <!-- ================================================= -->
+
+                <Grid
+                    x:Name="TransactionHeading"
+                    ColumnDefinitions="*,Auto">
+
+                    <VerticalStackLayout
+                        Grid.Column="0"
+                        Spacing="2">
+
+                        <Label
+                            x:Name="TransactionSectionTitle"
+                            Text="All Spending"
+                            FontSize="19"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            x:Name="TransactionSectionSubtitle"
+                            Text="Your most recently recorded purchases appear first."
+                            FontSize="12"
+                            TextColor="#777777" />
+
+                    </VerticalStackLayout>
+
+
+                    <Label
+                        x:Name="DisplayedCountLabel"
+                        Grid.Column="1"
+                        Text="0"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        TextColor="#146B3A"
+                        VerticalOptions="Center" />
+
+                </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- SPENDING RECORDS -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout
+                    x:Name="TransactionsLayout"
+                    Spacing="12" />
+
+
+                <!-- ================================================= -->
+                <!-- EMPTY STATE -->
+                <!-- ================================================= -->
+
+                <Border
+                    x:Name="EmptyStateCard"
+                    IsVisible="False"
+                    BackgroundColor="White"
+                    Stroke="#E5E5E5"
+                    StrokeThickness="1"
+                    Padding="30"
+                    Margin="0,10">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout
+                        Spacing="10"
+                        HorizontalOptions="Center">
+
+                        <Label
+                            Text="No Spending Activity"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E"
+                            HorizontalTextAlignment="Center" />
+
+                        <Label
+                            x:Name="EmptyStateLabel"
+                            Text="Purchases you record in SpendWise will appear here."
+                            FontSize="13"
+                            TextColor="#777777"
+                            HorizontalTextAlignment="Center"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- INFORMATION -->
+                <!-- ================================================= -->
+
+                <Border
+                    BackgroundColor="#EEF7F1"
+                    Stroke="#C9E5D3"
+                    StrokeThickness="1"
+                    Padding="15"
+                    Margin="0,5,0,20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="13" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="About Spending History"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A" />
+
+                        <Label
+                            Text="Spending History contains purchases recorded through Martin SpendWise. These records help update budgets, reports and insights."
+                            FontSize="12"
+                            TextColor="#555555"
+                            LineBreakMode="WordWrap" />
+
+                        <Label
+                            Text="When secure bank integration is added later, verified bank transactions can be incorporated separately."
+                            FontSize="12"
+                            TextColor="#777777"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <BoxView
+                    HeightRequest="10"
+                    Opacity="0" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

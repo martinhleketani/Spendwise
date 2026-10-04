@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.InsightsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Insights"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ================================================= -->
+        <!-- HEADER -->
+        <!-- ================================================= -->
+
+        <Grid
+            Grid.Row="0"
+            Padding="20,18"
+            BackgroundColor="#146B3A"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                x:Name="BackButton"
+                Grid.Column="0"
+                Text="←"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0"
+                VerticalOptions="Center"
+                Spacing="2">
+
+                <Label
+                    Text="Spending Insights"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Understand your spending and budget"
+                    FontSize="12"
+                    TextColor="#D8F0E2" />
+
+            </VerticalStackLayout>
+
+            <Button
+                x:Name="RefreshButton"
+                Grid.Column="2"
+                Text="↻"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- ================================================= -->
+        <!-- PAGE CONTENT -->
+        <!-- ================================================= -->
+
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="18">
+
+
+                <!-- ================================================= -->
+                <!-- MONTH SELECTION -->
+                <!-- ================================================= -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E5E5E5"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label
+                            Text="Select Month"
+                            FontSize="17"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="Choose the month you want SpendWise to analyse."
+                            FontSize="12"
+                            TextColor="#777777" />
+
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="10">
+
+
+                            <!-- MONTH -->
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Month"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="60"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Picker
+                                        x:Name="MonthPicker"
+                                        Title="Month"
+                                        TitleColor="#777777"
+                                        TextColor="#1E1E1E"
+                                        BackgroundColor="Transparent"
+                                        FontSize="15"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+
+                            <!-- YEAR -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Year"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="60"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Picker
+                                        x:Name="YearPicker"
+                                        Title="Year"
+                                        TitleColor="#777777"
+                                        TextColor="#1E1E1E"
+                                        BackgroundColor="Transparent"
+                                        FontSize="15"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <Button
+                            x:Name="LoadInsightsButton"
+                            Text="View Insights"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="10"
+                            HeightRequest="48"
+                            Clicked="LoadInsightsButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- LOADING -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout
+                    x:Name="LoadingSection"
+                    IsVisible="False"
+                    Spacing="10"
+                    HorizontalOptions="Center"
+                    Margin="0,10">
+
+                    <ActivityIndicator
+                        x:Name="LoadingIndicator"
+                        IsRunning="False"
+                        Color="#146B3A"
+                        WidthRequest="35"
+                        HeightRequest="35" />
+
+                    <Label
+                        Text="Loading your insights..."
+                        FontSize="13"
+                        TextColor="#777777"
+                        HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+
+
+                <!-- ================================================= -->
+                <!-- ERROR -->
+                <!-- ================================================= -->
+
+                <Border
+                    x:Name="ErrorCard"
+                    IsVisible="False"
+                    BackgroundColor="#FFF1F0"
+                    Stroke="#E6B8B4"
+                    StrokeThickness="1"
+                    Padding="15">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        TextColor="#B42318"
+                        FontSize="13" />
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- RESULTS -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout
+                    x:Name="InsightsSection"
+                    IsVisible="False"
+                    Spacing="18">
+
+
+                    <!-- ================================================= -->
+                    <!-- PERIOD -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout Spacing="3">
+
+                        <Label
+                            Text="Monthly Overview"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            x:Name="InsightsPeriodLabel"
+                            Text="September 2026"
+                            FontSize="13"
+                            TextColor="#777777" />
+
+                    </VerticalStackLayout>
+
+
+                    <!-- ================================================= -->
+                    <!-- BUDGET OVERVIEW -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        BackgroundColor="#146B3A"
+                        StrokeThickness="0"
+                        Padding="20">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="14">
+
+                            <Label
+                                Text="Budget Overview"
+                                FontSize="16"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+
+
+                            <Grid
+                                ColumnDefinitions="*,*"
+                                RowDefinitions="Auto,Auto"
+                                RowSpacing="16"
+                                ColumnSpacing="15">
+
+
+                                <!-- TOTAL BUDGET -->
+                                <VerticalStackLayout
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Spacing="3">
+
+                                    <Label
+                                        Text="Total Budget"
+                                        FontSize="11"
+                                        TextColor="#D8F0E2" />
+
+                                    <Label
+                                        x:Name="TotalBudgetLabel"
+                                        Text="R 0.00"
+                                        FontSize="19"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+
+                                </VerticalStackLayout>
+
+
+                                <!-- TOTAL SPENT -->
+                                <VerticalStackLayout
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Spacing="3">
+
+                                    <Label
+                                        Text="Total Spent"
+                                        FontSize="11"
+                                        TextColor="#D8F0E2" />
+
+                                    <Label
+                                        x:Name="TotalSpentLabel"
+                                        Text="R 0.00"
+                                        FontSize="19"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+
+                                </VerticalStackLayout>
+
+
+                                <!-- REMAINING -->
+                                <VerticalStackLayout
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Spacing="3">
+
+                                    <Label
+                                        Text="Remaining"
+                                        FontSize="11"
+                                        TextColor="#D8F0E2" />
+
+                                    <Label
+                                        x:Name="TotalRemainingLabel"
+                                        Text="R 0.00"
+                                        FontSize="19"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+
+                                </VerticalStackLayout>
+
+
+                                <!-- AVAILABLE BUDGET -->
+                                <VerticalStackLayout
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Spacing="3">
+
+                                    <Label
+                                        Text="Available Budget"
+                                        FontSize="11"
+                                        TextColor="#D8F0E2" />
+
+                                    <Label
+                                        x:Name="AvailableBudgetLabel"
+                                        Text="R 0.00"
+                                        FontSize="19"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+
+                                </VerticalStackLayout>
+
+                            </Grid>
+
+
+                            <!-- BUDGET USAGE -->
+                            <VerticalStackLayout Spacing="7">
+
+                                <Grid ColumnDefinitions="*,Auto">
+
+                                    <Label
+                                        Grid.Column="0"
+                                        Text="Budget Used"
+                                        FontSize="12"
+                                        TextColor="#D8F0E2" />
+
+                                    <Label
+                                        x:Name="PercentageUsedLabel"
+                                        Grid.Column="1"
+                                        Text="0%"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        TextColor="White" />
+
+                                </Grid>
+
+                                <ProgressBar
+                                    x:Name="BudgetProgressBar"
+                                    Progress="0"
+                                    ProgressColor="#FFFFFF"
+                                    BackgroundColor="#4C8C69"
+                                    HeightRequest="8" />
+
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- ================================================= -->
+                    <!-- BUDGET EXPLANATION -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        BackgroundColor="#EAF5EE"
+                        Stroke="#C8DFD0"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="5">
+
+                            <Label
+                                Text="Budget Tracking"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                            <Label
+                                Text="Available Budget is based on your monthly budget minus recorded spending. It is not a bank account balance."
+                                FontSize="12"
+                                TextColor="#50645A"
+                                LineBreakMode="WordWrap" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- ================================================= -->
+                    <!-- SMART INSIGHTS -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Smart Insights"
+                            FontSize="19"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="Important information about your spending."
+                            FontSize="12"
+                            TextColor="#777777" />
+
+                        <VerticalStackLayout
+                            x:Name="GeneralInsightsLayout"
+                            Spacing="10" />
+
+                        <Label
+                            x:Name="NoGeneralInsightsLabel"
+                            Text="No spending insights available for this month."
+                            FontSize="13"
+                            TextColor="#777777"
+                            HorizontalTextAlignment="Center"
+                            Margin="0,10"
+                            IsVisible="False" />
+
+                    </VerticalStackLayout>
+
+
+                    <!-- ================================================= -->
+                    <!-- CATEGORY INSIGHTS -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Category Insights"
+                            FontSize="19"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="See how each category is performing against its budget."
+                            FontSize="12"
+                            TextColor="#777777" />
+
+                        <VerticalStackLayout
+                            x:Name="CategoryInsightsLayout"
+                            Spacing="12" />
+
+                        <Label
+                            x:Name="NoCategoryInsightsLabel"
+                            Text="No category insights available."
+                            FontSize="13"
+                            TextColor="#777777"
+                            HorizontalTextAlignment="Center"
+                            Margin="0,10"
+                            IsVisible="False" />
+
+                    </VerticalStackLayout>
+
+
+                    <!-- ================================================= -->
+                    <!-- EXPLANATION -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        BackgroundColor="#EEF7F1"
+                        Stroke="#C9E5D3"
+                        StrokeThickness="1"
+                        Padding="16"
+                        Margin="0,4,0,20">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="7">
+
+                            <Label
+                                Text="About your insights"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                            <Label
+                                Text="Martin SpendWise analyses your monthly budget and recorded spending to highlight categories that are within budget, approaching their limits, or over budget."
+                                FontSize="12"
+                                TextColor="#555555"
+                                LineBreakMode="WordWrap" />
+
+                            <Label
+                                Text="These insights are based on spending recorded in SpendWise and do not represent a bank account balance."
+                                FontSize="12"
+                                TextColor="#777777"
+                                LineBreakMode="WordWrap" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

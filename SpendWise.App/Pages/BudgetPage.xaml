@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.BudgetPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Budget"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Text="←"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                VerticalOptions="Center">
+
+                <Label
+                    Text="Monthly Budget"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    x:Name="MonthLabel"
+                    Text="September 2026"
+                    FontSize="13"
+                    TextColor="#D9F0E2" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="20"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- MAIN CONTENT -->
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="18">
+
+
+                <!-- BUDGET SUMMARY -->
+                <Border
+                    x:Name="BudgetSummaryCard"
+                    BackgroundColor="#146B3A"
+                    StrokeThickness="0"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="8">
+
+                        <Label
+                            Text="Monthly Budget"
+                            FontSize="14"
+                            TextColor="#D9F0E2" />
+
+                        <Label
+                            x:Name="TotalBudgetLabel"
+                            Text="R 0.00"
+                            FontSize="30"
+                            FontAttributes="Bold"
+                            TextColor="White" />
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            Margin="0,10,0,0">
+
+                            <VerticalStackLayout>
+
+                                <Label
+                                    Text="Spent"
+                                    FontSize="12"
+                                    TextColor="#D9F0E2" />
+
+                                <Label
+                                    x:Name="TotalSpentLabel"
+                                    Text="R 0.00"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="White" />
+
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout
+                                Grid.Column="1">
+
+                                <Label
+                                    Text="Remaining"
+                                    FontSize="12"
+                                    TextColor="#D9F0E2" />
+
+                                <Label
+                                    x:Name="TotalRemainingLabel"
+                                    Text="R 0.00"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="White" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- NO BUDGET MESSAGE -->
+                <Border
+                    x:Name="NoBudgetCard"
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20"
+                    IsVisible="False">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="5">
+
+                        <Label
+                            Text="No budget yet"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="Create your monthly spending plan below."
+                            FontSize="14"
+                            TextColor="#777777" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- CREATE BUDGET -->
+                <VerticalStackLayout
+                    x:Name="CreateBudgetSection"
+                    Spacing="14">
+
+                    <Label
+                        Text="Create Monthly Budget"
+                        FontSize="21"
+                        FontAttributes="Bold"
+                        TextColor="#1E1E1E" />
+
+                    <Label
+                        Text="Set how much you want to spend this month."
+                        FontSize="13"
+                        TextColor="#777777" />
+
+
+                    <!-- TOTAL MONTHLY BUDGET -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="10">
+
+                            <Label
+                                Text="Total Monthly Budget"
+                                FontAttributes="Bold"
+                                TextColor="#1E1E1E" />
+
+                            <!-- VISIBLE TOTAL BUDGET INPUT -->
+                            <Border
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="56"
+                                Padding="12,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Grid ColumnDefinitions="Auto,*">
+
+                                    <Label
+                                        Text="R"
+                                        FontSize="18"
+                                        FontAttributes="Bold"
+                                        VerticalOptions="Center"
+                                        TextColor="#146B3A"
+                                        Margin="0,0,10,0" />
+
+                                    <Entry
+                                        x:Name="TotalLimitEntry"
+                                        Grid.Column="1"
+                                        Placeholder="Example: 5000"
+                                        PlaceholderColor="#777777"
+                                        TextColor="#1E1E1E"
+                                        BackgroundColor="Transparent"
+                                        Keyboard="Numeric"
+                                        FontSize="15"
+                                        VerticalOptions="Center"
+                                        VerticalTextAlignment="Center"
+                                        TextChanged="BudgetEntry_TextChanged" />
+
+                                </Grid>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- CATEGORY LIMITS -->
+                    <Label
+                        Text="Category Limits"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        TextColor="#1E1E1E"
+                        Margin="0,5,0,0" />
+
+
+                    <!-- GROCERIES -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="*,170"
+                            ColumnSpacing="15">
+
+                            <Label
+                                Text="🛒  Groceries"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                TextColor="#1E1E1E" />
+
+                            <Border
+                                Grid.Column="1"
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="52"
+                                Padding="8,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="GroceriesEntry"
+                                    Placeholder="R 0"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    TextChanged="BudgetEntry_TextChanged" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- TRANSPORT -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="*,170"
+                            ColumnSpacing="15">
+
+                            <Label
+                                Text="🚕  Transport"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                TextColor="#1E1E1E" />
+
+                            <Border
+                                Grid.Column="1"
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="52"
+                                Padding="8,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="TransportEntry"
+                                    Placeholder="R 0"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    TextChanged="BudgetEntry_TextChanged" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- ENTERTAINMENT -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="*,170"
+                            ColumnSpacing="15">
+
+                            <Label
+                                Text="🎬  Entertainment"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                TextColor="#1E1E1E" />
+
+                            <Border
+                                Grid.Column="1"
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="52"
+                                Padding="8,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="EntertainmentEntry"
+                                    Placeholder="R 0"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    TextChanged="BudgetEntry_TextChanged" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- UTILITIES -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="*,170"
+                            ColumnSpacing="15">
+
+                            <Label
+                                Text="💡  Utilities"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                TextColor="#1E1E1E" />
+
+                            <Border
+                                Grid.Column="1"
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="52"
+                                Padding="8,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="UtilitiesEntry"
+                                    Placeholder="R 0"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    TextChanged="BudgetEntry_TextChanged" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- OTHER -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="*,170"
+                            ColumnSpacing="15">
+
+                            <Label
+                                Text="📦  Other"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                TextColor="#1E1E1E" />
+
+                            <Border
+                                Grid.Column="1"
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="52"
+                                Padding="8,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="OtherEntry"
+                                    Placeholder="R 0"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="End"
+                                    VerticalTextAlignment="Center"
+                                    TextChanged="BudgetEntry_TextChanged" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- ALLOCATION SUMMARY -->
+                    <Border
+                        BackgroundColor="#EAF5EE"
+                        StrokeThickness="0"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid
+                            RowDefinitions="Auto,Auto"
+                            ColumnDefinitions="*,Auto"
+                            RowSpacing="8">
+
+                            <Label
+                                Text="Allocated"
+                                TextColor="#555555" />
+
+                            <Label
+                                x:Name="AllocatedLabel"
+                                Grid.Column="1"
+                                Text="R 0.00"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                            <Label
+                                Grid.Row="1"
+                                Text="Unallocated"
+                                TextColor="#555555" />
+
+                            <Label
+                                x:Name="UnallocatedLabel"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="R 0.00"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- ERROR -->
+                    <Label
+                        x:Name="ErrorLabel"
+                        Text=""
+                        IsVisible="False"
+                        TextColor="#C0392B"
+                        FontSize="13" />
+
+
+                    <!-- SAVE -->
+                    <Button
+                        x:Name="SaveBudgetButton"
+                        Text="Save Monthly Budget"
+                        BackgroundColor="#146B3A"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        HeightRequest="52"
+                        CornerRadius="14"
+                        Clicked="SaveBudgetButton_Clicked" />
+
+                </VerticalStackLayout>
+
+
+                <!-- EXISTING CATEGORY BUDGETS -->
+                <VerticalStackLayout
+                    x:Name="ExistingCategoriesSection"
+                    IsVisible="False"
+                    Spacing="12">
+
+                    <Label
+                        Text="Category Spending"
+                        FontSize="21"
+                        FontAttributes="Bold"
+                        TextColor="#1E1E1E" />
+
+                    <VerticalStackLayout
+                        x:Name="CategoriesLayout"
+                        Spacing="10" />
+
+                </VerticalStackLayout>
+
+
+                <BoxView
+                    HeightRequest="15"
+                    Opacity="0" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+
+        <!-- BOTTOM NAVIGATION -->
+        <Grid
+            Grid.Row="2"
+            BackgroundColor="White"
+            Padding="10,8"
+            ColumnDefinitions="*,*,*,*">
+
+            <Button
+                Grid.Column="0"
+                Text="Home"
+                BackgroundColor="Transparent"
+                TextColor="#555555"
+                Clicked="HomeButton_Clicked" />
+
+            <Button
+                Grid.Column="1"
+                Text="Grocery"
+                BackgroundColor="Transparent"
+                TextColor="#555555"
+                Clicked="GroceryButton_Clicked" />
+
+            <Button
+                Grid.Column="2"
+                Text="Budget"
+                BackgroundColor="Transparent"
+                TextColor="#146B3A"
+                FontAttributes="Bold" />
+
+            <Button
+                Grid.Column="3"
+                Text="Profile"
+                BackgroundColor="Transparent"
+                TextColor="#555555"
+                Clicked="ProfileButton_Clicked" />
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

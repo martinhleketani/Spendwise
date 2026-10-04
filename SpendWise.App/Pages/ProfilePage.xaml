@@ -1,0 +1,644 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.ProfilePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Profile"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Grid.Column="0"
+                Text="←"
+                FontSize="24"
+                WidthRequest="48"
+                HeightRequest="48"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0"
+                VerticalOptions="Center"
+                Spacing="1">
+
+                <Label
+                    Text="My Profile"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Manage your SpendWise account"
+                    FontSize="12"
+                    TextColor="#D9F2E3" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="22"
+                WidthRequest="48"
+                HeightRequest="48"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- =====================================================
+             CONTENT
+             ===================================================== -->
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="18">
+
+
+                <!-- =================================================
+                     LOADING
+                     ================================================= -->
+                <ActivityIndicator
+                    x:Name="LoadingIndicator"
+                    IsVisible="False"
+                    IsRunning="False"
+                    Color="#146B3A"
+                    HorizontalOptions="Center" />
+
+
+                <!-- =================================================
+                     ERROR
+                     ================================================= -->
+                <Border
+                    x:Name="ErrorCard"
+                    IsVisible="False"
+                    BackgroundColor="#FFF4F4"
+                    Stroke="#F1C7C7"
+                    StrokeThickness="1"
+                    Padding="14">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        FontSize="13"
+                        TextColor="#B42318" />
+
+                </Border>
+
+
+                <!-- =================================================
+                     SUCCESS
+                     ================================================= -->
+                <Border
+                    x:Name="SuccessCard"
+                    IsVisible="False"
+                    BackgroundColor="#EAF5EE"
+                    Stroke="#BFDCC9"
+                    StrokeThickness="1"
+                    Padding="14">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="SuccessLabel"
+                        FontSize="13"
+                        TextColor="#146B3A" />
+
+                </Border>
+
+
+                <!-- =================================================
+                     PROFILE HEADER CARD
+                     ================================================= -->
+                <Border
+                    BackgroundColor="#146B3A"
+                    StrokeThickness="0"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="18">
+
+                        <!-- =========================================
+                             PROFILE PHOTO
+                             ========================================= -->
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            Spacing="8"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+
+                            <!-- Circular avatar -->
+                            <Border
+                                WidthRequest="96"
+                                HeightRequest="96"
+                                BackgroundColor="White"
+                                Stroke="#D9F2E3"
+                                StrokeThickness="3"
+                                Padding="0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="48" />
+                                </Border.StrokeShape>
+
+                                <Grid>
+
+                                    <!--
+                                        Actual profile photo.
+                                        Hidden until a photo is selected
+                                        or loaded.
+                                    -->
+                                    <Image
+                                        x:Name="ProfileImage"
+                                        IsVisible="False"
+                                        Aspect="AspectFill"
+                                        WidthRequest="90"
+                                        HeightRequest="90"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill" />
+
+                                    <!--
+                                        Fallback initial.
+                                        Displayed when the user does not
+                                        have a profile photo.
+                                    -->
+                                    <Label
+                                        x:Name="ProfileInitialLabel"
+                                        Text="?"
+                                        FontSize="34"
+                                        FontAttributes="Bold"
+                                        TextColor="#146B3A"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
+                                        HorizontalTextAlignment="Center"
+                                        VerticalTextAlignment="Center" />
+
+                                </Grid>
+
+                            </Border>
+
+
+                            <!-- CHANGE PHOTO -->
+                            <Button
+                                x:Name="ChangePhotoButton"
+                                Text="Change Photo"
+                                FontSize="11"
+                                HeightRequest="38"
+                                Padding="12,0"
+                                CornerRadius="10"
+                                BackgroundColor="White"
+                                TextColor="#146B3A"
+                                FontAttributes="Bold"
+                                Clicked="ChangePhotoButton_Clicked" />
+
+
+                            <!-- REMOVE PHOTO -->
+                            <Button
+                                x:Name="RemovePhotoButton"
+                                Text="Remove Photo"
+                                FontSize="10"
+                                HeightRequest="34"
+                                Padding="10,0"
+                                CornerRadius="9"
+                                BackgroundColor="Transparent"
+                                BorderColor="#D9F2E3"
+                                BorderWidth="1"
+                                TextColor="White"
+                                IsVisible="False"
+                                Clicked="RemovePhotoButton_Clicked" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- =========================================
+                             USER SUMMARY
+                             ========================================= -->
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            VerticalOptions="Center"
+                            Spacing="5">
+
+                            <Label
+                                x:Name="ProfileNameLabel"
+                                Text="Loading..."
+                                FontSize="22"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+
+                            <Label
+                                x:Name="ProfileEmailLabel"
+                                Text="-"
+                                FontSize="13"
+                                TextColor="#D9F2E3" />
+
+                            <Label
+                                x:Name="AccountStatusLabel"
+                                Text="Account status"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="#D9F2E3" />
+
+                            <Label
+                                Text="Add a profile photo to personalize your SpendWise account."
+                                FontSize="11"
+                                TextColor="#D9F2E3"
+                                Margin="0,4,0,0"
+                                LineBreakMode="WordWrap" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- =================================================
+                     ACCOUNT INFORMATION
+                     ================================================= -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="15">
+
+                        <Label
+                            Text="Account Information"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Update your personal account details."
+                            FontSize="12"
+                            TextColor="#718078" />
+
+
+                        <!-- =========================================
+                             FULL NAME
+                             ========================================= -->
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label
+                                Text="Full Name"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="#50645A" />
+
+                            <Border
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="56"
+                                Padding="10,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="FullNameEntry"
+                                    Placeholder="Enter your full name"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#173C2A"
+                                    BackgroundColor="Transparent"
+                                    FontSize="15"
+                                    VerticalOptions="Center"
+                                    VerticalTextAlignment="Center" />
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- =========================================
+                             EMAIL
+                             ========================================= -->
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label
+                                Text="Email Address"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="#50645A" />
+
+                            <Border
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="56"
+                                Padding="10,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="EmailEntry"
+                                    Placeholder="Enter your email address"
+                                    PlaceholderColor="#777777"
+                                    Keyboard="Email"
+                                    TextColor="#173C2A"
+                                    BackgroundColor="Transparent"
+                                    FontSize="15"
+                                    VerticalOptions="Center"
+                                    VerticalTextAlignment="Center" />
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- =========================================
+                             PHONE
+                             ========================================= -->
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label
+                                Text="Phone Number"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="#50645A" />
+
+                            <Border
+                                BackgroundColor="#F1F3F2"
+                                Stroke="#8A9690"
+                                StrokeThickness="1.5"
+                                HeightRequest="56"
+                                Padding="10,0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="PhoneNumberEntry"
+                                    Placeholder="e.g. 0712345678"
+                                    PlaceholderColor="#777777"
+                                    Keyboard="Telephone"
+                                    MaxLength="10"
+                                    TextColor="#173C2A"
+                                    BackgroundColor="Transparent"
+                                    FontSize="15"
+                                    VerticalOptions="Center"
+                                    VerticalTextAlignment="Center" />
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- =========================================
+                             SAVE PROFILE
+                             ========================================= -->
+                        <Button
+                            x:Name="SaveProfileButton"
+                            Text="Save Profile"
+                            HeightRequest="50"
+                            CornerRadius="12"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="SaveProfileButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- =================================================
+                     ACCOUNT DETAILS
+                     ================================================= -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Label
+                            Text="Account Details"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+
+                        <!-- ACCOUNT ID -->
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Grid.Column="0"
+                                Text="Account ID"
+                                FontSize="13"
+                                TextColor="#718078" />
+
+                            <Label
+                                Grid.Column="1"
+                                x:Name="AccountIdLabel"
+                                Text="-"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                        </Grid>
+
+
+                        <BoxView
+                            HeightRequest="1"
+                            BackgroundColor="#E8EEEA" />
+
+
+                        <!-- MEMBER SINCE -->
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Grid.Column="0"
+                                Text="Member Since"
+                                FontSize="13"
+                                TextColor="#718078" />
+
+                            <Label
+                                Grid.Column="1"
+                                x:Name="MemberSinceLabel"
+                                Text="-"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                        </Grid>
+
+
+                        <BoxView
+                            HeightRequest="1"
+                            BackgroundColor="#E8EEEA" />
+
+
+                        <!-- STATUS -->
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Grid.Column="0"
+                                Text="Status"
+                                FontSize="13"
+                                TextColor="#718078" />
+
+                            <Label
+                                Grid.Column="1"
+                                x:Name="StatusValueLabel"
+                                Text="-"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- =================================================
+                     PROFILE PHOTO INFORMATION
+                     ================================================= -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Profile Photo"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Choose a photo from your device to personalize your SpendWise profile."
+                            FontSize="12"
+                            TextColor="#718078"
+                            LineBreakMode="WordWrap" />
+
+                        <Label
+                            Text="Your account initial will be displayed whenever no profile photo is available."
+                            FontSize="12"
+                            TextColor="#718078"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- =================================================
+                     SECURITY
+                     ================================================= -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Security"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Your SpendWise account is protected using your authenticated login session."
+                            FontSize="12"
+                            TextColor="#718078"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- =================================================
+                     LOGOUT
+                     ================================================= -->
+                <Button
+                    x:Name="LogoutButton"
+                    Text="Log Out"
+                    HeightRequest="50"
+                    CornerRadius="12"
+                    BackgroundColor="#FFF4F4"
+                    BorderColor="#E9B9B9"
+                    BorderWidth="1"
+                    TextColor="#B42318"
+                    FontAttributes="Bold"
+                    Clicked="LogoutButton_Clicked" />
+
+
+                <!-- =================================================
+                     FOOTER
+                     ================================================= -->
+                <Label
+                    Text="Martin SpendWise"
+                    FontSize="11"
+                    TextColor="#9AA69F"
+                    HorizontalTextAlignment="Center"
+                    Margin="0,4,0,20" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

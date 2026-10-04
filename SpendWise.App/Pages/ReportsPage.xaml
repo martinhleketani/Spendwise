@@ -1,0 +1,1134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.ReportsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Reports"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ============================================= -->
+        <!-- HEADER -->
+        <!-- ============================================= -->
+
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Grid.Column="0"
+                Text="←"
+                FontSize="24"
+                WidthRequest="48"
+                HeightRequest="48"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0"
+                VerticalOptions="Center"
+                Spacing="1">
+
+                <Label
+                    Text="Reports"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Understand where your money goes"
+                    FontSize="12"
+                    TextColor="#D9F2E3" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="22"
+                WidthRequest="48"
+                HeightRequest="48"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- ============================================= -->
+        <!-- SCROLLABLE CONTENT -->
+        <!-- ============================================= -->
+
+        <ScrollView
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Default">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="18">
+
+
+                <!-- ===================================== -->
+                <!-- MONTH / YEAR -->
+                <!-- ===================================== -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label
+                            Text="Monthly Report"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Choose the month you want to analyse."
+                            FontSize="13"
+                            TextColor="#6B7D72" />
+
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="10">
+
+                            <!-- MONTH -->
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Month"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="60"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Picker
+                                        x:Name="MonthPicker"
+                                        Title="Month"
+                                        TitleColor="#777777"
+                                        TextColor="#173C2A"
+                                        BackgroundColor="Transparent"
+                                        FontSize="15"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+
+                            <!-- YEAR -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Year"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="60"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Picker
+                                        x:Name="YearPicker"
+                                        Title="Year"
+                                        TitleColor="#777777"
+                                        TextColor="#173C2A"
+                                        BackgroundColor="Transparent"
+                                        FontSize="15"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <Button
+                            x:Name="LoadMonthlyReportButton"
+                            Text="View Monthly Report"
+                            HeightRequest="48"
+                            CornerRadius="12"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="LoadMonthlyReportButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ===================================== -->
+                <!-- LOADING -->
+                <!-- ===================================== -->
+
+                <ActivityIndicator
+                    x:Name="LoadingIndicator"
+                    IsRunning="False"
+                    IsVisible="False"
+                    Color="#146B3A"
+                    HorizontalOptions="Center" />
+
+
+                <!-- ===================================== -->
+                <!-- ERROR -->
+                <!-- ===================================== -->
+
+                <Border
+                    x:Name="ErrorCard"
+                    IsVisible="False"
+                    BackgroundColor="#FFF4F4"
+                    Stroke="#F1C7C7"
+                    StrokeThickness="1"
+                    Padding="14">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        TextColor="#B42318"
+                        FontSize="13" />
+
+                </Border>
+
+
+                <!-- ===================================== -->
+                <!-- MONTHLY SUMMARY -->
+                <!-- ===================================== -->
+
+                <VerticalStackLayout
+                    x:Name="MonthlyReportSection"
+                    IsVisible="False"
+                    Spacing="14">
+
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="10">
+
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            Spacing="2">
+
+                            <Label
+                                Text="Spending Summary"
+                                FontSize="20"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <Label
+                                x:Name="MonthlyPeriodLabel"
+                                Text="Monthly spending"
+                                FontSize="12"
+                                TextColor="#718078" />
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            Grid.Column="1"
+                            Text="MONTHLY"
+                            FontSize="10"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+
+                    <!-- TOTAL SPENT -->
+                    <Border
+                        BackgroundColor="#146B3A"
+                        StrokeThickness="0"
+                        Padding="18">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="5">
+
+                            <Label
+                                Text="TOTAL SPENT"
+                                FontSize="11"
+                                FontAttributes="Bold"
+                                TextColor="#D9F2E3" />
+
+                            <Label
+                                x:Name="TotalSpentLabel"
+                                Text="R0.00"
+                                FontSize="30"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+
+                            <Label
+                                x:Name="TransactionCountTextLabel"
+                                Text="0 purchases"
+                                FontSize="13"
+                                TextColor="#D9F2E3" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- SUMMARY CARDS -->
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Border
+                            Grid.Column="0"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Average Purchase"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="AveragePurchaseLabel"
+                                    Text="R0.00"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Biggest Purchase"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="BiggestPurchaseLabel"
+                                    Text="R0.00"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <!-- CATEGORY BREAKDOWN -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#DCE5DF"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label
+                                Text="Spending by Category"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <Label
+                                Text="See which categories received the most spending."
+                                FontSize="12"
+                                TextColor="#718078" />
+
+                            <VerticalStackLayout
+                                x:Name="CategoryReportLayout"
+                                Spacing="10" />
+
+                            <Label
+                                x:Name="NoCategoryDataLabel"
+                                Text="No category spending found for this month."
+                                IsVisible="False"
+                                FontSize="13"
+                                TextColor="#718078"
+                                HorizontalTextAlignment="Center"
+                                Margin="0,8" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- BIGGEST TRANSACTION -->
+                    <Border
+                        x:Name="BiggestTransactionCard"
+                        IsVisible="False"
+                        BackgroundColor="#F0F8F3"
+                        Stroke="#BFDCC9"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="8">
+
+                            <Label
+                                Text="Biggest Transaction"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <Label
+                                x:Name="BiggestTransactionDescriptionLabel"
+                                Text="-"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <Grid
+                                ColumnDefinitions="*,Auto"
+                                ColumnSpacing="10">
+
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    Spacing="2">
+
+                                    <Label
+                                        x:Name="BiggestTransactionCategoryLabel"
+                                        Text="-"
+                                        FontSize="12"
+                                        TextColor="#617269" />
+
+                                    <Label
+                                        x:Name="BiggestTransactionRetailerLabel"
+                                        Text="-"
+                                        FontSize="12"
+                                        TextColor="#617269" />
+
+                                    <Label
+                                        x:Name="BiggestTransactionDateLabel"
+                                        Text="-"
+                                        FontSize="11"
+                                        TextColor="#849087" />
+
+                                </VerticalStackLayout>
+
+                                <Label
+                                    Grid.Column="1"
+                                    x:Name="BiggestTransactionAmountLabel"
+                                    Text="R0.00"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="#146B3A"
+                                    VerticalOptions="Center" />
+
+                            </Grid>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- ===================================== -->
+                <!-- RETAILER REPORT -->
+                <!-- ===================================== -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label
+                            Text="Retailer Spending"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Compare your spending across retailers for the selected month."
+                            FontSize="12"
+                            TextColor="#718078" />
+
+                        <Button
+                            x:Name="LoadRetailerReportButton"
+                            Text="View Retailer Report"
+                            HeightRequest="48"
+                            CornerRadius="12"
+                            BackgroundColor="#EAF5EE"
+                            TextColor="#146B3A"
+                            FontAttributes="Bold"
+                            Clicked="LoadRetailerReportButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- RETAILER RESULTS -->
+                <VerticalStackLayout
+                    x:Name="RetailerReportSection"
+                    IsVisible="False"
+                    Spacing="14">
+
+                    <Label
+                        Text="Retailer Summary"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#173C2A" />
+
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Border
+                            Grid.Column="0"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Retailer Spend"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="RetailerTotalSpentLabel"
+                                    Text="R0.00"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Retailers"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="RetailerCountLabel"
+                                    Text="0"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Border
+                            Grid.Column="0"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Transactions"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="RetailerTransactionCountLabel"
+                                    Text="0"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Average Purchase"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="AverageRetailerPurchaseLabel"
+                                    Text="R0.00"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#DCE5DF"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label
+                                Text="Spending by Retailer"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <VerticalStackLayout
+                                x:Name="RetailerReportLayout"
+                                Spacing="10" />
+
+                            <Label
+                                x:Name="NoRetailerDataLabel"
+                                Text="No retailer spending found for this month."
+                                IsVisible="False"
+                                FontSize="13"
+                                TextColor="#718078"
+                                HorizontalTextAlignment="Center"
+                                Margin="0,8" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <Border
+                        x:Name="HighestRetailerCard"
+                        IsVisible="False"
+                        BackgroundColor="#F0F8F3"
+                        Stroke="#BFDCC9"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label
+                                Text="Highest Spending Retailer"
+                                FontSize="13"
+                                TextColor="#617269" />
+
+                            <Label
+                                x:Name="HighestRetailerNameLabel"
+                                Text="-"
+                                FontSize="19"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <Label
+                                x:Name="HighestRetailerAmountLabel"
+                                Text="R0.00"
+                                FontSize="24"
+                                FontAttributes="Bold"
+                                TextColor="#146B3A" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- ===================================== -->
+                <!-- CUSTOM DATE RANGE -->
+                <!-- ===================================== -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label
+                            Text="Custom Date Range"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            Text="Generate a spending report between two dates."
+                            FontSize="12"
+                            TextColor="#718078" />
+
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="10">
+
+                            <!-- START DATE -->
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Start Date"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="56"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <DatePicker
+                                        x:Name="StartDatePicker"
+                                        Format="dd MMM yyyy"
+                                        TextColor="#173C2A"
+                                        BackgroundColor="Transparent"
+                                        FontSize="14"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+
+                            <!-- END DATE -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="5">
+
+                                <Label
+                                    Text="End Date"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#50645A" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    HeightRequest="56"
+                                    Padding="8,0">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <DatePicker
+                                        x:Name="EndDatePicker"
+                                        Format="dd MMM yyyy"
+                                        TextColor="#173C2A"
+                                        BackgroundColor="Transparent"
+                                        FontSize="14"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <Button
+                            x:Name="LoadDateRangeReportButton"
+                            Text="Generate Date Range Report"
+                            HeightRequest="48"
+                            CornerRadius="12"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="LoadDateRangeReportButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ===================================== -->
+                <!-- DATE RANGE RESULTS -->
+                <!-- ===================================== -->
+
+                <VerticalStackLayout
+                    x:Name="DateRangeReportSection"
+                    IsVisible="False"
+                    Spacing="14">
+
+                    <VerticalStackLayout Spacing="2">
+
+                        <Label
+                            Text="Date Range Summary"
+                            FontSize="20"
+                            FontAttributes="Bold"
+                            TextColor="#173C2A" />
+
+                        <Label
+                            x:Name="DateRangePeriodLabel"
+                            Text="-"
+                            FontSize="12"
+                            TextColor="#718078" />
+
+                    </VerticalStackLayout>
+
+
+                    <!-- DATE RANGE TOTAL -->
+                    <Border
+                        BackgroundColor="#146B3A"
+                        StrokeThickness="0"
+                        Padding="18">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="5">
+
+                            <Label
+                                Text="TOTAL SPENT"
+                                FontSize="11"
+                                FontAttributes="Bold"
+                                TextColor="#D9F2E3" />
+
+                            <Label
+                                x:Name="DateRangeTotalSpentLabel"
+                                Text="R0.00"
+                                FontSize="30"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+
+                            <Label
+                                x:Name="DateRangeTransactionCountLabel"
+                                Text="0 purchases"
+                                FontSize="13"
+                                TextColor="#D9F2E3" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- DATE RANGE SUMMARY CARDS -->
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Border
+                            Grid.Column="0"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Average"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="DateRangeAverageLabel"
+                                    Text="R0.00"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="White"
+                            Stroke="#DCE5DF"
+                            StrokeThickness="1"
+                            Padding="14">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label
+                                    Text="Biggest"
+                                    FontSize="11"
+                                    TextColor="#718078" />
+
+                                <Label
+                                    x:Name="DateRangeBiggestLabel"
+                                    Text="R0.00"
+                                    FontSize="19"
+                                    FontAttributes="Bold"
+                                    TextColor="#173C2A" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <!-- CATEGORY BREAKDOWN -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#DCE5DF"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label
+                                Text="Categories"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <VerticalStackLayout
+                                x:Name="DateRangeCategoryLayout"
+                                Spacing="10" />
+
+                            <Label
+                                x:Name="NoDateRangeCategoryLabel"
+                                Text="No category data found."
+                                IsVisible="False"
+                                FontSize="13"
+                                TextColor="#718078"
+                                HorizontalTextAlignment="Center" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- RETAILER BREAKDOWN -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#DCE5DF"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label
+                                Text="Retailers"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <VerticalStackLayout
+                                x:Name="DateRangeRetailerLayout"
+                                Spacing="10" />
+
+                            <Label
+                                x:Name="NoDateRangeRetailerLabel"
+                                Text="No retailer data found."
+                                IsVisible="False"
+                                FontSize="13"
+                                TextColor="#718078"
+                                HorizontalTextAlignment="Center" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- TRANSACTIONS -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#DCE5DF"
+                        StrokeThickness="1"
+                        Padding="16">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label
+                                Text="Transactions"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#173C2A" />
+
+                            <VerticalStackLayout
+                                x:Name="DateRangeTransactionLayout"
+                                Spacing="10" />
+
+                            <Label
+                                x:Name="NoDateRangeTransactionsLabel"
+                                Text="No transactions found for this date range."
+                                IsVisible="False"
+                                FontSize="13"
+                                TextColor="#718078"
+                                HorizontalTextAlignment="Center"
+                                Margin="0,8" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- BOTTOM SPACE -->
+                <BoxView
+                    HeightRequest="25"
+                    Opacity="0" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

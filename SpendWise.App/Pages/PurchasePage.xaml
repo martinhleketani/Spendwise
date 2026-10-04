@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.PurchasePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Purchase"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Grid.Column="0"
+                Text="←"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                Spacing="2"
+                VerticalOptions="Center">
+
+                <Label
+                    Text="Record Purchase"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Record and track your spending"
+                    FontSize="13"
+                    TextColor="#D9F0E2" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="20"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- PAGE CONTENT -->
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="20">
+
+
+                <!-- SPENDING TRACKER -->
+                <Border
+                    BackgroundColor="#146B3A"
+                    StrokeThickness="0"
+                    Padding="22">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="8">
+
+                        <Label
+                            Text="Spending Tracker"
+                            FontSize="14"
+                            TextColor="#D9F0E2" />
+
+                        <Label
+                            Text="Record what you spend"
+                            FontSize="27"
+                            FontAttributes="Bold"
+                            TextColor="White" />
+
+                        <Label
+                            Text="Purchases recorded here update your spending history and budget categories."
+                            FontSize="13"
+                            TextColor="#D9F0E2"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- NO PAYMENT INFORMATION -->
+                <Border
+                    BackgroundColor="#EAF5EE"
+                    Stroke="#C8DFD0"
+                    StrokeThickness="1"
+                    Padding="15">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="5">
+
+                        <Label
+                            Text="Spending Record"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            TextColor="#146B3A" />
+
+                        <Label
+                            Text="SpendWise currently records purchases for budgeting and spending analysis. No bank or card payment is processed on this page."
+                            FontSize="12"
+                            TextColor="#50645A"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- NEW PURCHASE -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <VerticalStackLayout Spacing="3">
+
+                            <Label
+                                Text="New Purchase"
+                                FontSize="21"
+                                FontAttributes="Bold"
+                                TextColor="#1E1E1E" />
+
+                            <Label
+                                Text="Enter the details of money you have spent."
+                                FontSize="12"
+                                TextColor="#777777" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- CATEGORY -->
+                        <Label
+                            Text="Budget Category"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="60">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Picker
+                                x:Name="CategoryPicker"
+                                Title="Select a budget category"
+                                TitleColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill" />
+
+                        </Border>
+
+
+                        <!-- CATEGORY BUDGET -->
+                        <Border
+                            BackgroundColor="#F3F8F5"
+                            Stroke="#DDEAE2"
+                            StrokeThickness="1"
+                            Padding="12">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Label
+                                x:Name="CategoryBudgetLabel"
+                                Text="Select a category to see its budget."
+                                FontSize="12"
+                                TextColor="#555555"
+                                LineBreakMode="WordWrap" />
+
+                        </Border>
+
+
+                        <!-- DESCRIPTION -->
+                        <Label
+                            Text="Description"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="56">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Entry
+                                x:Name="DescriptionEntry"
+                                Placeholder="Example: Uber ride"
+                                PlaceholderColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                MaxLength="150"
+                                VerticalOptions="Center"
+                                VerticalTextAlignment="Center" />
+
+                        </Border>
+
+
+                        <!-- AMOUNT -->
+                        <Label
+                            Text="Amount Spent"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="12,0"
+                            HeightRequest="56">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Grid ColumnDefinitions="Auto,*">
+
+                                <Label
+                                    Grid.Column="0"
+                                    Text="R"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="#146B3A"
+                                    Margin="0,0,8,0"
+                                    VerticalOptions="Center" />
+
+                                <Entry
+                                    Grid.Column="1"
+                                    x:Name="AmountEntry"
+                                    Placeholder="0.00"
+                                    PlaceholderColor="#777777"
+                                    TextColor="#1E1E1E"
+                                    BackgroundColor="Transparent"
+                                    Keyboard="Numeric"
+                                    FontSize="16"
+                                    VerticalOptions="Center"
+                                    VerticalTextAlignment="Center" />
+
+                            </Grid>
+
+                        </Border>
+
+
+                        <!-- ERROR -->
+                        <Label
+                            x:Name="ErrorLabel"
+                            Text=""
+                            IsVisible="False"
+                            FontSize="13"
+                            TextColor="#C0392B" />
+
+
+                        <!-- RECORD BUTTON -->
+                        <Button
+                            x:Name="PurchaseButton"
+                            Text="Record Purchase"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="16"
+                            HeightRequest="55"
+                            CornerRadius="14"
+                            Clicked="PurchaseButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- PURCHASE HISTORY TITLE -->
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <VerticalStackLayout
+                        Grid.Column="0"
+                        Spacing="3">
+
+                        <Label
+                            Text="Purchase History"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            x:Name="HistorySummaryLabel"
+                            Text="0 purchases • R 0.00"
+                            FontSize="12"
+                            TextColor="#777777" />
+
+                    </VerticalStackLayout>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="Refresh"
+                        BackgroundColor="Transparent"
+                        TextColor="#146B3A"
+                        FontAttributes="Bold"
+                        VerticalOptions="Center"
+                        Clicked="HistoryRefreshButton_Clicked" />
+
+                </Grid>
+
+
+                <!-- SEARCH -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="12">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="10">
+
+                        <!-- VISIBLE SEARCH FIELD -->
+                        <Border
+                            Grid.Column="0"
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="50">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Entry
+                                x:Name="SearchEntry"
+                                Placeholder="Search description, category..."
+                                PlaceholderColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                ReturnType="Search"
+                                VerticalOptions="Center"
+                                VerticalTextAlignment="Center"
+                                Completed="SearchEntry_Completed" />
+
+                        </Border>
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Search"
+                            BackgroundColor="#E8F4EC"
+                            TextColor="#146B3A"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"
+                            Clicked="SearchButton_Clicked" />
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- LOADING -->
+                <ActivityIndicator
+                    x:Name="HistoryLoadingIndicator"
+                    IsVisible="False"
+                    IsRunning="False"
+                    Color="#146B3A"
+                    HorizontalOptions="Center" />
+
+
+                <!-- PURCHASE HISTORY -->
+                <VerticalStackLayout
+                    x:Name="PurchaseHistoryLayout"
+                    Spacing="10">
+
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="20">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Label
+                            Text="Your recorded purchases will appear here."
+                            TextColor="#777777"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center" />
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- HOW PURCHASE RECORDING WORKS -->
+                <Border
+                    BackgroundColor="#F3F8F5"
+                    Stroke="#DDEAE2"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="9">
+
+                        <Label
+                            Text="How purchase recording works"
+                            FontAttributes="Bold"
+                            FontSize="16"
+                            TextColor="#146B3A" />
+
+                        <Label
+                            Text="1. Select the budget category."
+                            FontSize="12"
+                            TextColor="#555555" />
+
+                        <Label
+                            Text="2. Enter what you purchased and the amount spent."
+                            FontSize="12"
+                            TextColor="#555555" />
+
+                        <Label
+                            Text="3. SpendWise records the purchase in your spending history."
+                            FontSize="12"
+                            TextColor="#555555" />
+
+                        <Label
+                            Text="4. The selected budget category is updated automatically."
+                            FontSize="12"
+                            TextColor="#555555" />
+
+                        <Label
+                            Text="No money is transferred by SpendWise."
+                            FontSize="12"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- FUTURE BANK INTEGRATION -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Bank Integration"
+                            FontSize="15"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Label
+                            Text="When secure bank integration is added, bank transactions can be connected to SpendWise without using the old simulated wallet balance."
+                            FontSize="12"
+                            TextColor="#666666"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <BoxView
+                    HeightRequest="20"
+                    Opacity="0" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

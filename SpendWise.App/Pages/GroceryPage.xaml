@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.GroceryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Grocery"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Text="←"
+                FontSize="22"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                VerticalOptions="Center"
+                Spacing="2">
+
+                <Label
+                    Text="Grocery"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Plan, budget and track groceries"
+                    FontSize="13"
+                    TextColor="#D9F0E2" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="20"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="45"
+                HeightRequest="45"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+
+        <!-- CONTENT -->
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="20">
+
+
+                <!-- SUMMARY -->
+                <Border
+                    BackgroundColor="#146B3A"
+                    StrokeThickness="0"
+                    Padding="22">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="15">
+
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            Spacing="5">
+
+                            <Label
+                                Text="Estimated Total"
+                                FontSize="13"
+                                TextColor="#D9F0E2" />
+
+                            <Label
+                                x:Name="EstimatedTotalLabel"
+                                Text="R 0.00"
+                                FontSize="30"
+                                FontAttributes="Bold"
+                                TextColor="White" />
+
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="5"
+                            HorizontalOptions="End">
+
+                            <Label
+                                Text="Items"
+                                FontSize="13"
+                                TextColor="#D9F0E2"
+                                HorizontalTextAlignment="End" />
+
+                            <Label
+                                x:Name="ItemCountLabel"
+                                Text="0"
+                                FontSize="30"
+                                FontAttributes="Bold"
+                                TextColor="White"
+                                HorizontalTextAlignment="End" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- SAVED GROCERY LISTS -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout Spacing="2">
+
+                                <Label
+                                    Text="Saved Grocery Lists"
+                                    FontSize="21"
+                                    FontAttributes="Bold"
+                                    TextColor="#1E1E1E" />
+
+                                <Label
+                                    Text="Open a previous grocery list"
+                                    FontSize="12"
+                                    TextColor="#777777" />
+
+                            </VerticalStackLayout>
+
+                            <Button
+                                Grid.Column="1"
+                                Text="Refresh"
+                                BackgroundColor="Transparent"
+                                TextColor="#146B3A"
+                                FontAttributes="Bold"
+                                Clicked="LoadListsButton_Clicked" />
+
+                        </Grid>
+
+                        <ActivityIndicator
+                            x:Name="ListsLoadingIndicator"
+                            IsVisible="False"
+                            IsRunning="False"
+                            Color="#146B3A" />
+
+                        <VerticalStackLayout
+                            x:Name="SavedListsLayout"
+                            Spacing="10">
+
+                            <Label
+                                Text="Loading saved lists..."
+                                TextColor="#777777"
+                                HorizontalOptions="Center"
+                                Margin="0,10" />
+
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- GROCERY LIST -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Label
+                            Text="Grocery List"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+
+                        <!-- LIST NAME -->
+                        <Label
+                            Text="List Name"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="56">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Entry
+                                x:Name="ListNameEntry"
+                                Placeholder="Example: Monthly Groceries"
+                                PlaceholderColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                VerticalOptions="Center"
+                                VerticalTextAlignment="Center" />
+
+                        </Border>
+
+
+                        <!-- RETAILER -->
+                        <Label
+                            Text="Retailer"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="60">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Picker
+                                x:Name="RetailerPicker"
+                                Title="Select retailer"
+                                TitleColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+
+                                <Picker.Items>
+                                    <x:String>Pick n Pay</x:String>
+                                    <x:String>Shoprite</x:String>
+                                    <x:String>Checkers</x:String>
+                                    <x:String>SPAR</x:String>
+                                    <x:String>Woolworths Food</x:String>
+                                    <x:String>Other</x:String>
+                                </Picker.Items>
+
+                            </Picker>
+
+                        </Border>
+
+
+                        <Button
+                            Text="+ New Grocery List"
+                            BackgroundColor="Transparent"
+                            TextColor="#146B3A"
+                            FontAttributes="Bold"
+                            Clicked="NewListButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ADD ITEM -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Label
+                            Text="Add Grocery Item"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+
+                        <!-- PRODUCT -->
+                        <Label
+                            Text="Product"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#555555" />
+
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            Padding="8,0"
+                            HeightRequest="56">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <Entry
+                                x:Name="ProductNameEntry"
+                                Placeholder="Example: Milk"
+                                PlaceholderColor="#777777"
+                                TextColor="#1E1E1E"
+                                BackgroundColor="Transparent"
+                                FontSize="15"
+                                VerticalOptions="Center"
+                                VerticalTextAlignment="Center" />
+
+                        </Border>
+
+
+                        <!-- QUANTITY + PRICE -->
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="12">
+
+                            <!-- QUANTITY -->
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Quantity"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="#555555" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    Padding="8,0"
+                                    HeightRequest="56">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Entry
+                                        x:Name="QuantityEntry"
+                                        Text="1"
+                                        TextColor="#1E1E1E"
+                                        BackgroundColor="Transparent"
+                                        Keyboard="Numeric"
+                                        FontSize="15"
+                                        VerticalOptions="Center"
+                                        VerticalTextAlignment="Center" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+
+                            <!-- UNIT PRICE -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="5">
+
+                                <Label
+                                    Text="Unit Price"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="#555555" />
+
+                                <Border
+                                    BackgroundColor="#F1F3F2"
+                                    Stroke="#8A9690"
+                                    StrokeThickness="1.5"
+                                    Padding="8,0"
+                                    HeightRequest="56">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10" />
+                                    </Border.StrokeShape>
+
+                                    <Entry
+                                        x:Name="PriceEntry"
+                                        Placeholder="0.00"
+                                        PlaceholderColor="#777777"
+                                        TextColor="#1E1E1E"
+                                        BackgroundColor="Transparent"
+                                        Keyboard="Numeric"
+                                        FontSize="15"
+                                        VerticalOptions="Center"
+                                        VerticalTextAlignment="Center" />
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <Button
+                            Text="+ Add Item"
+                            BackgroundColor="#E8F4EC"
+                            TextColor="#146B3A"
+                            FontAttributes="Bold"
+                            HeightRequest="48"
+                            CornerRadius="12"
+                            Clicked="AddItemButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ERROR -->
+                <Label
+                    x:Name="ErrorLabel"
+                    Text=""
+                    IsVisible="False"
+                    TextColor="#C0392B"
+                    FontSize="13" />
+
+
+                <!-- ITEMS -->
+                <VerticalStackLayout Spacing="12">
+
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <Label
+                            Text="Items"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#1E1E1E" />
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Clear"
+                            FontSize="12"
+                            BackgroundColor="Transparent"
+                            TextColor="#C0392B"
+                            Padding="10,5"
+                            Clicked="ClearItemsButton_Clicked" />
+
+                    </Grid>
+
+
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E1E5E3"
+                        StrokeThickness="1"
+                        Padding="18">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout
+                            x:Name="ItemsLayout"
+                            Spacing="5">
+
+                            <Label
+                                Text="No items added yet."
+                                TextColor="#777777"
+                                HorizontalOptions="Center"
+                                Margin="0,20" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- TOTAL -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E1E5E3"
+                    StrokeThickness="1"
+                    Padding="20">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            Spacing="3">
+
+                            <Label
+                                Text="List Total"
+                                FontSize="14"
+                                TextColor="#777777" />
+
+                            <Label
+                                Text="Estimated grocery cost"
+                                FontSize="12"
+                                TextColor="#999999" />
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            x:Name="ListTotalLabel"
+                            Grid.Column="1"
+                            Text="R 0.00"
+                            FontSize="24"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- SAVE LIST -->
+                <Button
+                    x:Name="SaveListButton"
+                    Text="Save Grocery List"
+                    BackgroundColor="#146B3A"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    HeightRequest="55"
+                    CornerRadius="14"
+                    Clicked="SaveListButton_Clicked" />
+
+
+                <!-- CHECK BUDGET -->
+                <Button
+                    x:Name="CheckBudgetButton"
+                    Text="Check Grocery Budget"
+                    BackgroundColor="White"
+                    TextColor="#146B3A"
+                    BorderColor="#146B3A"
+                    BorderWidth="1"
+                    FontAttributes="Bold"
+                    FontSize="15"
+                    HeightRequest="52"
+                    CornerRadius="14"
+                    Clicked="CheckBudgetButton_Clicked" />
+
+
+                <!-- RECORD PURCHASE INFORMATION -->
+                <Border
+                    BackgroundColor="#EAF5EE"
+                    Stroke="#C8DFD0"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Record Grocery Purchase"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            TextColor="#146B3A" />
+
+                        <Label
+                            Text="After buying these groceries, record the purchase to update your spending history and grocery budget."
+                            FontSize="12"
+                            TextColor="#50645A"
+                            LineBreakMode="WordWrap" />
+
+                        <Label
+                            Text="No bank or card payment is processed by SpendWise."
+                            FontSize="12"
+                            FontAttributes="Bold"
+                            TextColor="#50645A"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- RECORD PURCHASE -->
+                <Button
+                    x:Name="CheckoutButton"
+                    Text="Record Purchase"
+                    BackgroundColor="#1E1E1E"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    HeightRequest="55"
+                    CornerRadius="14"
+                    Clicked="CheckoutButton_Clicked" />
+
+
+                <!-- PRICE COMPARISON -->
+                <Button
+                    x:Name="ComparePricesButton"
+                    Text="Compare Retailer Prices"
+                    BackgroundColor="White"
+                    TextColor="#146B3A"
+                    BorderColor="#146B3A"
+                    BorderWidth="1"
+                    FontAttributes="Bold"
+                    FontSize="15"
+                    HeightRequest="52"
+                    CornerRadius="14"
+                    Clicked="ComparePricesButton_Clicked" />
+
+                <Label
+                    Text="Retailer price comparison will be connected when verified retailer price data is added."
+                    FontSize="11"
+                    TextColor="#888888"
+                    HorizontalTextAlignment="Center" />
+
+
+                <BoxView
+                    HeightRequest="20"
+                    Opacity="0" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

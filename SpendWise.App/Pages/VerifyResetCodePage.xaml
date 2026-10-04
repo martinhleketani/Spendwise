@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.VerifyResetCodePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Verify Code"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,18"
+            ColumnDefinitions="Auto,*">
+
+            <Button
+                Grid.Column="0"
+                Text="←"
+                FontSize="24"
+                WidthRequest="48"
+                HeightRequest="48"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                Margin="12,0"
+                VerticalOptions="Center"
+                Spacing="1">
+
+                <Label
+                    Text="Verify Code"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Verify your SpendWise account"
+                    FontSize="12"
+                    TextColor="#D9F2E3" />
+
+            </VerticalStackLayout>
+
+        </Grid>
+
+
+        <!-- CONTENT -->
+        <ScrollView Grid.Row="1">
+
+            <VerticalStackLayout
+                Padding="30,35"
+                Spacing="20"
+                MaximumWidthRequest="620"
+                HorizontalOptions="Center">
+
+
+                <!-- ICON -->
+                <Border
+                    WidthRequest="90"
+                    HeightRequest="90"
+                    BackgroundColor="#E8F4ED"
+                    StrokeThickness="0"
+                    HorizontalOptions="Center">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="45" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        Text="✉"
+                        FontSize="38"
+                        TextColor="#146B3A"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center" />
+
+                </Border>
+
+
+                <!-- TITLE -->
+                <Label
+                    Text="Check Your Email"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    TextColor="#18211D"
+                    HorizontalTextAlignment="Center" />
+
+
+                <Label
+                    Text="We sent a 6-digit verification code to:"
+                    FontSize="14"
+                    TextColor="#718078"
+                    HorizontalTextAlignment="Center" />
+
+
+                <Label
+                    x:Name="EmailLabel"
+                    Text="-"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    TextColor="#146B3A"
+                    HorizontalTextAlignment="Center" />
+
+
+                <!-- ERROR -->
+                <Border
+                    x:Name="ErrorCard"
+                    IsVisible="False"
+                    BackgroundColor="#FFF4F4"
+                    Stroke="#F1C7C7"
+                    StrokeThickness="1"
+                    Padding="14">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        Text=""
+                        FontSize="13"
+                        TextColor="#B42318"
+                        HorizontalTextAlignment="Center"
+                        LineBreakMode="WordWrap" />
+
+                </Border>
+
+
+                <!-- SUCCESS -->
+                <Border
+                    x:Name="SuccessCard"
+                    IsVisible="False"
+                    BackgroundColor="#EAF5EE"
+                    Stroke="#BFDCC9"
+                    StrokeThickness="1"
+                    Padding="14">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <Label
+                        x:Name="SuccessLabel"
+                        Text=""
+                        FontSize="13"
+                        TextColor="#146B3A"
+                        HorizontalTextAlignment="Center"
+                        LineBreakMode="WordWrap" />
+
+                </Border>
+
+
+                <!-- VERIFICATION CARD -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#DCE5DF"
+                    StrokeThickness="1"
+                    Padding="22">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="16">
+
+                        <Label
+                            Text="Verification Code"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#18211D" />
+
+
+                        <!-- CODE ENTRY -->
+                        <Border
+                            BackgroundColor="#F1F3F2"
+                            Stroke="#8A9690"
+                            StrokeThickness="1.5"
+                            HeightRequest="60"
+                            Padding="12,0">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+
+                            <Entry
+                                x:Name="CodeEntry"
+                                Placeholder="Enter 6-digit code"
+                                PlaceholderColor="#777777"
+                                Keyboard="Numeric"
+                                MaxLength="6"
+                                TextColor="#173C2A"
+                                BackgroundColor="Transparent"
+                                FontSize="22"
+                                CharacterSpacing="6"
+                                HorizontalTextAlignment="Center"
+                                VerticalTextAlignment="Center"
+                                ReturnType="Done"
+                                Completed="CodeEntry_Completed" />
+
+                        </Border>
+
+
+                        <Label
+                            Text="Enter the 6-digit code from your email."
+                            FontSize="12"
+                            TextColor="#718078"
+                            HorizontalTextAlignment="Center" />
+
+
+                        <!-- VERIFY BUTTON -->
+                        <Button
+                            x:Name="VerifyButton"
+                            Text="Verify Code"
+                            HeightRequest="52"
+                            CornerRadius="12"
+                            BackgroundColor="#146B3A"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            Clicked="VerifyButton_Clicked" />
+
+
+                        <!-- LOADING -->
+                        <ActivityIndicator
+                            x:Name="LoadingIndicator"
+                            IsVisible="False"
+                            IsRunning="False"
+                            Color="#146B3A"
+                            HorizontalOptions="Center" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- RESEND -->
+                <Border
+                    BackgroundColor="#F0F7F3"
+                    Stroke="#D4E8DC"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Didn't receive the code?"
+                            FontSize="13"
+                            TextColor="#50645A"
+                            HorizontalTextAlignment="Center" />
+
+                        <Button
+                            x:Name="ResendCodeButton"
+                            Text="Resend Code"
+                            HeightRequest="44"
+                            CornerRadius="10"
+                            BackgroundColor="Transparent"
+                            BorderColor="#146B3A"
+                            BorderWidth="1"
+                            TextColor="#146B3A"
+                            FontAttributes="Bold"
+                            Clicked="ResendCodeButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- CHANGE EMAIL -->
+                <Button
+                    Text="Use a Different Email"
+                    HeightRequest="46"
+                    BackgroundColor="Transparent"
+                    TextColor="#146B3A"
+                    FontAttributes="Bold"
+                    Clicked="ChangeEmailButton_Clicked" />
+
+
+                <!-- FOOTER -->
+                <Label
+                    Text="Martin SpendWise"
+                    FontSize="11"
+                    TextColor="#9AA69F"
+                    HorizontalTextAlignment="Center"
+                    Margin="0,8,0,20" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

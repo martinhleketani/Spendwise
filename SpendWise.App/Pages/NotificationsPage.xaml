@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="SpendWise.App.NotificationsPage"
+    Title="Budget Notifications"
+    BackgroundColor="#F5F7FB">
+
+    <Grid
+        Padding="20"
+        RowDefinitions="Auto,Auto,Auto,*"
+        RowSpacing="15">
+
+        <Label
+            Grid.Row="0"
+            Text="Budget Notifications"
+            FontSize="26"
+            FontAttributes="Bold"
+            TextColor="#172033" />
+
+        <Label
+            Grid.Row="1"
+            x:Name="UnreadCountLabel"
+            Text="Loading notifications..."
+            FontSize="15"
+            TextColor="#64748B" />
+
+        <HorizontalStackLayout
+            Grid.Row="2"
+            Spacing="12">
+
+            <Button
+                Text="Refresh"
+                Clicked="OnRefreshClicked"
+                BackgroundColor="#2563EB"
+                TextColor="White" />
+
+            <Button
+                Text="Mark All Read"
+                Clicked="OnMarkAllReadClicked"
+                BackgroundColor="#0F172A"
+                TextColor="White" />
+
+        </HorizontalStackLayout>
+
+        <CollectionView
+            Grid.Row="3"
+            x:Name="NotificationsList"
+            SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <Label
+                    Text="No budget notifications yet."
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    TextColor="#64748B" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Border
+                        Stroke="#E2E8F0"
+                        StrokeThickness="1"
+                        BackgroundColor="White"
+                        Padding="15"
+                        Margin="0,5"
+                        StrokeShape="RoundRectangle 12">
+
+                        <VerticalStackLayout Spacing="8">
+
+                            <Label
+                                Text="{Binding Category}"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                TextColor="#172033" />
+
+                            <Label
+                                Text="{Binding Message}"
+                                FontSize="14"
+                                TextColor="#334155" />
+
+                            <Label
+                                Text="{Binding Status}"
+                                FontSize="12"
+                                TextColor="#64748B" />
+
+                            <Button
+                                Text="Mark as Read"
+                                CommandParameter="{Binding Id}"
+                                Clicked="OnMarkReadClicked"
+                                BackgroundColor="#2563EB"
+                                TextColor="White"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding IsUnread}" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

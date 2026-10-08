@@ -1,24 +1,34 @@
 ﻿# 💰 Martin SpendWise
 
-**Martin SpendWise** is a full-stack personal finance, budgeting and grocery management application designed to help users manage their money, monitor spending and make better purchasing decisions.
+**Martin SpendWise** is a full-stack personal finance, budgeting and grocery management application developed using .NET MAUI, ASP.NET Core Web API and MySQL.
 
-The system combines personal financial management with grocery planning and retailer price comparison in a single application.
+The application is designed to help users manage monthly budgets, record purchases, monitor spending, organise grocery lists and make informed financial decisions.
 
----
-
-## 🚀 Overview
-
-SpendWise allows users to manage their finances through budgeting, transaction tracking, spending insights and grocery planning.
-
-The project consists of a **.NET MAUI client application** connected to an **ASP.NET Core Web API**, with **MySQL** used for persistent data storage.
-
-The application is designed around a client-server architecture where the mobile/desktop client communicates with the backend through REST API endpoints.
+The current system focuses on **personal budgeting, purchase tracking, spending monitoring and grocery management**, with future plans to introduce grocery price comparison across major South African retailers.
 
 ---
 
-## ✨ Main Features
+## 🚀 Project Overview
 
-### 🔐 User Authentication
+Martin SpendWise is a personal finance management system that combines financial tracking and grocery planning in one application.
+
+The project consists of:
+
+- A **.NET MAUI application** for the user interface
+- An **ASP.NET Core Web API** for backend services and business logic
+- A **MySQL database** for persistent data storage
+- **Entity Framework Core** for database operations
+- **JWT authentication** for securing user accounts and API requests
+
+The application follows a client-server architecture, with the frontend communicating with the backend through REST API endpoints.
+
+The Windows desktop application is the current development and testing target.
+
+---
+
+## ✨ Current Features
+
+### 🔐 User Authentication and Account Management
 
 - User registration
 - Secure login
@@ -26,270 +36,38 @@ The application is designed around a client-server architecture where the mobile
 - Password hashing
 - Password recovery
 - Email-based password reset
-- Authenticated API access
+- Authenticated access to protected API endpoints
 
 ### 💵 Budget Management
 
-Users can:
+SpendWise allows users to:
 
 - Create monthly budgets
+- Manage budget categories
+- Allocate funds to spending categories
 - Monitor available funds
-- Track spending against their budget
-- View financial summaries
-- Monitor remaining balances
+- Track spending against budgets
+- View remaining budget balances
+- Monitor budget utilisation
+- Receive notifications when spending reaches configured thresholds
+
+Budget notifications help users identify when they are approaching or exceeding their allocated spending limits.
 
 ### 💳 Transaction Management
 
-- Record income and expenses
-- Categorise transactions
-- View transaction history
-- Monitor spending patterns
-- Analyse financial activity
-
-### 📊 Financial Reports & Insights
-
-SpendWise provides users with financial information through:
-
-- Spending summaries
-- Budget analysis
-- Category-based spending
-- Financial reports
-- Visual insights and charts
-
-### 🛒 Grocery Management
-
 Users can:
 
-- Create grocery lists
-- Add grocery products
-- Track grocery quantities
-- Estimate grocery costs
-- Compare grocery spending against available budgets
-
-### 🏪 Retailer Price Comparison
-
-SpendWise includes infrastructure for retrieving and comparing grocery pricing information from supported retailer/data services.
-
-The long-term objective is to allow users to compare products and prices from multiple retailers from one application instead of manually checking several retailer platforms.
-
-External service credentials are handled through secure backend configuration and are not stored in the client application.
-
----
-
-## 🏗️ Architecture
-
-SpendWise follows a client-server architecture:
-
-```text
-.NET MAUI Application
-        |
-        | HTTPS / REST / JSON
-        v
-ASP.NET Core Web API
-        |
-        | Entity Framework Core
-        v
-      MySQL
-```
-
-External services used by the system are accessed through the backend API rather than exposing private credentials to the client.
-
----
-
-## 🛠️ Technology Stack
-
-### Frontend
-
-- C#
-- .NET MAUI
-- XAML
-
-### Backend
-
-- C#
-- ASP.NET Core Web API
-- .NET 8
-- REST APIs
-
-### Database
-
-- MySQL
-- Entity Framework Core
-- Pomelo Entity Framework Core Provider
-
-### Authentication & Security
-
-- JSON Web Tokens (JWT)
-- ASP.NET Core Password Hashing
-- Secure configuration
-- User Secrets for development credentials
-
-### Development Tools
-
-- Visual Studio
-- Swagger / OpenAPI
-- Git
-- GitHub
-
----
-
-## 🔒 Security
-
-Sensitive information is intentionally excluded from the repository.
-
-The following information must **never be committed to source control**:
-
-- Database passwords
-- Database connection strings containing credentials
-- JWT signing keys
-- Email account passwords
-- SMTP credentials
-- External API keys
-- Private service credentials
-
-Development secrets are stored locally using **ASP.NET Core User Secrets**.
-
-The public `appsettings.json` contains only non-sensitive configuration.
-
-Example:
-
-```json
-{
-  "Jwt": {
-    "Issuer": "SpendWise.API",
-    "Audience": "SpendWise.App",
-    "ExpiryMinutes": 60
-  }
-}
-```
-
-Developers running the project locally must configure their own required credentials.
-
----
-
-## ⚙️ Local Development
-
-### Requirements
-
-Install:
-
-- Visual Studio 2022 or later
-- .NET 8 SDK
-- .NET MAUI workload
-- MySQL Server
-- MySQL Workbench (recommended)
-
-### Backend Configuration
-
-Configure the required development credentials using ASP.NET Core User Secrets.
-
-Typical configuration includes:
-
-```text
-ConnectionStrings:DefaultConnection
-Jwt:Key
-Email configuration
-External API credentials
-```
-
-Actual credentials are intentionally not included in this repository.
-
-### Database
-
-Ensure MySQL Server is running and configure a local database connection through User Secrets.
-
-Entity Framework Core is used for database access and schema management.
-
-### Run the API
-
-Set the SpendWise API project as the startup project and run it through Visual Studio.
-
-Swagger can be used during development to test available API endpoints.
-
-### Run the Client
-
-Start the SpendWise .NET MAUI project after the API is running.
-
-The client communicates with the SpendWise backend through HTTP/REST requests.
-
----
-
-## 📁 Project Structure
-
-```text
-SpendWise
-│
-├── SpendWise
-│   ├── .NET MAUI client
-│   ├── Views
-│   ├── ViewModels
-│   ├── Models
-│   └── Services
-│
-├── SpendWise.API
-│   ├── Controllers
-│   ├── Data
-│   ├── DTOs
-│   ├── Models
-│   ├── Services
-│   ├── Migrations
-│   └── Program.cs
-│
-├── README.md
-└── .gitignore
-```
-
----
-
-## 🎯 Project Purpose
-
-SpendWise was developed as a practical software engineering project demonstrating the integration of:
-
-- Cross-platform application development
-- Backend API development
-- Relational databases
-- Authentication and authorization
-- Personal finance management
-- External service integration
-- RESTful communication
-- Secure configuration
-- Data analysis and reporting
-
-The project is also intended to demonstrate the development of a real-world system from database and backend design through to the user-facing application.
-
----
-
-## 🔮 Future Development
-
-Planned improvements include:
-
-- Expanded retailer integrations
-- More comprehensive grocery price comparison
-- Special and promotion tracking
-- Cheapest-basket recommendations
-- Improved financial analytics
-- Additional reporting capabilities
-- Cloud-hosted backend services
-- Production deployment
-- Mobile deployment improvements
-
----
-
-## 👨‍💻 Developer
-
-**Martin Chabalala**
-
-BSc Information Technology  
-North-West University
-
-Graduate / Junior Software Developer
-
-GitHub: [martinhleketani](https://github.com/martinhleketani)
-
----
-
-## 📄 Project Status
-
-SpendWise is currently under active development.
-
-Core personal finance, budgeting, authentication, transaction management and grocery functionality have been implemented, while retailer integration and price-comparison capabilities continue to be expanded.
+- Record financial transactions
+- Record purchases and expenses
+- Categorise spending
+- View transaction history
+- Monitor financial activity
+- View spending summaries
+- Filter spending history
+- Review purchase descriptions, amounts and dates
+
+### 🧾 Purchase Recording
+
+The purchase recording functionality allows users to:
+
+-

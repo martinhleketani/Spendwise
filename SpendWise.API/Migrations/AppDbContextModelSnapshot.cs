@@ -22,6 +22,54 @@ namespace SpendWise.API.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("SpendWise.API.Models.BudgetNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Threshold")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt")
+                        .HasDatabaseName("IX_BudgetNotifications_UserId_CreatedAt");
+
+                    b.HasIndex("UserId", "Category", "Month", "Year", "Threshold")
+                        .IsUnique()
+                        .HasDatabaseName("IX_BudgetNotifications_UniqueAlert");
+
+                    b.ToTable("BudgetNotifications");
+                });
+
             modelBuilder.Entity("SpendWise.API.Models.CategoryBudget", b =>
                 {
                     b.Property<int>("Id")
@@ -272,12 +320,19 @@ namespace SpendWise.API.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsOnPromotion")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("PriceCheckedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("PriceSource")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
@@ -288,6 +343,10 @@ namespace SpendWise.API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("varchar(1000)");
 
+                    b.Property<decimal?>("RegularPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int>("RetailerId")
                         .HasColumnType("int");
 
@@ -295,10 +354,13 @@ namespace SpendWise.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PriceCheckedAt")
+                        .HasDatabaseName("IX_RetailerProductPrices_PriceCheckedAt");
 
                     b.HasIndex("ProductName")
                         .HasDatabaseName("IX_RetailerProductPrices_ProductName");
@@ -406,6 +468,15 @@ namespace SpendWise.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.BudgetNotification", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SpendWise.API.Models.CategoryBudget", b =>

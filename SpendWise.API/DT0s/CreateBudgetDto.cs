@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace SpendWise.API.DTOs
 {
@@ -22,7 +23,8 @@ namespace SpendWise.API.DTOs
             ErrorMessage = "Total budget limit must be greater than R0.")]
         public decimal TotalLimit { get; set; }
 
-        [Required(ErrorMessage = "At least one budget category is required.")]
+        [Required(
+            ErrorMessage = "At least one budget category is required.")]
         [MinLength(
             1,
             ErrorMessage = "At least one budget category is required.")]
@@ -32,16 +34,18 @@ namespace SpendWise.API.DTOs
 
     public class CategoryBudgetDto
     {
-        [Required(ErrorMessage = "Category name is required.")]
+        [Required(
+            ErrorMessage = "Category name is required.")]
         [MaxLength(
             50,
             ErrorMessage = "Category name cannot exceed 50 characters.")]
         public string Category { get; set; } = string.Empty;
 
+        // FIX: Allow R0 for categories without an allocation.
         [Range(
-            0.01,
+            0,
             100000000,
-            ErrorMessage = "Category limit must be greater than R0.")]
+            ErrorMessage = "Category limit cannot be negative.")]
         public decimal LimitAmount { get; set; }
     }
 }

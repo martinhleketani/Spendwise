@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="SpendWise.App.Pages.MyGroceryListsPage"
+    Title="My Grocery Lists"
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="#F5F7F6">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            BackgroundColor="#146B3A"
+            Padding="20,16"
+            ColumnDefinitions="Auto,*,Auto"
+            ColumnSpacing="12">
+
+            <Button
+                Grid.Column="0"
+                Text="←"
+                FontSize="23"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                Clicked="BackButton_Clicked" />
+
+            <VerticalStackLayout
+                Grid.Column="1"
+                VerticalOptions="Center"
+                Spacing="3">
+
+                <Label
+                    Text="My Grocery Lists"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    TextColor="White" />
+
+                <Label
+                    Text="Manage your saved shopping lists"
+                    FontSize="12"
+                    TextColor="#D8F0E1" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="23"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                Clicked="RefreshButton_Clicked" />
+
+        </Grid>
+
+        <!-- MAIN CONTENT -->
+        <ScrollView Grid.Row="1">
+
+            <Grid
+                Padding="20,18,20,30"
+                ColumnDefinitions="*"
+                HorizontalOptions="Fill">
+
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- SUMMARY -->
+                    <Border
+                        BackgroundColor="#146B3A"
+                        StrokeThickness="0"
+                        Padding="20"
+                        StrokeShape="RoundRectangle 16">
+
+                        <Grid ColumnDefinitions="*,*">
+
+                            <VerticalStackLayout
+                                Grid.Column="0"
+                                Spacing="5">
+
+                                <Label
+                                    Text="SAVED LISTS"
+                                    FontSize="12"
+                                    TextColor="#D8F0E1" />
+
+                                <Label
+                                    x:Name="TotalListsLabel"
+                                    Text="0"
+                                    FontSize="30"
+                                    FontAttributes="Bold"
+                                    TextColor="White" />
+
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="5">
+
+                                <Label
+                                    Text="ACTIVE LISTS"
+                                    FontSize="12"
+                                    TextColor="#D8F0E1" />
+
+                                <Label
+                                    x:Name="ActiveListsLabel"
+                                    Text="0"
+                                    FontSize="30"
+                                    FontAttributes="Bold"
+                                    TextColor="White" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- CREATE LIST -->
+                    <Button
+                        Text="+ Create Grocery List"
+                        BackgroundColor="#146B3A"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        CornerRadius="10"
+                        HeightRequest="50"
+                        Clicked="CreateListButton_Clicked" />
+
+                    <!-- SEARCH -->
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E4EAE6"
+                        Padding="14"
+                        StrokeShape="RoundRectangle 12">
+
+                        <VerticalStackLayout Spacing="10">
+
+                            <Label
+                                Text="Search Your Lists"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#172B20" />
+
+                            <Entry
+                                x:Name="SearchEntry"
+                                Placeholder="Search list name or retailer"
+                                BackgroundColor="#F3F6F4"
+                                TextColor="#172B20"
+                                HeightRequest="48"
+                                TextChanged="SearchEntry_TextChanged" />
+
+                            <Picker
+                                x:Name="StatusPicker"
+                                Title="Filter by status"
+                                SelectedIndex="0"
+                                SelectedIndexChanged="StatusPicker_SelectedIndexChanged">
+
+                                <Picker.Items>
+                                    <x:String>All Lists</x:String>
+                                    <x:String>Active</x:String>
+                                    <x:String>Completed</x:String>
+                                </Picker.Items>
+
+                            </Picker>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                    <!-- LIST SECTION -->
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <Label
+                            Text="Saved Grocery Lists"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#172B20"
+                            VerticalOptions="Center" />
+
+                        <Label
+                            x:Name="ResultsCountLabel"
+                            Grid.Column="1"
+                            Text="0 results"
+                            FontSize="12"
+                            TextColor="#68776E"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                    <ActivityIndicator
+                        x:Name="LoadingIndicator"
+                        IsVisible="False"
+                        IsRunning="False"
+                        Color="#146B3A" />
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        IsVisible="False"
+                        TextColor="#B42318"
+                        FontSize="13"
+                        LineBreakMode="WordWrap" />
+
+                    <VerticalStackLayout
+                        x:Name="ListsLayout"
+                        Spacing="12" />
+
+                </VerticalStackLayout>
+
+            </Grid>
+
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

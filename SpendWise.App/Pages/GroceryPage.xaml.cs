@@ -1,55 +1,134 @@
-﻿using SpendWise.App.Models;
+﻿
+using SpendWise.App.Models;
 using SpendWise.App.Services;
 using System.Globalization;
-using System.Xml.Linq;
+using System.Linq;
+using System.Text;
 
 namespace SpendWise.App.Pages;
 
 public partial class GroceryPage : ContentPage
 {
-    private readonly ApiService _apiService;
-
-    private readonly List<LocalGroceryItem> _items =
-        new();
+    private readonly ApiService _apiService = new();
+    private readonly List<LocalGroceryItem> _items = new();
 
     private int? _savedGroceryListId;
-
+    private Guid? _editingItemId;
     private bool _isSaving;
+    private bool _isCompleted;
+    private readonly int? _listIdToOpen;
+    private bool _initialListLoaded;
 
+    private static readonly Color Green =
+        Color.FromArgb("#146B3A");
 
-    // ==========================================
-    // CONSTRUCTOR
-    // ==========================================
+    private static readonly Color Dark =
+        Color.FromArgb("#172B20");
+
+    private static readonly Color Gray =
+        Color.FromArgb("#68776E");
+
+    private static readonly Color Red =
+        Color.FromArgb("#B42318");
 
     public GroceryPage()
     {
         InitializeComponent();
 
-        _apiService =
-            new ApiService();
-
         RetailerPicker.SelectedIndex = 0;
+        UpdateRetailerButton();
 
-        UpdateSummary();
-
+        ResetProductForm();
         DisplayItems();
+        UpdateSummary();
     }
 
-
-    // ==========================================
-    // PAGE APPEARING
-    // ==========================================
+    public GroceryPage(int groceryListId) : this()
+    {
+        _listIdToOpen = groceryListId;
+    }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-
         await LoadGroceryListsAsync();
+
+        if (_listIdToOpen.HasValue && !_initialListLoaded)
+        {
+            _initialListLoaded = true;
+            await LoadSavedListAsync(_listIdToOpen.Value);
+        }
     }
 
+    // ==========================================
+    // RETAILER SELECTION
+    // ==========================================
+
+    private async void SelectRetailerButton_Clicked(
+        object sender,
+        EventArgs e)
+    {
+        if (_isCompleted)
+        {
+            await DisplayAlert(
+                "Completed List",
+                "Create a new list to change the retailer.",
+                "OK");
+            return;
+        }
+
+        string[] retailers =
+            RetailerPicker.Items.ToArray();
+
+        string selected = await DisplayActionSheet(
+            "Select Retailer",
+            "Cancel",
+            null,
+            retailers);
+
+        if (string.IsNullOrWhiteSpace(selected) ||
+            selected == "Cancel")
+            return;
+
+        int index = GetRetailerIndex(selected);
+
+        if (index >= 0)
+        {
+            RetailerPicker.SelectedIndex = index;
+            UpdateRetailerButton();
+        }
+    }
+
+    private void UpdateRetailerButton()
+    {
+        string retailer =
+            RetailerPicker.SelectedItem?.ToString()
+            ?? "Select a retailer";
+
+        SelectRetailerButton.Text =
+            retailer + "  ▼";
+    }
+
+    private int GetRetailerIndex(string retailer)
+    {
+        for (int i = 0;
+             i < RetailerPicker.Items.Count;
+             i++)
+        {
+            if (string.Equals(
+                RetailerPicker.Items[i],
+                retailer,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 
     // ==========================================
-    // ADD ITEM LOCALLY
+    // ADD OR EDIT ITEM
     // ==========================================
 
     private void AddItemButton_Clicked(
@@ -58,309 +137,309 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-        string productName =
-            ProductNameEntry.Text?.Trim()
-            ?? string.Empty;
-
-
-        if (string.IsNullOrWhiteSpace(
-            productName))
+        if (_isCompleted)
         {
             ShowError(
-                "Please enter a product name.");
-
+                "This list is completed. Create a new list.");
             return;
         }
 
+        string name =
+            ProductNameEntry.Text?.Trim() ?? "";
 
-        int quantity =
-            GetQuantity(
-                QuantityEntry.Text);
-
-
-        if (quantity <= 0)
+        if (string.IsNullOrWhiteSpace(name))
         {
-            ShowError(
-                "Quantity must be greater than 0.");
-
+            ShowError("Enter a product name.");
             return;
         }
 
+        if (!int.TryParse(
+                QuantityEntry.Text,
+                out int quantity) ||
+            quantity <= 0)
+        {
+            ShowError(
+                "Enter a valid quantity greater than zero.");
+            return;
+        }
 
-        decimal price =
-            GetDecimal(
-                PriceEntry.Text);
-
+        decimal price = GetDecimal(PriceEntry.Text);
 
         if (price <= 0)
         {
             ShowError(
-                "Price must be greater than R0.");
-
+                "Enter a valid price greater than R0.");
             return;
         }
 
-
-        LocalGroceryItem item =
-            new()
+        try
+        {
+            checked
             {
-                LocalId =
-                    Guid.NewGuid(),
+                _ = quantity * price;
+            }
 
-                ProductName =
-                    productName,
+            if (_editingItemId.HasValue)
+            {
+                var item = _items.FirstOrDefault(
+                    x => x.LocalId == _editingItemId.Value);
 
-                Quantity =
-                    quantity,
+                if (item == null)
+                {
+                    ShowError("Product not found.");
+                    ResetProductForm();
+                    return;
+                }
 
-                UnitPrice =
-                    price
-            };
+                item.ProductName = name;
+                item.Quantity = quantity;
+                item.UnitPrice = price;
 
+                if (item.DatabaseId.HasValue)
+                {
+                    item.PendingOldDatabaseId ??=
+                        item.DatabaseId;
 
-        _items.Add(item);
+                    item.DatabaseId = null;
+                }
+            }
+            else
+            {
+                _items.Add(new LocalGroceryItem
+                {
+                    LocalId = Guid.NewGuid(),
+                    ProductName = name,
+                    Quantity = quantity,
+                    UnitPrice = price
+                });
+            }
 
-
-        ProductNameEntry.Text =
-            string.Empty;
-
-        QuantityEntry.Text =
-            "1";
-
-        PriceEntry.Text =
-            string.Empty;
-
-
-        DisplayItems();
-
-        UpdateSummary();
+            ResetProductForm();
+            DisplayItems();
+            UpdateSummary();
+        }
+        catch (OverflowException)
+        {
+            ShowError(
+                "The quantity or price is too large.");
+        }
     }
 
+    private void EditItemButton_Clicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (_isCompleted ||
+            sender is not Button button ||
+            button.CommandParameter is not Guid id)
+            return;
+
+        var item = _items.FirstOrDefault(
+            x => x.LocalId == id);
+
+        if (item == null)
+            return;
+
+        HideError();
+
+        _editingItemId = item.LocalId;
+
+        ProductNameEntry.Text = item.ProductName;
+
+        QuantityEntry.Text =
+            item.Quantity.ToString(
+                CultureInfo.InvariantCulture);
+
+        PriceEntry.Text =
+            item.UnitPrice.ToString(
+                "0.00",
+                CultureInfo.InvariantCulture);
+
+        ProductFormTitleLabel.Text = "Edit Product";
+        AddItemButton.Text = "Save Changes";
+        CancelEditButton.IsVisible = true;
+
+        ProductNameEntry.Focus();
+    }
+
+    private void CancelEditButton_Clicked(
+        object sender,
+        EventArgs e)
+    {
+        ResetProductForm();
+        HideError();
+    }
+
+    private void ResetProductForm()
+    {
+        _editingItemId = null;
+
+        ProductNameEntry.Text = "";
+        QuantityEntry.Text = "1";
+        PriceEntry.Text = "";
+
+        ProductFormTitleLabel.Text = "Add a Product";
+        AddItemButton.Text = "+ Add to Basket";
+        CancelEditButton.IsVisible = false;
+    }
 
     // ==========================================
-    // DISPLAY ITEMS
+    // DISPLAY BASKET
     // ==========================================
 
     private void DisplayItems()
     {
         ItemsLayout.Children.Clear();
 
-
         if (_items.Count == 0)
         {
-            ItemsLayout.Children.Add(
-                new Label
-                {
-                    Text =
-                        "No items added yet.",
-
-                    TextColor =
-                        Color.FromArgb(
-                            "#777777"),
-
-                    HorizontalOptions =
-                        LayoutOptions.Center,
-
-                    Margin =
-                        new Thickness(
-                            0,
-                            20)
-                });
+            ItemsLayout.Children.Add(new Label
+            {
+                Text =
+                    "Your basket is empty.\nAdd a product to get started.",
+                FontSize = 13,
+                TextColor = Gray,
+                HorizontalTextAlignment =
+                    TextAlignment.Center,
+                HorizontalOptions =
+                    LayoutOptions.Fill,
+                Margin = new Thickness(0, 20)
+            });
 
             return;
         }
 
-
-        foreach (LocalGroceryItem item
-                 in _items)
+        foreach (var item in _items)
         {
-            Grid itemView =
-                CreateItemView(item);
-
             ItemsLayout.Children.Add(
-                itemView);
-
-
-            if (item != _items.Last())
-            {
-                ItemsLayout.Children.Add(
-                    new BoxView
-                    {
-                        HeightRequest = 1,
-
-                        BackgroundColor =
-                            Color.FromArgb(
-                                "#EEEEEE"),
-
-                        Margin =
-                            new Thickness(
-                                0,
-                                7)
-                    });
-            }
+                CreateItemView(item));
         }
     }
 
-
-    // ==========================================
-    // CREATE ITEM VIEW
-    // ==========================================
-
-    private Grid CreateItemView(
-        LocalGroceryItem item)
+    private View CreateItemView(LocalGroceryItem item)
     {
-        Grid grid =
-            new()
-            {
-                Padding =
-                    new Thickness(
-                        0,
-                        8),
+        var border = new Border
+        {
+            BackgroundColor =
+                Color.FromArgb("#F7FAF8"),
+            Stroke = Color.FromArgb("#E4EAE6"),
+            StrokeThickness = 1,
+            Padding = new Thickness(12),
+            StrokeShape =
+                new Microsoft.Maui.Controls.Shapes
+                    .RoundRectangle
+                {
+                    CornerRadius = new CornerRadius(10)
+                }
+        };
 
-                ColumnSpacing = 10
+        var layout = new VerticalStackLayout
+        {
+            Spacing = 10
+        };
+
+        var header = new Grid
+        {
+            ColumnSpacing = 10,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition
+                {
+                    Width = GridLength.Star
+                },
+                new ColumnDefinition
+                {
+                    Width = GridLength.Auto
+                }
+            }
+        };
+
+        var information = new VerticalStackLayout
+        {
+            Spacing = 4
+        };
+
+        information.Children.Add(new Label
+        {
+            Text = item.ProductName,
+            FontSize = 15,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Dark
+        });
+
+        information.Children.Add(new Label
+        {
+            Text =
+                $"{item.Quantity} × R {item.UnitPrice:N2}",
+            FontSize = 12,
+            TextColor = Gray
+        });
+
+        var total = new Label
+        {
+            Text = $"R {item.Total:N2}",
+            FontSize = 15,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Green,
+            VerticalOptions = LayoutOptions.Center
+        };
+
+        Grid.SetColumn(information, 0);
+        Grid.SetColumn(total, 1);
+
+        header.Children.Add(information);
+        header.Children.Add(total);
+
+        layout.Children.Add(header);
+
+        if (!_isCompleted)
+        {
+            var actions = new HorizontalStackLayout
+            {
+                Spacing = 8
             };
 
-
-        grid.ColumnDefinitions.Add(
-            new ColumnDefinition
+            var editButton = new Button
             {
-                Width =
-                    GridLength.Star
-            });
-
-
-        grid.ColumnDefinitions.Add(
-            new ColumnDefinition
-            {
-                Width =
-                    GridLength.Auto
-            });
-
-
-        grid.ColumnDefinitions.Add(
-            new ColumnDefinition
-            {
-                Width =
-                    GridLength.Auto
-            });
-
-
-        VerticalStackLayout information =
-            new()
-            {
-                Spacing = 3
-            };
-
-
-        Label productLabel =
-            new()
-            {
-                Text =
-                    item.ProductName,
-
-                FontAttributes =
-                    FontAttributes.Bold,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#1E1E1E")
-            };
-
-
-        Label quantityLabel =
-            new()
-            {
-                Text =
-                    $"{item.Quantity} × R {item.UnitPrice:N2}",
-
+                Text = "Edit",
                 FontSize = 12,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#777777")
-            };
-
-
-        information.Children.Add(
-            productLabel);
-
-        information.Children.Add(
-            quantityLabel);
-
-
-        Label totalLabel =
-            new()
-            {
-                Text =
-                    $"R {item.Total:N2}",
-
-                FontAttributes =
-                    FontAttributes.Bold,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#146B3A"),
-
-                VerticalOptions =
-                    LayoutOptions.Center
-            };
-
-
-        Button removeButton =
-            new()
-            {
-                Text = "✕",
-
-                FontSize = 14,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#C0392B"),
-
                 BackgroundColor =
-                    Colors.Transparent,
-
-                WidthRequest = 42,
-
-                HeightRequest = 42,
-
-                Padding = 0,
-
-                CommandParameter =
-                    item.LocalId
+                    Color.FromArgb("#E8F3EC"),
+                TextColor = Green,
+                CornerRadius = 8,
+                HeightRequest = 38,
+                Padding = new Thickness(18, 0),
+                CommandParameter = item.LocalId
             };
 
+            editButton.Clicked +=
+                EditItemButton_Clicked;
 
-        removeButton.Clicked +=
-            RemoveItemButton_Clicked;
+            var removeButton = new Button
+            {
+                Text = "Remove",
+                FontSize = 12,
+                BackgroundColor =
+                    Color.FromArgb("#FCEDEA"),
+                TextColor = Red,
+                CornerRadius = 8,
+                HeightRequest = 38,
+                Padding = new Thickness(18, 0),
+                CommandParameter = item.LocalId
+            };
 
+            removeButton.Clicked +=
+                RemoveItemButton_Clicked;
 
-        Grid.SetColumn(
-            information,
-            0);
+            actions.Children.Add(editButton);
+            actions.Children.Add(removeButton);
 
-        Grid.SetColumn(
-            totalLabel,
-            1);
+            layout.Children.Add(actions);
+        }
 
-        Grid.SetColumn(
-            removeButton,
-            2);
-
-
-        grid.Children.Add(
-            information);
-
-        grid.Children.Add(
-            totalLabel);
-
-        grid.Children.Add(
-            removeButton);
-
-
-        return grid;
+        border.Content = layout;
+        return border;
     }
-
 
     // ==========================================
     // REMOVE ITEM
@@ -370,62 +449,71 @@ public partial class GroceryPage : ContentPage
         object? sender,
         EventArgs e)
     {
-        if (sender is not Button button)
-        {
+        HideError();
+
+        if (_isCompleted ||
+            sender is not Button button ||
+            button.CommandParameter is not Guid id)
             return;
-        }
 
-
-        if (button.CommandParameter
-            is not Guid localId)
-        {
-            return;
-        }
-
-
-        LocalGroceryItem? item =
-            _items.FirstOrDefault(
-                x => x.LocalId == localId);
-
+        var item = _items.FirstOrDefault(
+            x => x.LocalId == id);
 
         if (item == null)
-        {
             return;
-        }
 
+        button.IsEnabled = false;
 
-        if (_savedGroceryListId.HasValue &&
-            item.DatabaseId.HasValue)
+        try
         {
-            var result =
-                await _apiService
-                    .DeleteGroceryItemAsync(
-                        _savedGroceryListId.Value,
-                        item.DatabaseId.Value);
-
-
-            if (!result.Success)
+            if (_savedGroceryListId.HasValue)
             {
-                ShowError(
-                    result.Message);
+                var ids = new[]
+                {
+                    item.DatabaseId,
+                    item.PendingOldDatabaseId
+                }
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
+                .Distinct();
 
-                return;
+                foreach (int databaseId in ids)
+                {
+                    var result =
+                        await _apiService
+                            .DeleteGroceryItemAsync(
+                                _savedGroceryListId.Value,
+                                databaseId);
+
+                    if (!result.Success)
+                    {
+                        ShowError(result.Message);
+                        return;
+                    }
+                }
             }
+
+            _items.Remove(item);
+
+            if (_editingItemId == item.LocalId)
+                ResetProductForm();
+
+            DisplayItems();
+            UpdateSummary();
         }
-
-
-        _items.Remove(item);
-
-        DisplayItems();
-
-        UpdateSummary();
-
-        await LoadGroceryListsAsync();
+        catch (Exception ex)
+        {
+            ShowError(
+                $"Unable to remove product: {ex.Message}");
+        }
+        finally
+        {
+            button.IsEnabled = true;
+        }
     }
 
-
     // ==========================================
-    // CLEAR ITEMS
+    // CLEAR BASKET
     // ==========================================
 
     private async void ClearItemsButton_Clicked(
@@ -434,272 +522,218 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
+        if (_isCompleted)
+        {
+            ShowError(
+                "Completed lists cannot be changed.");
+            return;
+        }
 
         if (_items.Count == 0)
         {
+            ShowError("Your basket is already empty.");
             return;
         }
 
+        bool confirm = await DisplayAlert(
+            "Clear Basket",
+            "Remove all products from this basket?",
+            "Clear All",
+            "Cancel");
 
-        bool clear =
-            await DisplayAlert(
-                "Clear Grocery List",
-                "Remove all items from this list?",
-                "Clear",
-                "Cancel");
-
-
-        if (!clear)
-        {
+        if (!confirm)
             return;
-        }
 
-
-        if (!_savedGroceryListId.HasValue)
+        try
         {
-            _items.Clear();
-
-            DisplayItems();
-
-            UpdateSummary();
-
-            return;
-        }
-
-
-        List<LocalGroceryItem> savedItems =
-            _items
-                .Where(
-                    x =>
-                        x.DatabaseId.HasValue)
-                .ToList();
-
-
-        foreach (LocalGroceryItem item
-                 in savedItems)
-        {
-            var result =
-                await _apiService
-                    .DeleteGroceryItemAsync(
-                        _savedGroceryListId.Value,
-                        item.DatabaseId!.Value);
-
-
-            if (!result.Success)
+            foreach (var item in _items.ToList())
             {
-                ShowError(
-                    result.Message);
+                if (_savedGroceryListId.HasValue)
+                {
+                    var ids = new[]
+                    {
+                        item.DatabaseId,
+                        item.PendingOldDatabaseId
+                    }
+                    .Where(x => x.HasValue)
+                    .Select(x => x!.Value)
+                    .Distinct();
 
-                return;
+                    foreach (int id in ids)
+                    {
+                        var result =
+                            await _apiService
+                                .DeleteGroceryItemAsync(
+                                    _savedGroceryListId.Value,
+                                    id);
+
+                        if (!result.Success)
+                        {
+                            ShowError(result.Message);
+                            DisplayItems();
+                            UpdateSummary();
+                            return;
+                        }
+                    }
+                }
+
+                _items.Remove(item);
             }
+
+            ResetProductForm();
+            DisplayItems();
+            UpdateSummary();
         }
-
-
-        _items.Clear();
-
-        DisplayItems();
-
-        UpdateSummary();
-
-        await LoadGroceryListsAsync();
+        catch (Exception ex)
+        {
+            ShowError(
+                $"Unable to clear basket: {ex.Message}");
+        }
     }
 
-
     // ==========================================
-    // SAVE LIST
+    // SAVE GROCERY LIST
     // ==========================================
 
     private async void SaveListButton_Clicked(
         object sender,
         EventArgs e)
     {
-        if (_isSaving)
-        {
+        if (_isSaving || _isCompleted)
             return;
-        }
-
 
         HideError();
 
-
         string listName =
-            ListNameEntry.Text?.Trim()
-            ?? string.Empty;
-
-
-        if (string.IsNullOrWhiteSpace(
-            listName))
-        {
-            ShowError(
-                "Please enter a grocery list name.");
-
-            return;
-        }
-
+            ListNameEntry.Text?.Trim() ?? "";
 
         string retailer =
-            RetailerPicker.SelectedItem
-                ?.ToString()
-            ?? string.Empty;
+            RetailerPicker.SelectedItem?.ToString()
+            ?? "";
 
-
-        if (string.IsNullOrWhiteSpace(
-            retailer))
+        if (string.IsNullOrWhiteSpace(listName))
         {
-            ShowError(
-                "Please select a retailer.");
-
+            ShowError("Enter a grocery list name.");
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(retailer))
+        {
+            ShowError("Select a retailer.");
+            return;
+        }
 
         if (_items.Count == 0)
         {
             ShowError(
-                "Add at least one grocery item.");
-
+                "Add at least one product before saving.");
             return;
         }
 
+        _isSaving = true;
+
+        SaveListButton.IsEnabled = false;
+        SaveListButton.Text = "Saving...";
 
         try
         {
-            _isSaving = true;
-
-            SaveListButton.IsEnabled =
-                false;
-
-            SaveListButton.Text =
-                "Saving...";
-
-
-            // CREATE LIST FIRST
             if (!_savedGroceryListId.HasValue)
             {
-                CreateGroceryListRequest
-                    createRequest =
-                    new()
+                var request =
+                    new CreateGroceryListRequest
                     {
-                        ListName =
-                            listName,
-
-                        Retailer =
-                            retailer
+                        ListName = listName,
+                        Retailer = retailer
                     };
 
-
-                var createResult =
+                var result =
                     await _apiService
-                        .CreateGroceryListAsync(
-                            createRequest);
+                        .CreateGroceryListAsync(request);
 
-
-                if (!createResult.Success ||
-                    createResult.Data == null)
+                if (!result.Success ||
+                    result.Data == null)
                 {
-                    ShowError(
-                        createResult.Message);
-
+                    ShowError(result.Message);
                     return;
                 }
 
-
-                _savedGroceryListId =
-                    createResult.Data.Id;
+                _savedGroceryListId = result.Data.Id;
             }
 
-
-            // ADD UNSAVED ITEMS
-            foreach (LocalGroceryItem item
-                     in _items.Where(
-                         x =>
-                             !x.DatabaseId.HasValue))
+            foreach (var item in _items)
             {
-                AddGroceryItemRequest request =
-                    new()
+                if (item.PendingOldDatabaseId.HasValue)
+                {
+                    var result =
+                        await _apiService
+                            .DeleteGroceryItemAsync(
+                                _savedGroceryListId.Value,
+                                item.PendingOldDatabaseId.Value);
+
+                    if (!result.Success)
                     {
-                        ProductName =
-                            item.ProductName,
+                        ShowError(result.Message);
+                        return;
+                    }
 
-                        Quantity =
-                            item.Quantity,
+                    item.PendingOldDatabaseId = null;
+                }
 
-                        UnitPrice =
-                            item.UnitPrice
-                    };
+                if (item.DatabaseId.HasValue)
+                    continue;
 
+                var request = new AddGroceryItemRequest
+                {
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice
+                };
 
-                var itemResult =
+                var addResult =
                     await _apiService
                         .AddGroceryItemAsync(
                             _savedGroceryListId.Value,
                             request);
 
-
-                if (!itemResult.Success ||
-                    itemResult.Data == null)
+                if (!addResult.Success ||
+                    addResult.Data == null)
                 {
-                    ShowError(
-                        itemResult.Message);
-
+                    ShowError(addResult.Message);
                     return;
                 }
 
-
                 item.DatabaseId =
-                    itemResult.Data.Item.Id;
+                    addResult.Data.Item.Id;
             }
-
 
             await DisplayAlert(
                 "Saved",
-                "Your grocery list and items were saved successfully.",
+                "Your grocery list was saved successfully.",
                 "OK");
-
-
-            SaveListButton.Text =
-                "Saved";
-
 
             await LoadGroceryListsAsync();
         }
         catch (Exception ex)
         {
             ShowError(
-                $"Unable to save grocery list: {ex.Message}");
+                $"Unable to save list: {ex.Message}");
         }
         finally
         {
             _isSaving = false;
-
-            SaveListButton.IsEnabled =
-                true;
-
-
-            if (SaveListButton.Text ==
-                "Saving...")
-            {
-                SaveListButton.Text =
-                    "Save Grocery List";
-            }
+            SaveListButton.Text = "Save List";
+            SaveListButton.IsEnabled = !_isCompleted;
         }
     }
 
-
     // ==========================================
-    // LOAD ALL SAVED LISTS
+    // LOAD SAVED LISTS
     // ==========================================
 
     private async Task LoadGroceryListsAsync()
     {
-        HideError();
-
-        ListsLoadingIndicator.IsVisible =
-            true;
-
-        ListsLoadingIndicator.IsRunning =
-            true;
-
+        ListsLoadingIndicator.IsVisible = true;
+        ListsLoadingIndicator.IsRunning = true;
 
         try
         {
@@ -707,417 +741,183 @@ public partial class GroceryPage : ContentPage
                 await _apiService
                     .GetGroceryListsAsync();
 
-
             SavedListsLayout.Children.Clear();
-
 
             if (!result.Success ||
                 result.Data == null)
             {
-                ShowError(
-                    result.Message);
-
                 ShowNoSavedLists(
-                    "Unable to load saved grocery lists.");
-
+                    "Unable to load saved lists.");
                 return;
             }
-
 
             if (result.Data.Count == 0)
             {
                 ShowNoSavedLists(
                     "No saved grocery lists yet.");
-
                 return;
             }
-
 
             foreach (GroceryListSummary list
                      in result.Data)
             {
                 SavedListsLayout.Children.Add(
-                    CreateSavedListView(
-                        list));
+                    CreateSavedListView(list));
             }
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Unable to load grocery lists: {ex.Message}");
+            ShowNoSavedLists(
+                $"Unable to load lists: {ex.Message}");
         }
         finally
         {
-            ListsLoadingIndicator.IsRunning =
-                false;
-
-            ListsLoadingIndicator.IsVisible =
-                false;
+            ListsLoadingIndicator.IsRunning = false;
+            ListsLoadingIndicator.IsVisible = false;
         }
     }
-
-
-    // ==========================================
-    // CREATE SAVED LIST CARD
-    // ==========================================
 
     private View CreateSavedListView(
         GroceryListSummary list)
     {
-        Border border =
-            new()
-            {
-                BackgroundColor =
-                    Color.FromArgb(
-                        "#F8FAF9"),
+        var border = new Border
+        {
+            BackgroundColor =
+                Color.FromArgb("#F7FAF8"),
+            Stroke = Color.FromArgb("#E4EAE6"),
+            Padding = new Thickness(12),
+            StrokeShape =
+                new Microsoft.Maui.Controls.Shapes
+                    .RoundRectangle
+                {
+                    CornerRadius = new CornerRadius(10)
+                }
+        };
 
-                Stroke =
-                    Color.FromArgb(
-                        "#E1E5E3"),
+        var layout = new VerticalStackLayout
+        {
+            Spacing = 8
+        };
 
-                StrokeThickness = 1,
+        layout.Children.Add(new Label
+        {
+            Text = list.ListName,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Dark
+        });
 
-                Padding =
-                    new Thickness(14),
+        layout.Children.Add(new Label
+        {
+            Text =
+                $"{list.Retailer} • {list.ItemCount} items",
+            FontSize = 12,
+            TextColor = Gray
+        });
 
-                StrokeShape =
-                    new Microsoft.Maui
-                        .Controls.Shapes
-                        .RoundRectangle
-                    {
-                        CornerRadius = 12
-                    }
-            };
+        layout.Children.Add(new Label
+        {
+            Text = $"R {list.Total:N2}",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Green
+        });
 
-
-        Grid grid =
-            new()
-            {
-                ColumnSpacing = 12
-            };
-
-
-        grid.ColumnDefinitions.Add(
-            new ColumnDefinition
-            {
-                Width =
-                    GridLength.Star
-            });
-
-
-        grid.ColumnDefinitions.Add(
-            new ColumnDefinition
-            {
-                Width =
-                    GridLength.Auto
-            });
-
-
-        VerticalStackLayout information =
-            new()
-            {
-                Spacing = 3
-            };
-
-
-        Label nameLabel =
-            new()
-            {
-                Text =
-                    list.ListName,
-
-                FontSize = 16,
-
-                FontAttributes =
-                    FontAttributes.Bold,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#1E1E1E")
-            };
-
-
-        Label retailerLabel =
-            new()
-            {
-                Text =
-                    $"{list.Retailer} • " +
-                    $"{list.ItemCount} item(s)",
-
-                FontSize = 12,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#777777")
-            };
-
-
-        Label statusLabel =
-            new()
-            {
-                Text =
-                    $"Status: {list.Status}",
-
-                FontSize = 12,
-
-                TextColor =
-                    list.Status.Equals(
-                        "Completed",
-                        StringComparison
-                            .OrdinalIgnoreCase)
-                    ? Color.FromArgb(
-                        "#777777")
-                    : Color.FromArgb(
-                        "#146B3A")
-            };
-
-
-        information.Children.Add(
-            nameLabel);
-
-        information.Children.Add(
-            retailerLabel);
-
-        information.Children.Add(
-            statusLabel);
-
-
-        VerticalStackLayout actions =
-            new()
-            {
-                Spacing = 5,
-
-                HorizontalOptions =
-                    LayoutOptions.End
-            };
-
-
-        Label totalLabel =
-            new()
-            {
-                Text =
-                    $"R {list.Total:N2}",
-
-                FontAttributes =
-                    FontAttributes.Bold,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#146B3A"),
-
-                HorizontalTextAlignment =
-                    TextAlignment.End
-            };
-
-
-        Button openButton =
-            new()
-            {
-                Text = "Open",
-
-                FontSize = 12,
-
-                BackgroundColor =
-                    Color.FromArgb(
-                        "#146B3A"),
-
-                TextColor =
-                    Colors.White,
-
-                CornerRadius = 10,
-
-                HeightRequest = 38,
-
-                CommandParameter =
-                    list.Id
-            };
-
+        var openButton = new Button
+        {
+            Text = "Open List",
+            BackgroundColor = Green,
+            TextColor = Colors.White,
+            CornerRadius = 8,
+            CommandParameter = list.Id
+        };
 
         openButton.Clicked +=
             OpenSavedListButton_Clicked;
 
-
-        actions.Children.Add(
-            totalLabel);
-
-        actions.Children.Add(
-            openButton);
-
-
-        Grid.SetColumn(
-            information,
-            0);
-
-        Grid.SetColumn(
-            actions,
-            1);
-
-
-        grid.Children.Add(
-            information);
-
-        grid.Children.Add(
-            actions);
-
-
-        border.Content =
-            grid;
-
+        layout.Children.Add(openButton);
+        border.Content = layout;
 
         return border;
     }
-
-
-    // ==========================================
-    // OPEN SAVED LIST
-    // ==========================================
 
     private async void OpenSavedListButton_Clicked(
         object? sender,
         EventArgs e)
     {
-        if (sender is not Button button)
+        if (sender is Button button &&
+            button.CommandParameter is int listId)
         {
-            return;
+            await LoadSavedListAsync(listId);
         }
-
-
-        if (button.CommandParameter
-            is not int listId)
-        {
-            return;
-        }
-
-
-        HideError();
-
-        _savedGroceryListId =
-            listId;
-
-
-        await LoadSavedListAsync(
-            listId);
     }
-
-
-    // ==========================================
-    // LOAD ONE SAVED LIST
-    // ==========================================
 
     private async Task LoadSavedListAsync(
         int groceryListId)
     {
-        var result =
-            await _apiService
-                .GetGroceryListAsync(
-                    groceryListId);
+        HideError();
 
+        try
+        {
+            var result =
+                await _apiService
+                    .GetGroceryListAsync(groceryListId);
 
-        if (!result.Success ||
-            result.Data == null)
+            if (!result.Success ||
+                result.Data == null)
+            {
+                ShowError(result.Message);
+                return;
+            }
+
+            GroceryListResponse list = result.Data;
+
+            _savedGroceryListId = list.Id;
+            ListNameEntry.Text = list.ListName;
+
+            int retailerIndex =
+                GetRetailerIndex(list.Retailer);
+
+            RetailerPicker.SelectedIndex =
+                retailerIndex >= 0
+                    ? retailerIndex
+                    : 0;
+
+            UpdateRetailerButton();
+
+            _items.Clear();
+
+            foreach (GroceryItemResponse item
+                     in list.Items)
+            {
+                _items.Add(new LocalGroceryItem
+                {
+                    LocalId = Guid.NewGuid(),
+                    DatabaseId = item.Id,
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice
+                });
+            }
+
+            _isCompleted =
+                !string.Equals(
+                    list.Status,
+                    "Active",
+                    StringComparison.OrdinalIgnoreCase);
+
+            SaveListButton.IsEnabled = !_isCompleted;
+            CheckBudgetButton.IsEnabled = !_isCompleted;
+            SelectRetailerButton.IsEnabled = !_isCompleted;
+
+            ResetProductForm();
+            DisplayItems();
+            UpdateSummary();
+        }
+        catch (Exception ex)
         {
             ShowError(
-                result.Message);
-
-            return;
-        }
-
-
-        GroceryListResponse list =
-            result.Data;
-
-
-        _savedGroceryListId =
-            list.Id;
-
-
-        ListNameEntry.Text =
-            list.ListName;
-
-
-        int retailerIndex =
-            GetRetailerIndex(
-                list.Retailer);
-
-
-        if (retailerIndex >= 0)
-        {
-            RetailerPicker.SelectedIndex =
-                retailerIndex;
-        }
-
-
-        _items.Clear();
-
-
-        foreach (GroceryItemResponse item
-                 in list.Items)
-        {
-            _items.Add(
-                new LocalGroceryItem
-                {
-                    LocalId =
-                        Guid.NewGuid(),
-
-                    DatabaseId =
-                        item.Id,
-
-                    ProductName =
-                        item.ProductName,
-
-                    Quantity =
-                        item.Quantity,
-
-                    UnitPrice =
-                        item.UnitPrice
-                });
-        }
-
-
-        DisplayItems();
-
-        UpdateSummary();
-
-
-        // COMPLETED LISTS CANNOT BE MODIFIED
-        bool isActive =
-            list.Status.Equals(
-                "Active",
-                StringComparison.OrdinalIgnoreCase);
-
-
-        SaveListButton.IsEnabled =
-            isActive;
-
-        CheckBudgetButton.IsEnabled =
-            isActive;
-
-        CheckoutButton.IsEnabled =
-            isActive;
-
-
-        if (isActive)
-        {
-            SaveListButton.Text =
-                "Save Grocery List";
-
-            CheckoutButton.Text =
-                "Record Purchase";
-        }
-        else
-        {
-            SaveListButton.Text =
-                "Completed";
-
-            CheckoutButton.Text =
-                "Completed";
+                $"Unable to open list: {ex.Message}");
         }
     }
-
-
-    // ==========================================
-    // REFRESH SAVED LISTS BUTTON
-    // ==========================================
 
     private async void LoadListsButton_Clicked(
         object sender,
@@ -1126,37 +926,17 @@ public partial class GroceryPage : ContentPage
         await LoadGroceryListsAsync();
     }
 
-
-    // ==========================================
-    // EMPTY SAVED LIST MESSAGE
-    // ==========================================
-
-    private void ShowNoSavedLists(
-        string message)
+    private void ShowNoSavedLists(string message)
     {
         SavedListsLayout.Children.Clear();
 
-
-        SavedListsLayout.Children.Add(
-            new Label
-            {
-                Text =
-                    message,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#777777"),
-
-                HorizontalOptions =
-                    LayoutOptions.Center,
-
-                Margin =
-                    new Thickness(
-                        0,
-                        10)
-            });
+        SavedListsLayout.Children.Add(new Label
+        {
+            Text = message,
+            TextColor = Gray,
+            FontSize = 12
+        });
     }
-
 
     // ==========================================
     // NEW GROCERY LIST
@@ -1168,57 +948,26 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-
-        _savedGroceryListId =
-            null;
-
-
+        _savedGroceryListId = null;
+        _isCompleted = false;
         _items.Clear();
 
+        ListNameEntry.Text = "";
+        RetailerPicker.SelectedIndex = 0;
 
-        ListNameEntry.Text =
-            string.Empty;
+        UpdateRetailerButton();
 
-        RetailerPicker.SelectedIndex =
-            0;
+        SelectRetailerButton.IsEnabled = true;
+        SaveListButton.IsEnabled = true;
+        CheckBudgetButton.IsEnabled = true;
 
-        ProductNameEntry.Text =
-            string.Empty;
-
-        QuantityEntry.Text =
-            "1";
-
-        PriceEntry.Text =
-            string.Empty;
-
-
-        SaveListButton.IsEnabled =
-            true;
-
-        SaveListButton.Text =
-            "Save Grocery List";
-
-
-        CheckBudgetButton.IsEnabled =
-            true;
-
-
-        CheckoutButton.IsEnabled =
-            true;
-
-        CheckoutButton.Text =
-            "Record Purchase";
-
-
+        ResetProductForm();
         DisplayItems();
-
         UpdateSummary();
     }
 
-
     // ==========================================
-    // ==========================================
-    // CHECK GROCERY BUDGET
+    // CHECK BUDGET
     // ==========================================
 
     private async void CheckBudgetButton_Clicked(
@@ -1227,31 +976,34 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-
-        if (!_savedGroceryListId.HasValue)
+        if (_items.Count == 0)
         {
             await DisplayAlert(
-                "Save First",
-                "Please save the grocery list before checking your budget.",
+                "Empty Basket",
+                "Add products before checking your budget.",
                 "OK");
-
             return;
         }
 
+        if (!_savedGroceryListId.HasValue ||
+            _items.Any(x =>
+                !x.DatabaseId.HasValue ||
+                x.PendingOldDatabaseId.HasValue))
+        {
+            await DisplayAlert(
+                "Save First",
+                "Save your current grocery list before checking the budget.",
+                "OK");
+            return;
+        }
 
-        DateTime today =
-            DateTime.Now;
-
-
-        CheckBudgetButton.IsEnabled =
-            false;
-
-        CheckBudgetButton.Text =
-            "Checking...";
-
+        CheckBudgetButton.IsEnabled = false;
+        CheckBudgetButton.Text = "Checking...";
 
         try
         {
+            DateTime today = DateTime.Now;
+
             var result =
                 await _apiService
                     .CheckGroceryBudgetAsync(
@@ -1259,66 +1011,68 @@ public partial class GroceryPage : ContentPage
                         today.Month,
                         today.Year);
 
-
             if (!result.Success ||
                 result.Data == null)
             {
-                ShowError(
-                    result.Message);
-
+                ShowError(result.Message);
                 return;
             }
-
 
             GroceryBudgetCheckResponse data =
                 result.Data;
 
+            var message = new StringBuilder();
 
-            string message =
-                $"List Total: R {data.ListTotal:N2}\n\n" +
-                $"Grocery Budget: R {data.GroceryBudgetLimit:N2}\n" +
-                $"Already Spent: R {data.AlreadySpent:N2}\n" +
-                $"Available: R {data.AvailableBeforeList:N2}\n\n";
+            message.AppendLine(
+                $"Basket Total: R {data.ListTotal:N2}");
 
+            message.AppendLine();
+
+            message.AppendLine(
+                $"Grocery Budget: R {data.GroceryBudgetLimit:N2}");
+
+            message.AppendLine(
+                $"Already Spent: R {data.AlreadySpent:N2}");
+
+            message.AppendLine(
+                $"Available: R {data.AvailableBeforeList:N2}");
+
+            message.AppendLine();
 
             if (data.WithinBudget)
             {
-                message +=
-                    "Within Budget\n\n" +
-                    "Remaining After List: " +
-                    $"R {data.RemainingAfterList:N2}";
+                message.AppendLine("Within Budget");
+
+                message.AppendLine(
+                    $"Remaining: R {data.RemainingAfterList:N2}");
             }
             else
             {
-                message +=
-                    "Over Budget\n\n" +
-                    $"Over By: R {data.OverBudgetBy:N2}";
-            }
+                message.AppendLine("Over Budget");
 
+                message.AppendLine(
+                    $"Over By: R {data.OverBudgetBy:N2}");
+            }
 
             await DisplayAlert(
                 "Budget Check",
-                message,
+                message.ToString(),
                 "OK");
         }
         catch (Exception ex)
         {
             ShowError(
-                $"Unable to check budget: {ex.Message}");
+                $"Budget check failed: {ex.Message}");
         }
         finally
         {
-            CheckBudgetButton.IsEnabled =
-                true;
-
-            CheckBudgetButton.Text =
-                "Check Grocery Budget";
+            CheckBudgetButton.IsEnabled = !_isCompleted;
+            CheckBudgetButton.Text = "Check Budget";
         }
     }
 
-
     // ==========================================
-    // RECORD GROCERY PURCHASE
+    // REVIEW CHECKOUT
     // ==========================================
 
     private async void CheckoutButton_Clicked(
@@ -1327,147 +1081,88 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-
-        // LIST MUST BE SAVED FIRST
-        if (!_savedGroceryListId.HasValue)
-        {
-            await DisplayAlert(
-                "Save First",
-                "Please save your grocery list before recording the purchase.",
-                "OK");
-
-            return;
-        }
-
-
-        // LIST MUST HAVE ITEMS
         if (_items.Count == 0)
         {
-            ShowError(
-                "Your grocery list is empty.");
-
-            return;
-        }
-
-
-        // CALCULATE TOTAL
-        decimal total =
-            _items.Sum(
-                x => x.Total);
-
-
-        // CONFIRM RECORDING
-        bool confirm =
             await DisplayAlert(
-                "Record Grocery Purchase",
-                $"Record this grocery purchase of R {total:N2}?\n\n" +
-                "SpendWise will add it to your spending history " +
-                "and update your grocery budget.\n\n" +
-                "No bank or card payment will be processed.",
-                "Record Purchase",
-                "Cancel");
-
-
-        if (!confirm)
-        {
+                "Empty Basket",
+                "Add products before reviewing checkout.",
+                "OK");
             return;
         }
 
-
-        DateTime today =
-            DateTime.Now;
-
-
-        CheckoutButton.IsEnabled =
-            false;
-
-        CheckoutButton.Text =
-            "Recording...";
-
+        decimal total;
 
         try
         {
-            // The service method still has the old
-            // CheckoutGroceryAsync name for compatibility.
-            // The backend now records spending only.
-
-            var result =
-                await _apiService
-                    .CheckoutGroceryAsync(
-                        _savedGroceryListId.Value,
-                        today.Month,
-                        today.Year);
-
-
-            if (!result.Success ||
-                result.Data == null)
-            {
-                ShowError(
-                    result.Message);
-
-                CheckoutButton.IsEnabled =
-                    true;
-
-                CheckoutButton.Text =
-                    "Record Purchase";
-
-                return;
-            }
-
-
-            GroceryCheckoutResponse data =
-                result.Data;
-
-
-            string message =
-                $"Purchase Recorded: R {data.PurchaseTotal:N2}\n\n" +
-                $"Grocery Budget Remaining: " +
-                $"R {data.GroceryBudgetRemaining:N2}\n\n" +
-                $"Budget Status: {data.BudgetStatus}\n" +
-                $"Reference: {data.TransactionReference}\n\n" +
-                "No bank or card payment was processed by SpendWise.";
-
-
-            await DisplayAlert(
-                "Purchase Recorded",
-                message,
-                "OK");
-
-
-            // MARK LIST COMPLETED
-            CheckoutButton.Text =
-                "Completed";
-
-            CheckoutButton.IsEnabled =
-                false;
-
-
-            SaveListButton.Text =
-                "Completed";
-
-            SaveListButton.IsEnabled =
-                false;
-
-
-            CheckBudgetButton.IsEnabled =
-                false;
-
-
-            await LoadGroceryListsAsync();
+            total = _items.Sum(x => x.Total);
         }
-        catch (Exception ex)
+        catch (OverflowException)
         {
-            ShowError(
-                $"Unable to record purchase: {ex.Message}");
-
-            CheckoutButton.IsEnabled =
-                true;
-
-            CheckoutButton.Text =
-                "Record Purchase";
+            ShowError("The basket total is too large.");
+            return;
         }
+
+        string retailer =
+            RetailerPicker.SelectedItem?.ToString()
+            ?? "Not selected";
+
+        string listName =
+            ListNameEntry.Text?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(listName))
+            listName = "My Grocery Basket";
+
+        var review = new StringBuilder();
+
+        review.AppendLine(listName);
+        review.AppendLine();
+        review.AppendLine($"Retailer: {retailer}");
+        review.AppendLine($"Products: {_items.Count}");
+        review.AppendLine();
+        review.AppendLine("YOUR PRODUCTS");
+        review.AppendLine("------------------------");
+
+        foreach (var item in _items)
+        {
+            review.AppendLine(item.ProductName);
+
+            review.AppendLine(
+                $"{item.Quantity} × R {item.UnitPrice:N2} = R {item.Total:N2}");
+
+            review.AppendLine();
+        }
+
+        review.AppendLine("------------------------");
+
+        review.AppendLine(
+            $"ESTIMATED TOTAL: R {total:N2}");
+
+        review.AppendLine();
+
+        review.AppendLine(
+            "Checkout preview only.");
+
+        review.AppendLine(
+            "No payments are processed.");
+
+        review.AppendLine(
+            "No purchases are recorded.");
+
+        await DisplayAlert(
+            "SpendWise Checkout Review",
+            review.ToString(),
+            "OK");
     }
 
+    private void UpdateCheckoutState()
+    {
+        CheckoutButton.IsEnabled = true;
+
+        CheckoutButton.Text =
+            _isCompleted
+                ? "Review Completed List"
+                : "Review Checkout";
+    }
 
     // ==========================================
     // PRICE COMPARISON
@@ -1479,42 +1174,34 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-
-        // LIST MUST BE SAVED FIRST
         if (!_savedGroceryListId.HasValue)
         {
             await DisplayAlert(
                 "Save First",
-                "Please save the grocery list before comparing retailer prices.",
+                "Save your grocery list before comparing prices.",
                 "OK");
-
             return;
         }
 
-
-        // LIST MUST HAVE ITEMS
         if (_items.Count == 0)
         {
-            ShowError(
-                "Your grocery list is empty.");
-
+            ShowError("Your basket is empty.");
             return;
         }
 
-
-        Button? compareButton =
-            sender as Button;
-
-
-        if (compareButton != null)
+        if (_items.Any(x =>
+            !x.DatabaseId.HasValue ||
+            x.PendingOldDatabaseId.HasValue))
         {
-            compareButton.IsEnabled =
-                false;
-
-            compareButton.Text =
-                "Comparing...";
+            await DisplayAlert(
+                "Unsaved Changes",
+                "Save your changes before comparing prices.",
+                "OK");
+            return;
         }
 
+        ComparePricesButton.IsEnabled = false;
+        ComparePricesButton.Text = "Comparing...";
 
         try
         {
@@ -1523,187 +1210,123 @@ public partial class GroceryPage : ContentPage
                     .GetRetailerPriceComparisonAsync(
                         _savedGroceryListId.Value);
 
-
             if (!result.Success ||
                 result.Data == null)
             {
-                ShowError(
-                    result.Message);
-
+                ShowError(result.Message);
                 return;
             }
 
-
             RetailerPriceComparisonResponse comparison =
                 result.Data;
-
 
             if (comparison.Retailers == null ||
                 comparison.Retailers.Count == 0)
             {
                 await DisplayAlert(
-                    "Retailer Price Comparison",
-                    "No active retailers are currently available for price comparison.",
+                    "Price Comparison",
+                    "No verified retailer prices are available.",
                     "OK");
-
                 return;
             }
 
+            var message = new StringBuilder();
 
-            string message =
-                $"{comparison.GroceryListName}\n\n";
+            message.AppendLine(
+                comparison.GroceryListName);
 
+            message.AppendLine();
 
-            foreach (
-                RetailerComparisonResponse retailer
-                in comparison.Retailers)
+            foreach (RetailerComparisonResponse retailer
+                     in comparison.Retailers)
             {
-                message +=
-                    $"{retailer.RetailerName}\n";
+                message.AppendLine(
+                    retailer.RetailerName);
 
+                message.AppendLine(
+                    $"Matched: {retailer.MatchedItemCount}");
 
-                message +=
-                    $"Matched: {retailer.MatchedItemCount}\n";
-
-
-                message +=
-                    $"Missing: {retailer.MissingItemCount}\n";
-
+                message.AppendLine(
+                    $"Missing: {retailer.MissingItemCount}");
 
                 if (retailer.MatchedItemCount > 0)
                 {
-                    message +=
-                        $"Estimated Total: R {retailer.EstimatedTotal:N2}\n";
+                    message.AppendLine(
+                        $"Estimated Total: R {retailer.EstimatedTotal:N2}");
                 }
                 else
                 {
-                    message +=
-                        "Estimated Total: Not available\n";
+                    message.AppendLine(
+                        "Estimated Total: Unavailable");
                 }
 
-
-                message +=
+                message.AppendLine(
                     retailer.HasCompletePricing
-                        ? "Pricing: Complete\n"
-                        : "Pricing: Incomplete\n";
-
+                        ? "Pricing: Complete"
+                        : "Pricing: Incomplete");
 
                 if (retailer.LatestPriceCheckedAt.HasValue)
                 {
-                    message +=
-                        "Prices Checked: " +
-                        retailer.LatestPriceCheckedAt
-                            .Value
+                    message.AppendLine(
+                        "Last Checked: " +
+                        retailer.LatestPriceCheckedAt.Value
                             .ToLocalTime()
-                            .ToString(
-                                "dd MMM yyyy HH:mm") +
-                        "\n";
+                            .ToString("dd MMM yyyy"));
                 }
 
-
-                if (retailer.Items != null &&
-                    retailer.Items.Count > 0)
+                if (retailer.Items != null)
                 {
-                    message +=
-                        "\nItems:\n";
-
-
-                    foreach (
-                        RetailerComparisonItemResponse item
-                        in retailer.Items)
+                    foreach (RetailerComparisonItemResponse item
+                             in retailer.Items)
                     {
                         if (item.PriceFound &&
                             item.UnitPrice.HasValue)
                         {
-                            message +=
-                                $"• {item.ProductName} " +
-                                $"x{item.Quantity}: " +
-                                $"R {item.UnitPrice.Value:N2} each";
-
+                            message.Append(
+                                $"{item.ProductName} × {item.Quantity}: R {item.UnitPrice.Value:N2} each");
 
                             if (item.TotalPrice.HasValue)
                             {
-                                message +=
-                                    $" = R {item.TotalPrice.Value:N2}";
+                                message.Append(
+                                    $" = R {item.TotalPrice.Value:N2}");
                             }
 
-
-                            if (!string.IsNullOrWhiteSpace(
-                                item.Brand))
-                            {
-                                message +=
-                                    $" ({item.Brand}";
-
-
-                                if (!string.IsNullOrWhiteSpace(
-                                    item.Size))
-                                {
-                                    message +=
-                                        $" - {item.Size}";
-                                }
-
-
-                                message +=
-                                    ")";
-                            }
-                            else if (!string.IsNullOrWhiteSpace(
-                                item.Size))
-                            {
-                                message +=
-                                    $" ({item.Size})";
-                            }
-
-
-                            message +=
-                                "\n";
+                            message.AppendLine();
                         }
                         else
                         {
-                            message +=
-                                $"• {item.ProductName} " +
-                                $"x{item.Quantity}: " +
-                                "Price not available\n";
+                            message.AppendLine(
+                                $"{item.ProductName}: Price unavailable");
                         }
                     }
                 }
 
-
-                message +=
-                    "\n-------------------------\n\n";
+                message.AppendLine();
             }
 
-
-            message +=
-                "Only verified retailer prices stored in SpendWise are shown. " +
-                "Missing prices are not estimated or invented.";
-
+            message.AppendLine(
+                "Prices are based on verified stored data.");
 
             await DisplayAlert(
                 "Retailer Price Comparison",
-                message.Trim(),
+                message.ToString(),
                 "OK");
         }
         catch (Exception ex)
         {
             ShowError(
-                $"Unable to compare retailer prices: {ex.Message}");
+                $"Unable to compare prices: {ex.Message}");
         }
         finally
         {
-            if (compareButton != null)
-            {
-                compareButton.IsEnabled =
-                    true;
-
-                compareButton.Text =
-                    "Compare Retailer Prices";
-            }
+            ComparePricesButton.IsEnabled = true;
+            ComparePricesButton.Text =
+                "Compare Retailer Prices";
         }
     }
 
-
     // ==========================================
-    // REFRESH PAGE
+    // REFRESH
     // ==========================================
 
     private async void RefreshButton_Clicked(
@@ -1712,113 +1335,65 @@ public partial class GroceryPage : ContentPage
     {
         HideError();
 
-
         await LoadGroceryListsAsync();
 
-
-        if (_savedGroceryListId.HasValue)
-        {
-            await LoadSavedListAsync(
-                _savedGroceryListId.Value);
-        }
+        await DisplayAlert(
+            "Refreshed",
+            "Saved lists refreshed. Your current basket was kept.",
+            "OK");
     }
 
-
     // ==========================================
-    // UPDATE TOTAL
+    // UPDATE SUMMARY
     // ==========================================
 
     private void UpdateSummary()
     {
-        int quantity =
-            _items.Sum(
-                x => x.Quantity);
-
-
-        decimal total =
-            _items.Sum(
-                x => x.Total);
-
-
-        ItemCountLabel.Text =
-            quantity.ToString();
-
-
-        EstimatedTotalLabel.Text =
-            $"R {total:N2}";
-
-
-        ListTotalLabel.Text =
-            $"R {total:N2}";
-    }
-
-
-    // ==========================================
-    // GET RETAILER INDEX
-    // ==========================================
-
-    private int GetRetailerIndex(
-        string retailer)
-    {
-        for (int i = 0;
-             i < RetailerPicker.Items.Count;
-             i++)
+        try
         {
-            if (RetailerPicker.Items[i]
-                .Equals(
-                    retailer,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                return i;
-            }
+            int quantity =
+                _items.Sum(x => x.Quantity);
+
+            decimal total =
+                _items.Sum(x => x.Total);
+
+            ItemCountLabel.Text =
+                quantity.ToString();
+
+            EstimatedTotalLabel.Text =
+                $"R {total:N2}";
+
+            ListTotalLabel.Text =
+                $"R {total:N2}";
+        }
+        catch (OverflowException)
+        {
+            ItemCountLabel.Text = "—";
+            EstimatedTotalLabel.Text = "Invalid total";
+            ListTotalLabel.Text = "Invalid total";
+
+            ShowError(
+                "The basket total is too large.");
         }
 
-
-        return -1;
+        UpdateCheckoutState();
     }
 
-
     // ==========================================
-    // READ QUANTITY
+    // PRICE PARSING
     // ==========================================
 
-    private int GetQuantity(
-        string? value)
+    private decimal GetDecimal(string? value)
     {
-        if (int.TryParse(
-            value,
-            out int quantity))
-        {
-            return quantity;
-        }
-
-
-        return 0;
-    }
-
-
-    // ==========================================
-    // READ PRICE
-    // ==========================================
-
-    private decimal GetDecimal(
-        string? value)
-    {
-        if (string.IsNullOrWhiteSpace(
-            value))
-        {
+        if (string.IsNullOrWhiteSpace(value))
             return 0;
-        }
 
-
-        string cleaned =
-            value.Trim()
-                .Replace(
-                    "R",
-                    "",
-                    StringComparison.OrdinalIgnoreCase)
-                .Trim();
-
+        string cleaned = value.Trim()
+            .Replace(
+                "R",
+                "",
+                StringComparison.OrdinalIgnoreCase)
+            .Trim();
 
         if (decimal.TryParse(
             cleaned,
@@ -1829,7 +1404,6 @@ public partial class GroceryPage : ContentPage
             return amount;
         }
 
-
         if (decimal.TryParse(
             cleaned,
             NumberStyles.Number,
@@ -1839,42 +1413,27 @@ public partial class GroceryPage : ContentPage
             return amount;
         }
 
-
         return 0;
     }
 
-
     // ==========================================
-    // SHOW ERROR
+    // ERROR HANDLING
     // ==========================================
 
-    private void ShowError(
-        string message)
+    private void ShowError(string message)
     {
-        ErrorLabel.Text =
-            message;
-
-        ErrorLabel.IsVisible =
-            true;
+        ErrorLabel.Text = message;
+        MessageBorder.IsVisible = true;
     }
-
-
-    // ==========================================
-    // HIDE ERROR
-    // ==========================================
 
     private void HideError()
     {
-        ErrorLabel.Text =
-            string.Empty;
-
-        ErrorLabel.IsVisible =
-            false;
+        ErrorLabel.Text = "";
+        MessageBorder.IsVisible = false;
     }
 
-
     // ==========================================
-    // BACK
+    // BACK BUTTON
     // ==========================================
 
     private async void BackButton_Clicked(
@@ -1893,9 +1452,8 @@ public partial class GroceryPage : ContentPage
         }
     }
 
-
     // ==========================================
-    // LOCAL UI ITEM
+    // LOCAL GROCERY ITEM MODEL
     // ==========================================
 
     private class LocalGroceryItem
@@ -1903,6 +1461,8 @@ public partial class GroceryPage : ContentPage
         public Guid LocalId { get; set; }
 
         public int? DatabaseId { get; set; }
+
+        public int? PendingOldDatabaseId { get; set; }
 
         public string ProductName { get; set; } =
             string.Empty;
@@ -1915,4 +1475,3 @@ public partial class GroceryPage : ContentPage
             Quantity * UnitPrice;
     }
 }
-// ==========================================

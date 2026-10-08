@@ -1,551 +1,427 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <ContentPage
-    x:Class="SpendWise.App.Pages.DashboardPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="SpendWise.App.Pages.DashboardPage"
     BackgroundColor="#F5F7F6"
     NavigationPage.HasNavigationBar="False">
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- ================================================= -->
         <!-- HEADER -->
-        <!-- ================================================= -->
+        <Grid Grid.Row="0"
+              Padding="20,20"
+              BackgroundColor="#146B3A"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
 
-        <Grid
-            Grid.Row="0"
-            Padding="25,20"
-            BackgroundColor="#146B3A"
-            ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="3"
+                                 VerticalOptions="Center">
 
-            <VerticalStackLayout
-                Grid.Column="0"
-                Spacing="3">
+                <Label Text="Martin SpendWise"
+                       TextColor="White"
+                       FontSize="23"
+                       FontAttributes="Bold"
+                       LineBreakMode="TailTruncation" />
 
-                <Label
-                    Text="Martin SpendWise"
-                    TextColor="White"
-                    FontSize="23"
-                    FontAttributes="Bold" />
-
-                <Label
-                    x:Name="WelcomeLabel"
-                    Text="Welcome back"
-                    TextColor="#D8F3E3"
-                    FontSize="14" />
+                <Label x:Name="WelcomeLabel"
+                       Text="Welcome back"
+                       TextColor="#D8F3E3"
+                       FontSize="14"
+                       LineBreakMode="TailTruncation" />
 
             </VerticalStackLayout>
 
-            <Button
+            <!-- NOTIFICATION BELL AND PROFILE -->
+            <HorizontalStackLayout
                 Grid.Column="1"
-                Text="Profile"
-                BackgroundColor="Transparent"
-                TextColor="White"
-                FontAttributes="Bold"
-                Clicked="ProfileButton_Clicked" />
+                Spacing="5"
+                VerticalOptions="Center">
 
+                <Button
+                    x:Name="NotificationsButton"
+                    Text="🔔"
+                    FontSize="20"
+                    BackgroundColor="#2A7E4D"
+                    TextColor="White"
+                    CornerRadius="12"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    Clicked="NotificationsButton_Clicked"
+                    SemanticProperties.Description="Open budget notifications" />
+
+                <Label
+                    x:Name="UnreadNotificationsLabel"
+                    Text=""
+                    FontSize="13"
+                    FontAttributes="Bold"
+                    TextColor="#FFE082"
+                    VerticalOptions="Center"
+                    IsVisible="False" />
+
+                <Button
+                    Text="Profile"
+                    BackgroundColor="Transparent"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    Clicked="ProfileButton_Clicked" />
+
+            </HorizontalStackLayout>
         </Grid>
 
-
-        <!-- ================================================= -->
-        <!-- DASHBOARD CONTENT -->
-        <!-- ================================================= -->
-
+        <!-- MAIN DASHBOARD -->
         <ScrollView Grid.Row="1">
+            <Grid Padding="20"
+                  ColumnDefinitions="*"
+                  HorizontalOptions="Fill">
 
-            <VerticalStackLayout
-                Padding="22"
-                Spacing="20">
+                <VerticalStackLayout Spacing="18">
 
+                    <!-- BANK ACCOUNT -->
+                    <Border BackgroundColor="#146B3A"
+                            StrokeThickness="0"
+                            Padding="22"
+                            StrokeShape="RoundRectangle 18">
 
-                <!-- ================================================= -->
-                <!-- BANK ACCOUNT -->
-                <!-- ================================================= -->
+                        <VerticalStackLayout Spacing="12">
 
-                <Border
-                    BackgroundColor="#146B3A"
-                    StrokeThickness="0"
-                    Padding="22">
+                            <Grid ColumnDefinitions="*,Auto">
 
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="18" />
-                    </Border.StrokeShape>
+                                <VerticalStackLayout Spacing="3">
+                                    <Label Text="Bank Account"
+                                           TextColor="#D8F3E3"
+                                           FontSize="14" />
 
-                    <VerticalStackLayout Spacing="12">
+                                    <Label Text="Account Balance"
+                                           TextColor="White"
+                                           FontSize="13" />
+                                </VerticalStackLayout>
 
-                        <Grid ColumnDefinitions="*,Auto">
+                                <Border Grid.Column="1"
+                                        BackgroundColor="#2A7E4D"
+                                        StrokeThickness="0"
+                                        Padding="10,5"
+                                        StrokeShape="RoundRectangle 10">
 
-                            <VerticalStackLayout
-                                Grid.Column="0"
-                                Spacing="3">
+                                    <Label x:Name="BankStatusLabel"
+                                           Text="Not Connected"
+                                           TextColor="White"
+                                           FontSize="11"
+                                           FontAttributes="Bold" />
+                                </Border>
+                            </Grid>
 
-                                <Label
-                                    Text="Bank Account"
-                                    TextColor="#D8F3E3"
-                                    FontSize="14" />
+                            <Label x:Name="WalletBalanceLabel"
+                                   Text="—"
+                                   TextColor="White"
+                                   FontSize="34"
+                                   FontAttributes="Bold" />
 
-                                <Label
-                                    Text="Account Balance"
-                                    TextColor="White"
-                                    FontSize="13" />
+                            <Label x:Name="BankAccountInfoLabel"
+                                   Text="Connect your bank securely to view your account balance."
+                                   TextColor="#D8F3E3"
+                                   FontSize="13"
+                                   LineBreakMode="WordWrap" />
 
-                            </VerticalStackLayout>
+                            <Button x:Name="ConnectBankButton"
+                                    Text="Connect Bank Account"
+                                    BackgroundColor="White"
+                                    TextColor="#146B3A"
+                                    FontAttributes="Bold"
+                                    CornerRadius="12"
+                                    HeightRequest="48"
+                                    Clicked="ConnectBankButton_Clicked" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                            <Border
-                                Grid.Column="1"
-                                BackgroundColor="#2A7E4D"
-                                StrokeThickness="0"
-                                Padding="10,5">
-
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="10" />
-                                </Border.StrokeShape>
-
-                                <Label
-                                    x:Name="BankStatusLabel"
-                                    Text="Not Connected"
-                                    TextColor="White"
-                                    FontSize="11"
-                                    FontAttributes="Bold" />
-
-                            </Border>
-
-                        </Grid>
-
-
-                        <!-- BALANCE -->
-
-                        <Label
-                            x:Name="WalletBalanceLabel"
-                            Text="—"
-                            TextColor="White"
-                            FontSize="34"
-                            FontAttributes="Bold"
-                            Margin="0,4,0,0" />
-
-
-                        <!-- ACCOUNT INFORMATION -->
+                    <!-- BANK INFORMATION -->
+                    <Border BackgroundColor="#EAF5EE"
+                            Stroke="#C8DFD0"
+                            Padding="15"
+                            StrokeShape="RoundRectangle 14">
 
                         <Label
-                            x:Name="BankAccountInfoLabel"
-                            Text="Connect your bank securely to view your account balance."
-                            TextColor="#D8F3E3"
-                            FontSize="13"
+                            Text="Bank integration is not connected yet. SpendWise will not display or store a fake bank balance."
+                            FontSize="12"
+                            TextColor="#50645A"
                             LineBreakMode="WordWrap" />
+                    </Border>
 
+                    <!-- MONTHLY BUDGET -->
+                    <Border BackgroundColor="White"
+                            Stroke="#E5E5E5"
+                            Padding="20"
+                            StrokeShape="RoundRectangle 16">
 
-                        <!-- CONNECT BANK -->
+                        <VerticalStackLayout Spacing="12">
 
-                        <Button
-                            x:Name="ConnectBankButton"
-                            Text="Connect Bank Account"
-                            BackgroundColor="White"
-                            TextColor="#146B3A"
-                            FontAttributes="Bold"
-                            CornerRadius="12"
-                            HeightRequest="48"
-                            Margin="0,5,0,0"
-                            Clicked="ConnectBankButton_Clicked" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Monthly Budget"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#172B20" />
 
-                    </VerticalStackLayout>
+                                <Button Grid.Column="1"
+                                        Text="View"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#146B3A"
+                                        Clicked="BudgetButton_Clicked" />
+                            </Grid>
 
-                </Border>
+                            <Label x:Name="BudgetSpentLabel"
+                                   Text="R 0.00 spent of R 0.00"
+                                   TextColor="#666666"
+                                   FontSize="14" />
 
+                            <ProgressBar x:Name="BudgetProgressBar"
+                                         Progress="0"
+                                         ProgressColor="#146B3A"
+                                         BackgroundColor="#E4EAE6"
+                                         HeightRequest="9" />
 
-                <!-- ================================================= -->
-                <!-- BANK INFORMATION -->
-                <!-- ================================================= -->
+                            <Grid ColumnDefinitions="*,Auto">
 
-                <Border
-                    BackgroundColor="#EAF5EE"
-                    Stroke="#C8DFD0"
-                    StrokeThickness="1"
-                    Padding="15">
+                                <Label x:Name="BudgetRemainingLabel"
+                                       Text="R 0.00 remaining"
+                                       TextColor="#146B3A"
+                                       FontAttributes="Bold" />
 
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="14" />
-                    </Border.StrokeShape>
+                                <Label x:Name="BudgetPercentageLabel"
+                                       Grid.Column="1"
+                                       Text="0%"
+                                       TextColor="#666666" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
 
-                    <Label
-                        Text="Bank integration is not connected yet. SpendWise will not display or store a fake bank balance."
-                        FontSize="12"
-                        TextColor="#50645A"
-                        LineBreakMode="WordWrap" />
+                    <!-- QUICK ACTIONS -->
+                    <Label Text="Quick Actions"
+                           FontSize="19"
+                           FontAttributes="Bold"
+                           TextColor="#172B20" />
 
-                </Border>
+                    <Grid ColumnDefinitions="*,*,*"
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
 
-
-                <!-- ================================================= -->
-                <!-- MONTHLY BUDGET -->
-                <!-- ================================================= -->
-
-                <Border
-                    BackgroundColor="White"
-                    Stroke="#E5E5E5"
-                    StrokeThickness="1"
-                    Padding="20">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout Spacing="10">
-
-                        <Grid ColumnDefinitions="*,Auto">
-
-                            <Label
-                                Text="Monthly Budget"
-                                FontSize="18"
-                                FontAttributes="Bold"
-                                TextColor="#1E1E1E" />
-
-                            <Button
-                                Grid.Column="1"
-                                Text="View"
-                                BackgroundColor="Transparent"
+                        <Button Grid.Row="0"
+                                Grid.Column="0"
+                                Text="Activity"
+                                HeightRequest="65"
+                                BackgroundColor="White"
                                 TextColor="#146B3A"
-                                Padding="5"
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                Clicked="WalletButton_Clicked" />
+
+                        <Button Grid.Row="0"
+                                Grid.Column="1"
+                                Text="Budget"
+                                HeightRequest="65"
+                                BackgroundColor="White"
+                                TextColor="#146B3A"
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
                                 Clicked="BudgetButton_Clicked" />
 
-                        </Grid>
-
-                        <Label
-                            x:Name="BudgetSpentLabel"
-                            Text="R 0.00 spent of R 0.00"
-                            TextColor="#666666"
-                            FontSize="14" />
-
-                        <ProgressBar
-                            x:Name="BudgetProgressBar"
-                            Progress="0"
-                            ProgressColor="#146B3A"
-                            BackgroundColor="#E4EAE6"
-                            HeightRequest="9" />
-
-                        <Grid ColumnDefinitions="*,Auto">
-
-                            <Label
-                                x:Name="BudgetRemainingLabel"
-                                Text="R 0.00 remaining"
+                        <Button Grid.Row="0"
+                                Grid.Column="2"
+                                Text="Grocery"
+                                HeightRequest="65"
+                                BackgroundColor="White"
                                 TextColor="#146B3A"
-                                FontAttributes="Bold" />
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                Clicked="GroceryButton_Clicked" />
+
+                        <Button Grid.Row="1"
+                                Grid.Column="0"
+                                Text="Purchase"
+                                HeightRequest="65"
+                                BackgroundColor="White"
+                                TextColor="#146B3A"
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                Clicked="PurchaseButton_Clicked" />
+
+                        <Button Grid.Row="1"
+                                Grid.Column="1"
+                                Text="Reports"
+                                HeightRequest="65"
+                                BackgroundColor="White"
+                                TextColor="#146B3A"
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                Clicked="ReportsButton_Clicked" />
+
+                        <Button Grid.Row="1"
+                                Grid.Column="2"
+                                Text="Insights"
+                                HeightRequest="65"
+                                BackgroundColor="White"
+                                TextColor="#146B3A"
+                                BorderColor="#DCE5DF"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                Clicked="InsightsButton_Clicked" />
+                    </Grid>
+
+                    <!-- SAVED GROCERY LISTS -->
+                    <Button
+                        Text="My Grocery Lists"
+                        BackgroundColor="#E8F3EC"
+                        TextColor="#146B3A"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        CornerRadius="12"
+                        HeightRequest="52"
+                        Clicked="MyGroceryListsButton_Clicked" />
+
+                    <!-- MONTHLY SUMMARY -->
+                    <Border BackgroundColor="White"
+                            Stroke="#E5E5E5"
+                            Padding="20"
+                            StrokeShape="RoundRectangle 16">
+
+                        <VerticalStackLayout Spacing="14">
+
+                            <Label Text="This Month"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#172B20" />
+
+                            <Grid ColumnDefinitions="*,*"
+                                  ColumnSpacing="12">
+
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="Total Spent"
+                                           FontSize="13"
+                                           TextColor="#777777" />
+
+                                    <Label x:Name="MonthlySpentLabel"
+                                           Text="R 0.00"
+                                           FontSize="21"
+                                           FontAttributes="Bold"
+                                           TextColor="#C0392B" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="5">
+
+                                    <Label Text="Budget Remaining"
+                                           FontSize="13"
+                                           TextColor="#777777" />
+
+                                    <Label x:Name="MonthlyRemainingLabel"
+                                           Text="R 0.00"
+                                           FontSize="21"
+                                           FontAttributes="Bold"
+                                           TextColor="#146B3A" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- RECENT SPENDING -->
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Recent Spending"
+                                   FontSize="19"
+                                   FontAttributes="Bold"
+                                   TextColor="#172B20" />
+
+                            <Label Text="Recently recorded purchases"
+                                   FontSize="12"
+                                   TextColor="#777777" />
+                        </VerticalStackLayout>
+
+                        <Button Grid.Column="1"
+                                Text="View All"
+                                BackgroundColor="Transparent"
+                                TextColor="#146B3A"
+                                Clicked="ViewTransactionsButton_Clicked" />
+                    </Grid>
+
+                    <Border BackgroundColor="White"
+                            Stroke="#E5E5E5"
+                            Padding="20"
+                            StrokeShape="RoundRectangle 16">
+
+                        <VerticalStackLayout
+                            x:Name="RecentTransactionsLayout"
+                            Spacing="12">
+
+                            <Label x:Name="NoTransactionsLabel"
+                                   Text="No recent spending recorded yet."
+                                   TextColor="#777777"
+                                   HorizontalTextAlignment="Center"
+                                   Margin="0,15" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- SECURITY -->
+                    <Border BackgroundColor="White"
+                            Stroke="#E5E5E5"
+                            Padding="17"
+                            StrokeShape="RoundRectangle 16">
+
+                        <VerticalStackLayout Spacing="7">
+                            <Label Text="Secure Banking"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#172B20" />
 
                             <Label
-                                x:Name="BudgetPercentageLabel"
-                                Grid.Column="1"
-                                Text="0%"
-                                TextColor="#666666" />
+                                Text="When bank integration is added, connections will be handled through an authorised banking or payment provider. SpendWise will not ask you to enter your banking password or PIN directly into the app."
+                                FontSize="12"
+                                TextColor="#666666"
+                                LineBreakMode="WordWrap" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                        </Grid>
-
-                    </VerticalStackLayout>
-
-                </Border>
-
-
-                <!-- ================================================= -->
-                <!-- QUICK ACTIONS -->
-                <!-- ================================================= -->
-
-                <Label
-                    Text="Quick Actions"
-                    FontSize="19"
-                    FontAttributes="Bold"
-                    TextColor="#1E1E1E" />
-
-
-                <Grid
-                    ColumnDefinitions="*,*,*"
-                    RowDefinitions="Auto,Auto"
-                    ColumnSpacing="12"
-                    RowSpacing="12">
-
-                    <Button
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Text="Activity"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="WalletButton_Clicked" />
-
-                    <Button
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Text="Budget"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="BudgetButton_Clicked" />
-
-                    <Button
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        Text="Grocery"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="GroceryButton_Clicked" />
-
-                    <Button
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Text="Purchase"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="PurchaseButton_Clicked" />
-
-                    <Button
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Text="Reports"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="ReportsButton_Clicked" />
-
-                    <Button
-                        Grid.Row="1"
-                        Grid.Column="2"
-                        Text="Insights"
-                        HeightRequest="70"
-                        BackgroundColor="White"
-                        TextColor="#146B3A"
-                        BorderColor="#DCE5DF"
-                        BorderWidth="1"
-                        CornerRadius="14"
-                        Clicked="InsightsButton_Clicked" />
-
-                </Grid>
-
-
-                <!-- ================================================= -->
-                <!-- SPENDING SUMMARY -->
-                <!-- ================================================= -->
-
-                <Border
-                    BackgroundColor="White"
-                    Stroke="#E5E5E5"
-                    StrokeThickness="1"
-                    Padding="20">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout Spacing="15">
-
-                        <Label
-                            Text="This Month"
-                            FontSize="18"
-                            FontAttributes="Bold"
-                            TextColor="#1E1E1E" />
-
-                        <Grid ColumnDefinitions="*,*">
-
-                            <VerticalStackLayout
-                                Grid.Column="0"
-                                Spacing="4">
-
-                                <Label
-                                    Text="Total Spent"
-                                    TextColor="#777777"
-                                    FontSize="13" />
-
-                                <Label
-                                    x:Name="MonthlySpentLabel"
-                                    Text="R 0.00"
-                                    FontSize="21"
-                                    FontAttributes="Bold"
-                                    TextColor="#C0392B" />
-
-                            </VerticalStackLayout>
-
-                            <VerticalStackLayout
-                                Grid.Column="1"
-                                Spacing="4">
-
-                                <Label
-                                    Text="Budget Remaining"
-                                    TextColor="#777777"
-                                    FontSize="13" />
-
-                                <Label
-                                    x:Name="MonthlyRemainingLabel"
-                                    Text="R 0.00"
-                                    FontSize="21"
-                                    FontAttributes="Bold"
-                                    TextColor="#146B3A" />
-
-                            </VerticalStackLayout>
-
-                        </Grid>
-
-                    </VerticalStackLayout>
-
-                </Border>
-
-
-                <!-- ================================================= -->
-                <!-- RECENT TRANSACTIONS -->
-                <!-- ================================================= -->
-
-                <Grid ColumnDefinitions="*,Auto">
-
-                    <VerticalStackLayout
-                        Grid.Column="0"
-                        Spacing="2">
-
-                        <Label
-                            Text="Recent Spending"
-                            FontSize="19"
-                            FontAttributes="Bold"
-                            TextColor="#1E1E1E"
-                            VerticalOptions="Center" />
-
-                        <Label
-                            Text="Recently recorded purchases"
-                            FontSize="12"
-                            TextColor="#777777" />
-
-                    </VerticalStackLayout>
-
-                    <Button
-                        Grid.Column="1"
-                        Text="View All"
-                        BackgroundColor="Transparent"
-                        TextColor="#146B3A"
-                        Clicked="ViewTransactionsButton_Clicked" />
-
-                </Grid>
-
-
-                <Border
-                    BackgroundColor="White"
-                    Stroke="#E5E5E5"
-                    StrokeThickness="1"
-                    Padding="20">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout
-                        x:Name="RecentTransactionsLayout"
-                        Spacing="12">
-
-                        <Label
-                            x:Name="NoTransactionsLabel"
-                            Text="No recent spending recorded yet."
-                            TextColor="#777777"
-                            HorizontalOptions="Center"
-                            HorizontalTextAlignment="Center"
-                            Margin="0,15" />
-
-                    </VerticalStackLayout>
-
-                </Border>
-
-
-                <!-- ================================================= -->
-                <!-- SECURITY INFORMATION -->
-                <!-- ================================================= -->
-
-                <Border
-                    BackgroundColor="White"
-                    Stroke="#E5E5E5"
-                    StrokeThickness="1"
-                    Padding="17">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout Spacing="7">
-
-                        <Label
-                            Text="Secure Banking"
-                            FontSize="16"
-                            FontAttributes="Bold"
-                            TextColor="#1E1E1E" />
-
-                        <Label
-                            Text="When bank integration is added, connections will be handled through an authorised banking or payment provider. SpendWise will not ask you to enter your banking password or PIN directly into the app."
-                            FontSize="12"
-                            TextColor="#666666"
-                            LineBreakMode="WordWrap" />
-
-                    </VerticalStackLayout>
-
-                </Border>
-
-
-                <BoxView
-                    HeightRequest="15"
-                    Opacity="0" />
-
-            </VerticalStackLayout>
-
+                </VerticalStackLayout>
+            </Grid>
         </ScrollView>
 
-
-        <!-- ================================================= -->
         <!-- BOTTOM NAVIGATION -->
-        <!-- ================================================= -->
+        <Grid Grid.Row="2"
+              BackgroundColor="White"
+              Padding="12,8"
+              ColumnDefinitions="*,*,*,*">
 
-        <Grid
-            Grid.Row="2"
-            BackgroundColor="White"
-            Padding="12,8"
-            ColumnDefinitions="*,*,*,*">
+            <Button Grid.Column="0"
+                    Text="Home"
+                    BackgroundColor="Transparent"
+                    TextColor="#146B3A"
+                    FontAttributes="Bold" />
 
-            <Button
-                Grid.Column="0"
-                Text="Home"
-                BackgroundColor="Transparent"
-                TextColor="#146B3A"
-                FontAttributes="Bold" />
+            <Button Grid.Column="1"
+                    Text="Grocery"
+                    BackgroundColor="Transparent"
+                    TextColor="#666666"
+                    Clicked="GroceryButton_Clicked" />
 
-            <Button
-                Grid.Column="1"
-                Text="Grocery"
-                BackgroundColor="Transparent"
-                TextColor="#666666"
-                Clicked="GroceryButton_Clicked" />
+            <Button Grid.Column="2"
+                    Text="Budget"
+                    BackgroundColor="Transparent"
+                    TextColor="#666666"
+                    Clicked="BudgetButton_Clicked" />
 
-            <Button
-                Grid.Column="2"
-                Text="Budget"
-                BackgroundColor="Transparent"
-                TextColor="#666666"
-                Clicked="BudgetButton_Clicked" />
-
-            <Button
-                Grid.Column="3"
-                Text="Profile"
-                BackgroundColor="Transparent"
-                TextColor="#666666"
-                Clicked="ProfileButton_Clicked" />
-
+            <Button Grid.Column="3"
+                    Text="Profile"
+                    BackgroundColor="Transparent"
+                    TextColor="#666666"
+                    Clicked="ProfileButton_Clicked" />
         </Grid>
 
     </Grid>
-
 </ContentPage>

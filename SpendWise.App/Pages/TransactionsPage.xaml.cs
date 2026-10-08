@@ -1,3 +1,4 @@
+
 using SpendWise.App.Models;
 using SpendWise.App.Services;
 using System.Diagnostics;
@@ -9,32 +10,27 @@ namespace SpendWise.App.Pages;
 public partial class TransactionsPage : ContentPage
 {
     private readonly ApiService _apiService;
-
-    private List<TransactionResponse> _allTransactions =
-        new();
+    private List<TransactionResponse> _allTransactions = new();
 
     private bool _isLoading;
+    private bool _isDeleting;
 
-
-    // =====================================================
+    // ==========================================
     // CONSTRUCTOR
-    // =====================================================
+    // ==========================================
 
     public TransactionsPage()
     {
         InitializeComponent();
 
-        _apiService =
-            new ApiService();
+        _apiService = new ApiService();
 
-        TransactionFilterPicker.SelectedIndex =
-            0;
+        TransactionFilterPicker.SelectedIndex = 0;
     }
 
-
-    // =====================================================
+    // ==========================================
     // PAGE APPEARING
-    // =====================================================
+    // ==========================================
 
     protected override async void OnAppearing()
     {
@@ -43,78 +39,44 @@ public partial class TransactionsPage : ContentPage
         await LoadTransactionsAsync();
     }
 
-
-    // =====================================================
-    // LOAD SPENDING HISTORY
-    // =====================================================
+    // ==========================================
+    // LOAD TRANSACTIONS
+    // ==========================================
 
     private async Task LoadTransactionsAsync()
     {
         if (_isLoading)
-        {
             return;
-        }
 
         try
         {
             SetLoading(true);
-
             HideError();
 
-            var result =
-                await _apiService
-                    .GetTransactionsAsync();
+            var result = await _apiService.GetTransactionsAsync();
 
-
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
                 _allTransactions.Clear();
-
                 ClearPage();
-
-                ShowError(
-                    result.Message);
-
+                ShowError(result.Message);
                 return;
             }
 
-
-            // =============================================
-            // ONLY KEEP SPENDING RECORDS
-            // =============================================
-            //
-            // SpendWise currently displays recorded
-            // purchases and spending transactions here.
-            //
-            // Old wallet deposits, credits and refunds
-            // are excluded from this spending view.
-            // =============================================
-
-            _allTransactions =
-                result.Data
-                    .Where(
-                        IsSpendingTransaction)
-                    .OrderByDescending(
-                        transaction =>
-                            transaction.CreatedAt)
-                    .ToList();
-
+            _allTransactions = result.Data
+                .Where(IsSpendingTransaction)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToList();
 
             DisplaySummary();
-
             ApplyCurrentFilter();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"LOAD SPENDING HISTORY ERROR: {ex}");
-
+            Debug.WriteLine($"LOAD TRANSACTIONS ERROR: {ex}");
 
             _allTransactions.Clear();
-
             ClearPage();
-
 
             ShowError(
                 $"Unable to load spending history: {ex.Message}");
@@ -125,628 +87,396 @@ public partial class TransactionsPage : ContentPage
         }
     }
 
-
-    // =====================================================
-    // DISPLAY SPENDING SUMMARY
-    // =====================================================
+    // ==========================================
+    // SUMMARY
+    // ==========================================
 
     private void DisplaySummary()
     {
-        decimal totalSpent =
-            _allTransactions
-                .Sum(
-                    transaction =>
-                        Math.Abs(
-                            transaction.Amount));
+        decimal totalSpent = _allTransactions
+            .Sum(t => Math.Abs(t.Amount));
 
+        int purchaseCount = _allTransactions.Count;
 
-        int purchaseCount =
-            _allTransactions.Count;
+        decimal averagePurchase = purchaseCount > 0
+            ? totalSpent / purchaseCount
+            : 0m;
 
-
-        decimal averagePurchase =
-            purchaseCount > 0
-                ? totalSpent / purchaseCount
-                : 0;
-
-
-        // =============================================
-        // MoneyOutLabel displays total recorded spending.
-        // =============================================
-
-        MoneyOutLabel.Text =
-            FormatMoney(
-                totalSpent);
-
-
-        TransactionCountLabel.Text =
-            purchaseCount.ToString();
-
-
-        // =============================================
-        // NetActivityLabel displays average purchase.
-        // =============================================
-
-        NetActivityLabel.Text =
-            FormatMoney(
-                averagePurchase);
-
+        MoneyOutLabel.Text = FormatMoney(totalSpent);
+        TransactionCountLabel.Text = purchaseCount.ToString();
+        NetActivityLabel.Text = FormatMoney(averagePurchase);
 
         NetActivityLabel.TextColor =
-            Color.FromArgb(
-                "#1E1E1E");
+            Color.FromArgb("#1E1E1E");
     }
 
-
-    // =====================================================
-    // APPLY CURRENT FILTER
-    // =====================================================
+    // ==========================================
+    // FILTERS
+    // ==========================================
 
     private void ApplyCurrentFilter()
     {
-        int selectedIndex =
-            TransactionFilterPicker.SelectedIndex;
+        int selectedIndex = TransactionFilterPicker.SelectedIndex;
 
-
-        IEnumerable<TransactionResponse>
-            filteredTransactions =
-                _allTransactions;
-
-
-        // =================================================
-        // GROCERIES
-        // =================================================
+        IEnumerable<TransactionResponse> filtered =
+            _allTransactions;
 
         if (selectedIndex == 1)
         {
-            filteredTransactions =
-                _allTransactions
-                    .Where(
-                        IsGroceryTransaction);
+            filtered = _allTransactions
+                .Where(IsGroceryTransaction);
 
-
-            TransactionSectionTitle.Text =
-                "Groceries";
-
-
+            TransactionSectionTitle.Text = "Groceries";
             TransactionSectionSubtitle.Text =
                 "Recorded grocery purchases appear here.";
         }
-
-
-        // =================================================
-        // OTHER PURCHASES
-        // =================================================
-
         else if (selectedIndex == 2)
         {
-            filteredTransactions =
-                _allTransactions
-                    .Where(
-                        transaction =>
-                            !IsGroceryTransaction(
-                                transaction));
+            filtered = _allTransactions
+                .Where(t => !IsGroceryTransaction(t));
 
-
-            TransactionSectionTitle.Text =
-                "Other Purchases";
-
-
+            TransactionSectionTitle.Text = "Other Purchases";
             TransactionSectionSubtitle.Text =
                 "Recorded non-grocery purchases appear here.";
         }
-
-
-        // =================================================
-        // ALL SPENDING
-        // =================================================
-
         else
         {
-            TransactionSectionTitle.Text =
-                "All Spending";
-
-
+            TransactionSectionTitle.Text = "All Spending";
             TransactionSectionSubtitle.Text =
                 "Your most recently recorded purchases appear first.";
         }
 
-
-        List<TransactionResponse> transactions =
-            filteredTransactions
-                .OrderByDescending(
-                    transaction =>
-                        transaction.CreatedAt)
-                .ToList();
-
-
         DisplayTransactions(
-            transactions);
+            filtered
+                .OrderByDescending(t => t.CreatedAt)
+                .ToList());
     }
 
-
-    // =====================================================
+    // ==========================================
     // DISPLAY TRANSACTIONS
-    // =====================================================
+    // ==========================================
 
     private void DisplayTransactions(
         List<TransactionResponse> transactions)
     {
-        TransactionsLayout
-            .Children
-            .Clear();
-
+        TransactionsLayout.Children.Clear();
 
         DisplayedCountLabel.Text =
-            transactions.Count
-                .ToString();
-
+            transactions.Count.ToString();
 
         if (transactions.Count == 0)
         {
-            EmptyStateCard.IsVisible =
-                true;
+            EmptyStateCard.IsVisible = true;
 
-
-            if (_allTransactions.Count == 0)
-            {
-                EmptyStateLabel.Text =
-                    "Purchases you record in SpendWise will appear here.";
-            }
-            else
-            {
-                EmptyStateLabel.Text =
-                    "No spending records match the selected filter.";
-            }
-
+            EmptyStateLabel.Text =
+                _allTransactions.Count == 0
+                    ? "Purchases you record in SpendWise will appear here."
+                    : "No spending records match the selected filter.";
 
             return;
         }
 
+        EmptyStateCard.IsVisible = false;
 
-        EmptyStateCard.IsVisible =
-            false;
-
-
-        foreach (
-            TransactionResponse transaction
-            in transactions)
+        foreach (var transaction in transactions)
         {
-            Border transactionCard =
-                CreateTransactionCard(
-                    transaction);
-
-
-            TransactionsLayout
-                .Children
-                .Add(
-                    transactionCard);
+            TransactionsLayout.Children.Add(
+                CreateTransactionCard(transaction));
         }
     }
 
-
-    // =====================================================
-    // CREATE SPENDING CARD
-    // =====================================================
+    // ==========================================
+    // CREATE TRANSACTION CARD
+    // ==========================================
 
     private Border CreateTransactionCard(
         TransactionResponse transaction)
     {
-        Color transactionColor =
-            Color.FromArgb(
-                "#C0392B");
+        Color red = Color.FromArgb("#C0392B");
 
+        var typeLabel = new Label
+        {
+            Text = GetDisplayType(transaction),
+            FontSize = 16,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#1E1E1E"),
+            VerticalOptions = LayoutOptions.Center
+        };
 
-        Color transactionBackground =
-            Color.FromArgb(
-                "#FFF1F0");
+        var amountLabel = new Label
+        {
+            Text = FormatTransactionAmount(transaction),
+            FontSize = 17,
+            FontAttributes = FontAttributes.Bold,
+            TextColor = red,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center
+        };
 
-
-        // =================================================
-        // DISPLAY TYPE
-        // =================================================
-
-        string transactionType =
-            GetDisplayType(
-                transaction);
-
-
-        Label typeLabel =
-            new Label
+        var headerGrid = new Grid
+        {
+            ColumnDefinitions =
             {
-                Text =
-                    transactionType,
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            ColumnSpacing = 10
+        };
 
-                FontSize =
-                    16,
+        Grid.SetColumn(typeLabel, 0);
+        Grid.SetColumn(amountLabel, 1);
 
-                FontAttributes =
-                    FontAttributes.Bold,
+        headerGrid.Children.Add(typeLabel);
+        headerGrid.Children.Add(amountLabel);
 
-                TextColor =
-                    Color.FromArgb(
-                        "#1E1E1E"),
+        var descriptionLabel = new Label
+        {
+            Text = GetDescription(transaction),
+            FontSize = 13,
+            TextColor = Color.FromArgb("#555555"),
+            LineBreakMode = LineBreakMode.WordWrap
+        };
 
-                VerticalOptions =
-                    LayoutOptions.Center
-            };
+        var detailsLayout = new VerticalStackLayout
+        {
+            Spacing = 5
+        };
 
+        var categoryLabel = CreateDetailLabel(
+            "Category", transaction.Category);
 
-        // =================================================
-        // AMOUNT
-        // =================================================
+        var retailerLabel = CreateDetailLabel(
+            "Retailer", transaction.Retailer);
 
-        Label amountLabel =
-            new Label
-            {
-                Text =
-                    FormatTransactionAmount(
-                        transaction),
+        var dateLabel = CreateDetailLabel(
+            "Date", FormatDate(transaction.CreatedAt));
 
-                FontSize =
-                    17,
-
-                FontAttributes =
-                    FontAttributes.Bold,
-
-                TextColor =
-                    transactionColor,
-
-                HorizontalOptions =
-                    LayoutOptions.End,
-
-                VerticalOptions =
-                    LayoutOptions.Center
-            };
-
-
-        Grid headerGrid =
-            new Grid
-            {
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition
-                    {
-                        Width =
-                            GridLength.Star
-                    },
-
-                    new ColumnDefinition
-                    {
-                        Width =
-                            GridLength.Auto
-                    }
-                },
-
-                ColumnSpacing =
-                    10
-            };
-
-
-        Grid.SetColumn(
-            typeLabel,
-            0);
-
-
-        Grid.SetColumn(
-            amountLabel,
-            1);
-
-
-        headerGrid.Children.Add(
-            typeLabel);
-
-
-        headerGrid.Children.Add(
-            amountLabel);
-
-
-        // =================================================
-        // DESCRIPTION
-        // =================================================
-
-        Label descriptionLabel =
-            new Label
-            {
-                Text =
-                    GetDescription(
-                        transaction),
-
-                FontSize =
-                    13,
-
-                TextColor =
-                    Color.FromArgb(
-                        "#555555"),
-
-                LineBreakMode =
-                    LineBreakMode.WordWrap
-            };
-
-
-        // =================================================
-        // CATEGORY
-        // =================================================
-
-        Label categoryLabel =
-            CreateDetailLabel(
-                "Category",
-                transaction.Category);
-
-
-        // =================================================
-        // RETAILER
-        // =================================================
-
-        Label retailerLabel =
-            CreateDetailLabel(
-                "Retailer",
-                transaction.Retailer);
-
-
-        // =================================================
-        // DATE
-        // =================================================
-
-        Label dateLabel =
-            CreateDetailLabel(
-                "Date",
-                FormatDate(
-                    transaction.CreatedAt));
-
-
-        // =================================================
-        // REFERENCE
-        // =================================================
-
-        Label referenceLabel =
-            CreateDetailLabel(
-                "Reference",
-                transaction.Reference);
-
-
-        // =================================================
-        // DETAILS
-        // =================================================
-
-        VerticalStackLayout detailsLayout =
-            new VerticalStackLayout
-            {
-                Spacing =
-                    5
-            };
-
+        var referenceLabel = CreateDetailLabel(
+            "Reference", transaction.Reference);
 
         if (categoryLabel.IsVisible)
-        {
-            detailsLayout.Children.Add(
-                categoryLabel);
-        }
-
+            detailsLayout.Children.Add(categoryLabel);
 
         if (retailerLabel.IsVisible)
-        {
-            detailsLayout.Children.Add(
-                retailerLabel);
-        }
+            detailsLayout.Children.Add(retailerLabel);
 
-
-        detailsLayout.Children.Add(
-            dateLabel);
-
+        detailsLayout.Children.Add(dateLabel);
 
         if (referenceLabel.IsVisible)
+            detailsLayout.Children.Add(referenceLabel);
+
+        var statusBorder = new Border
         {
-            detailsLayout.Children.Add(
-                referenceLabel);
-        }
-
-
-        // =================================================
-        // SPENDING STATUS
-        // =================================================
-
-        Border statusBorder =
-            new Border
+            BackgroundColor = Color.FromArgb("#FFF1F0"),
+            Stroke = red,
+            StrokeThickness = 1,
+            Padding = new Thickness(10, 5),
+            HorizontalOptions = LayoutOptions.Start,
+            StrokeShape = new RoundRectangle
             {
-                BackgroundColor =
-                    transactionBackground,
-
-                Stroke =
-                    transactionColor,
-
-                StrokeThickness =
-                    1,
-
-                Padding =
-                    new Thickness(
-                        10,
-                        5),
-
-                HorizontalOptions =
-                    LayoutOptions.Start,
-
-                StrokeShape =
-                    new RoundRectangle
-                    {
-                        CornerRadius =
-                            new CornerRadius(
-                                20)
-                    },
-
-                Content =
-                    new Label
-                    {
-                        Text =
-                            "Recorded Spending",
-
-                        FontSize =
-                            10,
-
-                        FontAttributes =
-                            FontAttributes.Bold,
-
-                        TextColor =
-                            transactionColor
-                    }
-            };
-
-
-        // =================================================
-        // CONTENT
-        // =================================================
-
-        VerticalStackLayout content =
-            new VerticalStackLayout
+                CornerRadius = new CornerRadius(20)
+            },
+            Content = new Label
             {
-                Spacing =
-                    10
-            };
+                Text = "Recorded Spending",
+                FontSize = 10,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = red
+            }
+        };
 
+        var deleteButton = new Button
+        {
+            Text = "Delete Purchase",
+            BackgroundColor = Color.FromArgb("#FFF1F0"),
+            TextColor = Color.FromArgb("#B42318"),
+            BorderColor = Color.FromArgb("#E6B8B4"),
+            BorderWidth = 1,
+            CornerRadius = 10,
+            HeightRequest = 44,
+            HorizontalOptions = LayoutOptions.End,
+            CommandParameter = transaction.Id,
+            IsEnabled = !_isDeleting && transaction.Id > 0,
+            IsVisible = string.Equals(transaction.Type, "Purchase", StringComparison.OrdinalIgnoreCase)
+        };
 
-        content.Children.Add(
-            headerGrid);
+        deleteButton.Clicked += DeletePurchaseButton_Clicked;
 
+        var content = new VerticalStackLayout
+        {
+            Spacing = 10
+        };
 
-        content.Children.Add(
-            statusBorder);
+        content.Children.Add(headerGrid);
+        content.Children.Add(statusBorder);
+        content.Children.Add(descriptionLabel);
+        content.Children.Add(detailsLayout);
+        content.Children.Add(deleteButton);
 
-
-        content.Children.Add(
-            descriptionLabel);
-
-
-        content.Children.Add(
-            detailsLayout);
-
-
-        // =================================================
-        // CARD
-        // =================================================
-
-        Border card =
-            new Border
+        return new Border
+        {
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#E5E5E5"),
+            StrokeThickness = 1,
+            Padding = new Thickness(16),
+            StrokeShape = new RoundRectangle
             {
-                BackgroundColor =
-                    Colors.White,
-
-                Stroke =
-                    Color.FromArgb(
-                        "#E5E5E5"),
-
-                StrokeThickness =
-                    1,
-
-                Padding =
-                    new Thickness(
-                        16),
-
-                StrokeShape =
-                    new RoundRectangle
-                    {
-                        CornerRadius =
-                            new CornerRadius(
-                                14)
-                    },
-
-                Content =
-                    content
-            };
-
-
-        return card;
+                CornerRadius = new CornerRadius(14)
+            },
+            Content = content
+        };
     }
 
+    // ==========================================
+    // DELETE PURCHASE
+    // ==========================================
 
-    // =====================================================
-    // GET DISPLAY TYPE
-    // =====================================================
+    private async void DeletePurchaseButton_Clicked(
+        object sender,
+        EventArgs e)
+    {
+        if (_isDeleting || _isLoading)
+            return;
+
+        if (sender is not Button button ||
+            button.CommandParameter == null)
+            return;
+
+        if (!int.TryParse(
+                button.CommandParameter.ToString(),
+                out int transactionId) ||
+            transactionId <= 0)
+        {
+            await DisplayAlert(
+                "Invalid Transaction",
+                "This purchase does not have a valid transaction ID.",
+                "OK");
+            return;
+        }
+
+        var selectedTransaction = _allTransactions
+            .FirstOrDefault(t => t.Id == transactionId);
+
+        if (selectedTransaction == null)
+        {
+            await DisplayAlert(
+                "Purchase Not Found",
+                "Refresh the spending history and try again.",
+                "OK");
+            return;
+        }
+
+        if (!string.Equals(selectedTransaction.Type, "Purchase", StringComparison.OrdinalIgnoreCase))
+        {
+            await DisplayAlert("Cannot Delete", "Only purchase transactions can be deleted here.", "OK");
+            return;
+        }
+
+        string description = GetDescription(selectedTransaction);
+
+        bool confirmed = await DisplayAlert(
+            "Delete Purchase",
+            $"Delete \"{description}\" for " +
+            $"{FormatMoney(Math.Abs(selectedTransaction.Amount))}?\n\n" +
+            "This action cannot be undone.",
+            "Delete",
+            "Cancel");
+
+        if (!confirmed)
+            return;
+
+        _isDeleting = true;
+        button.IsEnabled = false;
+
+        try
+        {
+            var result = await _apiService.DeletePurchaseAsync(transactionId);
+
+            if (!result.Success)
+            {
+                await DisplayAlert(
+                    "Delete Failed",
+                    result.Message,
+                    "OK");
+                return;
+            }
+
+            await LoadTransactionsAsync();
+
+            if (ErrorCard.IsVisible)
+            {
+                await DisplayAlert(
+                    "Purchase Deleted",
+                    "The purchase was deleted, but the spending history could not be refreshed. Please refresh the page.",
+                    "OK");
+                return;
+            }
+
+            await DisplayAlert(
+                "Purchase Deleted",
+                "The purchase was deleted. Check your budget totals to confirm they updated correctly.",
+                "OK");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"DELETE PURCHASE ERROR: {ex}");
+
+            await DisplayAlert(
+                "Connection Error",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            _isDeleting = false;
+            button.IsEnabled = true;
+        }
+    }
+
+    // ==========================================
+    // TRANSACTION HELPERS
+    // ==========================================
 
     private string GetDisplayType(
         TransactionResponse transaction)
     {
-        if (IsGroceryTransaction(
-            transaction))
-        {
-            return "Grocery Purchase";
-        }
-
-
-        return "Purchase";
+        return IsGroceryTransaction(transaction)
+            ? "Grocery Purchase"
+            : "Purchase";
     }
-
-
-    // =====================================================
-    // CREATE DETAIL LABEL
-    // =====================================================
 
     private Label CreateDetailLabel(
         string title,
         string? value)
     {
-        bool hasValue =
-            !string.IsNullOrWhiteSpace(
-                value);
-
+        bool hasValue = !string.IsNullOrWhiteSpace(value);
 
         return new Label
         {
-            Text =
-                hasValue
-                    ? $"{title}: {value}"
-                    : string.Empty,
-
-            FontSize =
-                11,
-
-            TextColor =
-                Color.FromArgb(
-                    "#777777"),
-
-            IsVisible =
-                hasValue,
-
-            LineBreakMode =
-                LineBreakMode.WordWrap
+            Text = hasValue
+                ? $"{title}: {value}"
+                : string.Empty,
+            FontSize = 11,
+            TextColor = Color.FromArgb("#777777"),
+            IsVisible = hasValue,
+            LineBreakMode = LineBreakMode.WordWrap
         };
     }
-
-
-    // =====================================================
-    // GET DESCRIPTION
-    // =====================================================
 
     private string GetDescription(
         TransactionResponse transaction)
     {
-        if (!string.IsNullOrWhiteSpace(
-            transaction.Description))
-        {
+        if (!string.IsNullOrWhiteSpace(transaction.Description))
             return transaction.Description;
-        }
 
-
-        if (!string.IsNullOrWhiteSpace(
-            transaction.Retailer))
-        {
+        if (!string.IsNullOrWhiteSpace(transaction.Retailer))
             return transaction.Retailer;
-        }
 
-
-        if (!string.IsNullOrWhiteSpace(
-            transaction.Category))
-        {
+        if (!string.IsNullOrWhiteSpace(transaction.Category))
             return transaction.Category;
-        }
-
 
         return "Recorded purchase";
     }
-
-
-    // =====================================================
-    // IS SPENDING TRANSACTION
-    // =====================================================
 
     private bool IsSpendingTransaction(
         TransactionResponse transaction)
@@ -755,102 +485,52 @@ public partial class TransactionsPage : ContentPage
             transaction.Type,
             "Deposit",
             StringComparison.OrdinalIgnoreCase))
-        {
             return false;
-        }
-
 
         if (string.Equals(
             transaction.Type,
             "Credit",
             StringComparison.OrdinalIgnoreCase))
-        {
             return false;
-        }
-
 
         if (string.Equals(
             transaction.Type,
             "Refund",
             StringComparison.OrdinalIgnoreCase))
-        {
             return false;
-        }
 
-
-        if (string.Equals(
-            transaction.Type,
-            "Purchase",
-            StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-
-        if (transaction.Amount < 0)
-        {
-            return true;
-        }
-
-
-        return false;
+        return string.Equals(
+                   transaction.Type,
+                   "Purchase",
+                   StringComparison.OrdinalIgnoreCase)
+               || transaction.Amount < 0;
     }
-
-
-    // =====================================================
-    // IS GROCERY TRANSACTION
-    // =====================================================
 
     private bool IsGroceryTransaction(
         TransactionResponse transaction)
     {
-        if (!string.IsNullOrWhiteSpace(
-                transaction.Category) &&
+        if (!string.IsNullOrWhiteSpace(transaction.Category) &&
             transaction.Category.Equals(
                 "Groceries",
                 StringComparison.OrdinalIgnoreCase))
-        {
             return true;
-        }
 
-
-        if (!string.IsNullOrWhiteSpace(
-                transaction.Description) &&
+        if (!string.IsNullOrWhiteSpace(transaction.Description) &&
             transaction.Description.Contains(
                 "grocery",
                 StringComparison.OrdinalIgnoreCase))
-        {
             return true;
-        }
-
 
         return false;
     }
 
-
-    // =====================================================
-    // FORMAT TRANSACTION AMOUNT
-    // =====================================================
-
     private string FormatTransactionAmount(
         TransactionResponse transaction)
     {
-        decimal amount =
-            Math.Abs(
-                transaction.Amount);
-
-
-        return
-            $"-{FormatMoney(amount)}";
+        return $"-{FormatMoney(Math.Abs(transaction.Amount))}";
     }
 
-
-    // =====================================================
-    // FORMAT MONEY
-    // =====================================================
-
-    private string FormatMoney(
-        decimal amount)
+    private string FormatMoney(decimal amount)
     {
         return string.Format(
             CultureInfo.InvariantCulture,
@@ -858,132 +538,71 @@ public partial class TransactionsPage : ContentPage
             amount);
     }
 
-
-    // =====================================================
-    // FORMAT DATE
-    // =====================================================
-
-    private string FormatDate(
-        DateTime date)
+    private string FormatDate(DateTime date)
     {
-        return date
-            .ToLocalTime()
-            .ToString(
-                "dd MMM yyyy, HH:mm");
+        return date.ToLocalTime()
+            .ToString("dd MMM yyyy, HH:mm");
     }
 
-
-    // =====================================================
+    // ==========================================
     // CLEAR PAGE
-    // =====================================================
+    // ==========================================
 
     private void ClearPage()
     {
-        MoneyOutLabel.Text =
-            "R 0.00";
-
-
-        TransactionCountLabel.Text =
-            "0";
-
-
-        NetActivityLabel.Text =
-            "R 0.00";
-
+        MoneyOutLabel.Text = "R 0.00";
+        TransactionCountLabel.Text = "0";
+        NetActivityLabel.Text = "R 0.00";
 
         NetActivityLabel.TextColor =
-            Color.FromArgb(
-                "#1E1E1E");
+            Color.FromArgb("#1E1E1E");
 
+        DisplayedCountLabel.Text = "0";
 
-        DisplayedCountLabel.Text =
-            "0";
-
-
-        TransactionSectionTitle.Text =
-            "All Spending";
-
+        TransactionSectionTitle.Text = "All Spending";
 
         TransactionSectionSubtitle.Text =
             "Your most recently recorded purchases appear first.";
 
+        TransactionsLayout.Children.Clear();
 
-        TransactionsLayout
-            .Children
-            .Clear();
-
-
-        EmptyStateCard.IsVisible =
-            true;
-
+        EmptyStateCard.IsVisible = true;
 
         EmptyStateLabel.Text =
             "Purchases you record in SpendWise will appear here.";
     }
 
+    // ==========================================
+    // LOADING AND ERRORS
+    // ==========================================
 
-    // =====================================================
-    // SET LOADING
-    // =====================================================
-
-    private void SetLoading(
-        bool isLoading)
+    private void SetLoading(bool isLoading)
     {
-        _isLoading =
-            isLoading;
+        _isLoading = isLoading;
 
+        LoadingSection.IsVisible = isLoading;
+        LoadingIndicator.IsRunning = isLoading;
 
-        LoadingSection.IsVisible =
-            isLoading;
+        RefreshButton.IsEnabled = !isLoading;
 
-
-        LoadingIndicator.IsRunning =
-            isLoading;
-
-
-        RefreshButton.IsEnabled =
-            !isLoading;
-
-
-        TransactionFilterPicker.IsEnabled =
-            !isLoading;
+        TransactionFilterPicker.IsEnabled = !isLoading;
     }
 
-
-    // =====================================================
-    // SHOW ERROR
-    // =====================================================
-
-    private void ShowError(
-        string message)
+    private void ShowError(string message)
     {
-        ErrorLabel.Text =
-            message;
-
-
-        ErrorCard.IsVisible =
-            true;
+        ErrorLabel.Text = message;
+        ErrorCard.IsVisible = true;
     }
-
-
-    // =====================================================
-    // HIDE ERROR
-    // =====================================================
 
     private void HideError()
     {
-        ErrorLabel.Text =
-            string.Empty;
-
-
-        ErrorCard.IsVisible =
-            false;
+        ErrorLabel.Text = string.Empty;
+        ErrorCard.IsVisible = false;
     }
 
-
-    // =====================================================
-    // BACK BUTTON
-    // =====================================================
+    // ==========================================
+    // NAVIGATION
+    // ==========================================
 
     private async void BackButton_Clicked(
         object sender,
@@ -996,15 +615,9 @@ public partial class TransactionsPage : ContentPage
         else
         {
             Application.Current!.MainPage =
-                new NavigationPage(
-                    new DashboardPage());
+                new NavigationPage(new DashboardPage());
         }
     }
-
-
-    // =====================================================
-    // REFRESH BUTTON
-    // =====================================================
 
     private async void RefreshButton_Clicked(
         object sender,
@@ -1013,20 +626,12 @@ public partial class TransactionsPage : ContentPage
         await LoadTransactionsAsync();
     }
 
-
-    // =====================================================
-    // FILTER CHANGED
-    // =====================================================
-
     private void TransactionFilterPicker_SelectedIndexChanged(
         object sender,
         EventArgs e)
     {
         if (_isLoading)
-        {
             return;
-        }
-
 
         ApplyCurrentFilter();
     }

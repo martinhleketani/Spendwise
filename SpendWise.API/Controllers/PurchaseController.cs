@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpendWise.API.Data;
@@ -15,600 +16,319 @@ namespace SpendWise.API.Controllers
     {
         private readonly AppDbContext _context;
 
-
-        // =====================================================
-        // CONSTRUCTOR
-        // =====================================================
-
-        public PurchaseController(
-            AppDbContext context)
+        public PurchaseController(AppDbContext context)
         {
             _context = context;
         }
 
-
-        // =====================================================
-        // CREATE / RECORD GENERAL PURCHASE
-        //
-        // POST: /api/Purchase
-        //
-        // This endpoint records spending only.
-        // It does NOT process a real bank payment.
-        // =====================================================
+        // ============================================
+        // POST: api/Purchase
+        // ============================================
 
         [HttpPost]
         public async Task<IActionResult> CreatePurchase(
-            CreatePurchaseDto request)
+            [FromBody] CreatePurchaseDto request)
         {
-            int? userId =
-                GetCurrentUserId();
-
+            int? userId = GetCurrentUserId();
 
             if (userId == null)
-            {
                 return Unauthorized();
-            }
 
+            if (string.IsNullOrWhiteSpace(request.Category))
+                return BadRequest(new
+                {
+                    message = "Category is required."
+                });
 
-            // =================================================
-            // VALIDATE CATEGORY
-            // =================================================
-
-            if (string.IsNullOrWhiteSpace(
-                    request.Category))
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Category is required."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE DESCRIPTION
-            // =================================================
-
-            if (string.IsNullOrWhiteSpace(
-                    request.Description))
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Description is required."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE AMOUNT
-            // =================================================
+            if (string.IsNullOrWhiteSpace(request.Description))
+                return BadRequest(new
+                {
+                    message = "Description is required."
+                });
 
             if (request.Amount <= 0)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Purchase amount must be greater than R0."
-                    });
-            }
+                return BadRequest(new
+                {
+                    message = "Purchase amount must be greater than R0."
+                });
 
+            if (request.Month < 1 || request.Month > 12)
+                return BadRequest(new
+                {
+                    message = "Month must be between 1 and 12."
+                });
 
-            // =================================================
-            // VALIDATE MONTH
-            // =================================================
+            if (request.Year < 2020 || request.Year > 2100)
+                return BadRequest(new
+                {
+                    message = "Invalid year."
+                });
 
-            if (request.Month < 1 ||
-                request.Month > 12)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Month must be between 1 and 12."
-                    });
-            }
+            if (string.IsNullOrWhiteSpace(request.RequestId))
+                return BadRequest(new
+                {
+                    message = "RequestId is required."
+                });
 
+            string cleanRequestId = request.RequestId.Trim();
+            string cleanCategory = request.Category.Trim();
+            string cleanDescription = request.Description.Trim();
 
-            // =================================================
-            // VALIDATE YEAR
-            // =================================================
-
-            if (request.Year < 2020 ||
-                request.Year > 2100)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Invalid year."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE REQUEST ID
-            // =================================================
-
-            if (string.IsNullOrWhiteSpace(
-                    request.RequestId))
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "RequestId is required."
-                    });
-            }
-
-
-            string cleanRequestId =
-                request.RequestId.Trim();
-
-            string cleanCategory =
-                request.Category.Trim();
-
-            string cleanDescription =
-                request.Description.Trim();
-
-
-            // =================================================
-            // FIND MONTHLY BUDGET
-            // =================================================
-
-            var monthlyBudget =
-                await _context
-                    .MonthlyBudgets
-                    .Include(
-                        budget =>
-                            budget.CategoryBudgets)
-                    .FirstOrDefaultAsync(
-                        budget =>
-                            budget.UserId ==
-                                userId.Value &&
-                            budget.Month ==
-                                request.Month &&
-                            budget.Year ==
-                                request.Year);
-
-
-            if (monthlyBudget == null)
-            {
-                return NotFound(
-                    new
-                    {
-                        message =
-                            "No monthly budget was found for the selected month and year."
-                    });
-            }
-
-
-            // =================================================
-            // FIND CATEGORY
-            // =================================================
-
-            var categoryBudget =
-                monthlyBudget
-                    .CategoryBudgets
-                    .FirstOrDefault(
-                        category =>
-                            category.Category.Equals(
-                                cleanCategory,
-                                StringComparison.OrdinalIgnoreCase));
-
-
-            if (categoryBudget == null)
-            {
-                return NotFound(
-                    new
-                    {
-                        message =
-                            "The selected spending category does not exist in this monthly budget.",
-
-                        category =
-                            cleanCategory
-                    });
-            }
-
-
-            // =================================================
-            // IDEMPOTENCY CHECK
-            //
-            // Transactions belong directly to UserId.
-            // =================================================
-
-            var existingTransaction =
-                await _context
-                    .Transactions
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        transaction =>
-                            transaction.UserId ==
-                                userId.Value &&
-                            transaction.RequestId ==
-                                cleanRequestId);
-
+            var existingTransaction = await _context.Transactions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t =>
+                    t.UserId == userId.Value &&
+                    t.RequestId == cleanRequestId);
 
             if (existingTransaction != null)
+                return DuplicateResponse(existingTransaction);
+
+            var monthlyBudget = await _context.MonthlyBudgets
+                .Include(b => b.CategoryBudgets)
+                .FirstOrDefaultAsync(b =>
+                    b.UserId == userId.Value &&
+                    b.Month == request.Month &&
+                    b.Year == request.Year);
+
+            if (monthlyBudget == null)
+                return NotFound(new
+                {
+                    message =
+                        "No monthly budget was found for the selected month and year."
+                });
+
+            var categoryBudget = monthlyBudget.CategoryBudgets
+                .FirstOrDefault(c =>
+                    c.Category.Equals(
+                        cleanCategory,
+                        StringComparison.OrdinalIgnoreCase));
+
+            if (categoryBudget == null)
+                return NotFound(new
+                {
+                    message =
+                        "The selected spending category does not exist in this monthly budget.",
+                    category = cleanCategory
+                });
+
+            decimal budgetLimit = categoryBudget.LimitAmount;
+            decimal previousSpent = categoryBudget.SpentAmount;
+            decimal projectedSpent = previousSpent + request.Amount;
+            decimal projectedRemaining = budgetLimit - projectedSpent;
+
+            decimal categoryAvailable = budgetLimit - previousSpent;
+            bool withinBudget = request.Amount <= categoryAvailable;
+
+            decimal previousPercentage = budgetLimit > 0
+                ? previousSpent / budgetLimit * 100m
+                : 0m;
+
+            decimal newPercentage = budgetLimit > 0
+                ? projectedSpent / budgetLimit * 100m
+                : 0m;
+
+            var pendingAlerts =
+                new List<(int Threshold, string Message)>();
+
+            if (budgetLimit == 0m)
             {
-                return Ok(
-                    new
-                    {
-                        message =
-                            "This purchase request has already been recorded.",
+                if (previousSpent == 0m && projectedSpent > 0m)
+                {
+                    pendingAlerts.Add((
+                        101,
+                        $"Your {categoryBudget.Category} category has a R0 budget and is now over budget."
+                    ));
+                }
+            }
+            else
+            {
+                if (previousPercentage < 75m &&
+                    newPercentage >= 75m)
+                {
+                    pendingAlerts.Add((
+                        75,
+                        $"You have reached 75% of your {categoryBudget.Category} budget."
+                    ));
+                }
 
-                        duplicate =
-                            true,
+                if (previousPercentage < 90m &&
+                    newPercentage >= 90m)
+                {
+                    pendingAlerts.Add((
+                        90,
+                        $"You have reached 90% of your {categoryBudget.Category} budget."
+                    ));
+                }
 
-                        transactionId =
-                            existingTransaction.Id,
+                if (previousPercentage < 100m &&
+                    newPercentage >= 100m)
+                {
+                    pendingAlerts.Add((
+                        100,
+                        $"You have reached 100% of your {categoryBudget.Category} budget."
+                    ));
+                }
 
-                        transactionReference =
-                            existingTransaction.Reference,
-
-                        requestId =
-                            existingTransaction.RequestId,
-
-                        category =
-                            existingTransaction.Category,
-
-                        amount =
-                            Math.Abs(
-                                existingTransaction.Amount),
-
-                        createdAt =
-                            existingTransaction.CreatedAt,
-
-                        paymentProcessed =
-                            false
-                    });
+                if (previousSpent <= budgetLimit &&
+                    projectedSpent > budgetLimit)
+                {
+                    pendingAlerts.Add((
+                        101,
+                        $"You have exceeded your {categoryBudget.Category} budget."
+                    ));
+                }
             }
 
-
-            // =================================================
-            // BUDGET INFORMATION
-            // =================================================
-
-            decimal categoryAvailable =
-                categoryBudget.LimitAmount -
-                categoryBudget.SpentAmount;
-
-
-            bool withinBudget =
-                request.Amount <=
-                categoryAvailable;
-
-
-            decimal projectedSpent =
-                categoryBudget.SpentAmount +
-                request.Amount;
-
-
-            decimal projectedRemaining =
-                categoryBudget.LimitAmount -
-                projectedSpent;
-
-
-            // =================================================
-            // DATABASE TRANSACTION
-            // =================================================
-
             await using var databaseTransaction =
-                await _context
-                    .Database
-                    .BeginTransactionAsync();
-
+                await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // =============================================
-                // UPDATE CATEGORY SPENDING
-                // =============================================
+                var duplicate = await _context.Transactions
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t =>
+                        t.UserId == userId.Value &&
+                        t.RequestId == cleanRequestId);
 
-                categoryBudget.SpentAmount +=
-                    request.Amount;
+                if (duplicate != null)
+                {
+                    await databaseTransaction.RollbackAsync();
+                    return DuplicateResponse(duplicate);
+                }
 
+                categoryBudget.SpentAmount = projectedSpent;
 
-                // =============================================
-                // CREATE SPENDING HISTORY RECORD
-                //
-                // Negative amount represents spending.
-                //
-                // No money is moved by SpendWise.
-                // =============================================
+                var spendingRecord = new Transaction
+                {
+                    UserId = userId.Value,
+                    Amount = -request.Amount,
+                    Type = "Purchase",
+                    Category = categoryBudget.Category,
+                    RequestId = cleanRequestId,
+                    Description = cleanDescription,
+                    Reference =
+                        $"PURCHASE-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                var spendingRecord =
-                    new Transaction
+                _context.Transactions.Add(spendingRecord);
+
+                var savedAlerts = new List<BudgetNotification>();
+
+                foreach (var alert in pendingAlerts)
+                {
+                    bool alreadyExists = await _context
+                        .BudgetNotifications
+                        .AnyAsync(n =>
+                            n.UserId == userId.Value &&
+                            n.Category == categoryBudget.Category &&
+                            n.Month == request.Month &&
+                            n.Year == request.Year &&
+                            n.Threshold == alert.Threshold);
+
+                    if (alreadyExists)
+                        continue;
+
+                    var notification = new BudgetNotification
                     {
-                        UserId =
-                            userId.Value,
-
-                        Amount =
-                            -request.Amount,
-
-                        Type =
-                            "Purchase",
-
-                        Category =
-                            categoryBudget.Category,
-
-                        RequestId =
-                            cleanRequestId,
-
-                        Description =
-                            cleanDescription,
-
-                        Reference =
-                            $"PURCHASE-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
-
-                        CreatedAt =
-                            DateTime.UtcNow
+                        UserId = userId.Value,
+                        Category = categoryBudget.Category,
+                        Threshold = alert.Threshold,
+                        Message = alert.Message,
+                        Month = request.Month,
+                        Year = request.Year,
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
                     };
 
+                    _context.BudgetNotifications.Add(notification);
+                    savedAlerts.Add(notification);
+                }
 
-                _context
-                    .Transactions
-                    .Add(
-                        spendingRecord);
+                await _context.SaveChangesAsync();
+                await databaseTransaction.CommitAsync();
 
-
-                // =============================================
-                // SAVE CHANGES
-                // =============================================
-
-                await _context
-                    .SaveChangesAsync();
-
-
-                await databaseTransaction
-                    .CommitAsync();
-
-
-                // =============================================
-                // SUCCESS
-                // =============================================
-
-                return Ok(
-                    new
-                    {
-                        message =
-                            "Purchase recorded successfully. No payment was processed by SpendWise.",
-
-                        duplicate =
-                            false,
-
-                        transactionId =
-                            spendingRecord.Id,
-
-                        requestId =
-                            spendingRecord.RequestId,
-
-                        category =
-                            categoryBudget.Category,
-
-                        description =
-                            cleanDescription,
-
-                        purchaseAmount =
-                            request.Amount,
-
-                        categoryBudget =
-                            categoryBudget.LimitAmount,
-
-                        categorySpent =
-                            categoryBudget.SpentAmount,
-
-                        categoryRemaining =
-                            projectedRemaining,
-
-                        withinBudget,
-
-                        budgetStatus =
-                            withinBudget
-                                ? "Within budget"
-                                : "Over budget",
-
-                        transactionReference =
-                            spendingRecord.Reference,
-
-                        month =
-                            request.Month,
-
-                        year =
-                            request.Year,
-
-                        paymentProcessed =
-                            false
-                    });
+                return Ok(new
+                {
+                    message =
+                        "Purchase recorded successfully. No payment was processed by SpendWise.",
+                    duplicate = false,
+                    transactionId = spendingRecord.Id,
+                    requestId = spendingRecord.RequestId,
+                    category = categoryBudget.Category,
+                    description = cleanDescription,
+                    purchaseAmount = request.Amount,
+                    categoryBudget = budgetLimit,
+                    categorySpent = categoryBudget.SpentAmount,
+                    categoryRemaining = projectedRemaining,
+                    withinBudget,
+                    budgetPercentageUsed = budgetLimit > 0m
+                        ? (decimal?)newPercentage
+                        : null,
+                    budgetAlerts = savedAlerts
+                        .Select(n => n.Message)
+                        .ToList(),
+                    notificationsCreated = savedAlerts.Count,
+                    budgetStatus = withinBudget
+                        ? "Within budget"
+                        : "Over budget",
+                    transactionReference = spendingRecord.Reference,
+                    month = request.Month,
+                    year = request.Year,
+                    paymentProcessed = false
+                });
             }
-
-
-            // =================================================
-            // CONCURRENCY / DUPLICATE PROTECTION
-            // =================================================
-
             catch (DbUpdateConcurrencyException)
             {
-                await databaseTransaction
-                    .RollbackAsync();
+                await databaseTransaction.RollbackAsync();
+                _context.ChangeTracker.Clear();
 
+                var duplicate = await FindDuplicateAsync(
+                    userId.Value, cleanRequestId);
 
-                _context
-                    .ChangeTracker
-                    .Clear();
+                if (duplicate != null)
+                    return DuplicateResponse(duplicate);
 
-
-                var duplicateTransaction =
-                    await _context
-                        .Transactions
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(
-                            transaction =>
-                                transaction.UserId ==
-                                    userId.Value &&
-                                transaction.RequestId ==
-                                    cleanRequestId);
-
-
-                if (duplicateTransaction != null)
+                return Conflict(new
                 {
-                    return Ok(
-                        new
-                        {
-                            message =
-                                "This purchase request has already been recorded.",
-
-                            duplicate =
-                                true,
-
-                            transactionId =
-                                duplicateTransaction.Id,
-
-                            transactionReference =
-                                duplicateTransaction.Reference,
-
-                            requestId =
-                                duplicateTransaction.RequestId,
-
-                            category =
-                                duplicateTransaction.Category,
-
-                            amount =
-                                Math.Abs(
-                                    duplicateTransaction.Amount),
-
-                            createdAt =
-                                duplicateTransaction.CreatedAt,
-
-                            paymentProcessed =
-                                false
-                        });
-                }
-
-
-                return Conflict(
-                    new
-                    {
-                        message =
-                            "The spending information changed while this purchase was being recorded. Please try again.",
-
-                        retryRequired =
-                            true
-                    });
+                    message =
+                        "The spending information changed while this purchase was being recorded. Please try again.",
+                    retryRequired = true
+                });
             }
-
-
-            // =================================================
-            // DATABASE UPDATE ERROR
-            // =================================================
-
             catch (DbUpdateException)
             {
-                await databaseTransaction
-                    .RollbackAsync();
+                await databaseTransaction.RollbackAsync();
+                _context.ChangeTracker.Clear();
 
+                var duplicate = await FindDuplicateAsync(
+                    userId.Value, cleanRequestId);
 
-                _context
-                    .ChangeTracker
-                    .Clear();
+                if (duplicate != null)
+                    return DuplicateResponse(duplicate);
 
-
-                var duplicateTransaction =
-                    await _context
-                        .Transactions
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(
-                            transaction =>
-                                transaction.UserId ==
-                                    userId.Value &&
-                                transaction.RequestId ==
-                                    cleanRequestId);
-
-
-                if (duplicateTransaction != null)
+                return StatusCode(500, new
                 {
-                    return Ok(
-                        new
-                        {
-                            message =
-                                "This purchase request has already been recorded.",
-
-                            duplicate =
-                                true,
-
-                            transactionId =
-                                duplicateTransaction.Id,
-
-                            transactionReference =
-                                duplicateTransaction.Reference,
-
-                            requestId =
-                                duplicateTransaction.RequestId,
-
-                            category =
-                                duplicateTransaction.Category,
-
-                            amount =
-                                Math.Abs(
-                                    duplicateTransaction.Amount),
-
-                            createdAt =
-                                duplicateTransaction.CreatedAt,
-
-                            paymentProcessed =
-                                false
-                        });
-                }
-
-
-                return StatusCode(
-                    StatusCodes
-                        .Status500InternalServerError,
-
-                    new
-                    {
-                        message =
-                            "Recording the purchase failed. No changes were completed."
-                    });
+                    message =
+                        "Recording the purchase failed. No changes were completed."
+                });
             }
-
-
-            // =================================================
-            // OTHER ERROR
-            // =================================================
-
             catch
             {
-                await databaseTransaction
-                    .RollbackAsync();
+                await databaseTransaction.RollbackAsync();
+                _context.ChangeTracker.Clear();
 
-
-                _context
-                    .ChangeTracker
-                    .Clear();
-
-
-                return StatusCode(
-                    StatusCodes
-                        .Status500InternalServerError,
-
-                    new
-                    {
-                        message =
-                            "Recording the purchase failed. No changes were completed."
-                    });
+                return StatusCode(500, new
+                {
+                    message =
+                        "Recording the purchase failed. No changes were completed."
+                });
             }
         }
 
-
-        // =====================================================
-        // GET PURCHASE RECORDS WITH FILTERS
-        //
-        // GET: /api/Purchase
-        // =====================================================
+        // ============================================
+        // GET: api/Purchase
+        // ============================================
 
         [HttpGet]
         public async Task<IActionResult> GetPurchases(
@@ -619,317 +339,306 @@ namespace SpendWise.API.Controllers
             [FromQuery] decimal? minAmount,
             [FromQuery] decimal? maxAmount)
         {
-            int? userId =
-                GetCurrentUserId();
-
+            int? userId = GetCurrentUserId();
 
             if (userId == null)
-            {
                 return Unauthorized();
-            }
-
-
-            // =================================================
-            // VALIDATE MONTH
-            // =================================================
 
             if (month.HasValue &&
-                (month.Value < 1 ||
-                 month.Value > 12))
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Month must be between 1 and 12."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE YEAR
-            // =================================================
+                (month.Value < 1 || month.Value > 12))
+                return BadRequest(new
+                {
+                    message = "Month must be between 1 and 12."
+                });
 
             if (year.HasValue &&
-                (year.Value < 2020 ||
-                 year.Value > 2100))
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Invalid year."
-                    });
-            }
+                (year.Value < 2020 || year.Value > 2100))
+                return BadRequest(new
+                {
+                    message = "Invalid year."
+                });
 
+            if (minAmount.HasValue && minAmount.Value < 0)
+                return BadRequest(new
+                {
+                    message = "Minimum amount cannot be negative."
+                });
 
-            // =================================================
-            // VALIDATE MINIMUM AMOUNT
-            // =================================================
-
-            if (minAmount.HasValue &&
-                minAmount.Value < 0)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Minimum amount cannot be negative."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE MAXIMUM AMOUNT
-            // =================================================
-
-            if (maxAmount.HasValue &&
-                maxAmount.Value < 0)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Maximum amount cannot be negative."
-                    });
-            }
-
-
-            // =================================================
-            // VALIDATE RANGE
-            // =================================================
+            if (maxAmount.HasValue && maxAmount.Value < 0)
+                return BadRequest(new
+                {
+                    message = "Maximum amount cannot be negative."
+                });
 
             if (minAmount.HasValue &&
                 maxAmount.HasValue &&
-                minAmount.Value >
-                    maxAmount.Value)
+                minAmount.Value > maxAmount.Value)
+                return BadRequest(new
+                {
+                    message =
+                        "Minimum amount cannot be greater than maximum amount."
+                });
+
+            var query = _context.Transactions
+                .AsNoTracking()
+                .Where(t =>
+                    t.UserId == userId.Value &&
+                    t.Type == "Purchase");
+
+            if (!string.IsNullOrWhiteSpace(category))
             {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Minimum amount cannot be greater than maximum amount."
-                    });
+                string cleanCategory = category.Trim();
+
+                query = query.Where(t =>
+                    t.Category != null &&
+                    t.Category == cleanCategory);
             }
 
-
-            // =================================================
-            // START PURCHASE QUERY
-            //
-            // Purchases belong directly to UserId.
-            // =================================================
-
-            var query =
-                _context
-                    .Transactions
-                    .AsNoTracking()
-                    .Where(
-                        transaction =>
-                            transaction.UserId ==
-                                userId.Value &&
-                            transaction.Type ==
-                                "Purchase");
-
-
-            // =================================================
-            // CATEGORY FILTER
-            // =================================================
-
-            if (!string.IsNullOrWhiteSpace(
-                    category))
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                string cleanCategory =
-                    category.Trim();
+                string cleanSearch = search.Trim();
 
-
-                query =
-                    query.Where(
-                        transaction =>
-                            transaction.Category != null &&
-                            transaction.Category ==
-                                cleanCategory);
+                query = query.Where(t =>
+                    t.Description.Contains(cleanSearch) ||
+                    (t.Category != null &&
+                     t.Category.Contains(cleanSearch)) ||
+                    t.Reference.Contains(cleanSearch));
             }
-
-
-            // =================================================
-            // SEARCH FILTER
-            // =================================================
-
-            if (!string.IsNullOrWhiteSpace(
-                    search))
-            {
-                string cleanSearch =
-                    search.Trim();
-
-
-                query =
-                    query.Where(
-                        transaction =>
-                            transaction.Description.Contains(
-                                cleanSearch) ||
-
-                            (transaction.Category != null &&
-                             transaction.Category.Contains(
-                                 cleanSearch)) ||
-
-                            transaction.Reference.Contains(
-                                cleanSearch));
-            }
-
-
-            // =================================================
-            // MONTH FILTER
-            // =================================================
 
             if (month.HasValue)
             {
-                query =
-                    query.Where(
-                        transaction =>
-                            transaction.CreatedAt.Month ==
-                                month.Value);
+                query = query.Where(t =>
+                    t.CreatedAt.Month == month.Value);
             }
-
-
-            // =================================================
-            // YEAR FILTER
-            // =================================================
 
             if (year.HasValue)
             {
-                query =
-                    query.Where(
-                        transaction =>
-                            transaction.CreatedAt.Year ==
-                                year.Value);
+                query = query.Where(t =>
+                    t.CreatedAt.Year == year.Value);
             }
-
-
-            // =================================================
-            // MINIMUM AMOUNT FILTER
-            // =================================================
 
             if (minAmount.HasValue)
             {
-                query =
-                    query.Where(
-                        transaction =>
-                            -transaction.Amount >=
-                                minAmount.Value);
+                query = query.Where(t =>
+                    -t.Amount >= minAmount.Value);
             }
-
-
-            // =================================================
-            // MAXIMUM AMOUNT FILTER
-            // =================================================
 
             if (maxAmount.HasValue)
             {
-                query =
-                    query.Where(
-                        transaction =>
-                            -transaction.Amount <=
-                                maxAmount.Value);
+                query = query.Where(t =>
+                    -t.Amount <= maxAmount.Value);
             }
 
-
-            // =================================================
-            // GET RESULTS
-            // =================================================
-
-            var purchases =
-                await query
-                    .OrderByDescending(
-                        transaction =>
-                            transaction.CreatedAt)
-                    .Select(
-                        transaction =>
-                            new
-                            {
-                                id =
-                                    transaction.Id,
-
-                                category =
-                                    transaction.Category,
-
-                                amount =
-                                    -transaction.Amount,
-
-                                type =
-                                    transaction.Type,
-
-                                description =
-                                    transaction.Description,
-
-                                reference =
-                                    transaction.Reference,
-
-                                requestId =
-                                    transaction.RequestId,
-
-                                createdAt =
-                                    transaction.CreatedAt
-                            })
-                    .ToListAsync();
-
-
-            // =================================================
-            // TOTAL PURCHASE VALUE
-            // =================================================
-
-            decimal totalAmount =
-                purchases.Sum(
-                    purchase =>
-                        purchase.amount);
-
-
-            // =================================================
-            // RETURN FILTERED PURCHASES
-            // =================================================
-
-            return Ok(
-                new
+            var purchases = await query
+                .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new
                 {
-                    count =
-                        purchases.Count,
+                    id = t.Id,
+                    category = t.Category,
+                    amount = -t.Amount,
+                    type = t.Type,
+                    description = t.Description,
+                    reference = t.Reference,
+                    requestId = t.RequestId,
+                    createdAt = t.CreatedAt
+                })
+                .ToListAsync();
 
-                    totalAmount,
+            decimal totalAmount = purchases.Sum(p => p.amount);
 
-                    filters =
-                        new
-                        {
-                            category,
-                            search,
-                            month,
-                            year,
-                            minAmount,
-                            maxAmount
-                        },
-
-                    purchases
-                });
+            return Ok(new
+            {
+                count = purchases.Count,
+                totalAmount,
+                filters = new
+                {
+                    category,
+                    search,
+                    month,
+                    year,
+                    minAmount,
+                    maxAmount
+                },
+                purchases
+            });
         }
 
+        // ============================================
+        // DELETE: api/Purchase/{id}
+        // ============================================
 
-        // =====================================================
-        // GET CURRENT USER ID FROM JWT
-        // =====================================================
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeletePurchase(int id)
+        {
+            int? userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            if (id <= 0)
+                return BadRequest(new
+                {
+                    message = "Invalid purchase ID."
+                });
+
+            await using var databaseTransaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var purchase = await _context.Transactions
+                    .FirstOrDefaultAsync(t =>
+                        t.Id == id &&
+                        t.UserId == userId.Value &&
+                        t.Type == "Purchase");
+
+                if (purchase == null)
+                    return NotFound(new
+                    {
+                        message = "Purchase not found."
+                    });
+
+                if (purchase.Amount >= 0)
+                    return Conflict(new
+                    {
+                        message =
+                            "This record is not a valid spending purchase."
+                    });
+
+                if (string.IsNullOrWhiteSpace(purchase.Category))
+                    return Conflict(new
+                    {
+                        message = "Purchase category is missing."
+                    });
+
+                decimal purchaseAmount = -purchase.Amount;
+
+                int month = purchase.CreatedAt.Month;
+                int year = purchase.CreatedAt.Year;
+
+                var monthlyBudget = await _context.MonthlyBudgets
+                    .Include(b => b.CategoryBudgets)
+                    .FirstOrDefaultAsync(b =>
+                        b.UserId == userId.Value &&
+                        b.Month == month &&
+                        b.Year == year);
+
+                if (monthlyBudget == null)
+                    return Conflict(new
+                    {
+                        message =
+                            "The matching monthly budget could not be found. Purchase was not deleted."
+                    });
+
+                var categoryBudget = monthlyBudget.CategoryBudgets
+                    .FirstOrDefault(c =>
+                        c.Category.Equals(
+                            purchase.Category,
+                            StringComparison.OrdinalIgnoreCase));
+
+                if (categoryBudget == null)
+                    return Conflict(new
+                    {
+                        message =
+                            "The matching category budget could not be found. Purchase was not deleted."
+                    });
+
+                if (categoryBudget.SpentAmount < purchaseAmount)
+                    return Conflict(new
+                    {
+                        message =
+                            "The category spending total is inconsistent. Purchase was not deleted."
+                    });
+
+                categoryBudget.SpentAmount -= purchaseAmount;
+
+                _context.Transactions.Remove(purchase);
+
+                await _context.SaveChangesAsync();
+                await databaseTransaction.CommitAsync();
+
+                return Ok(new
+                {
+                    message = "Purchase deleted successfully.",
+                    deletedTransactionId = id,
+                    category = categoryBudget.Category,
+                    amountRemoved = purchaseAmount,
+                    categorySpent = categoryBudget.SpentAmount,
+                    categoryRemaining =
+                        categoryBudget.LimitAmount -
+                        categoryBudget.SpentAmount
+                });
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await databaseTransaction.RollbackAsync();
+
+                return Conflict(new
+                {
+                    message =
+                        "Spending changed during deletion. Refresh and try again."
+                });
+            }
+            catch
+            {
+                await databaseTransaction.RollbackAsync();
+
+                return StatusCode(500, new
+                {
+                    message =
+                        "Deletion failed. No changes were completed."
+                });
+            }
+        }
+
+        // ============================================
+        // DUPLICATE PURCHASE LOOKUP
+        // ============================================
+
+        private async Task<Transaction?> FindDuplicateAsync(
+            int userId,
+            string requestId)
+        {
+            return await _context.Transactions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t =>
+                    t.UserId == userId &&
+                    t.RequestId == requestId);
+        }
+
+        // ============================================
+        // DUPLICATE PURCHASE RESPONSE
+        // ============================================
+
+        private IActionResult DuplicateResponse(
+            Transaction transaction)
+        {
+            return Ok(new
+            {
+                message =
+                    "This purchase request has already been recorded.",
+                duplicate = true,
+                transactionId = transaction.Id,
+                transactionReference = transaction.Reference,
+                requestId = transaction.RequestId,
+                category = transaction.Category,
+                amount = Math.Abs(transaction.Amount),
+                createdAt = transaction.CreatedAt,
+                paymentProcessed = false
+            });
+        }
+
+        // ============================================
+        // CURRENT USER ID FROM JWT
+        // ============================================
 
         private int? GetCurrentUserId()
         {
-            string? value =
-                User.FindFirstValue(
-                    ClaimTypes
-                        .NameIdentifier);
+            string? value = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
 
-
-            if (!int.TryParse(
-                    value,
-                    out int userId))
-            {
+            if (!int.TryParse(value, out int userId))
                 return null;
-            }
-
 
             return userId;
         }

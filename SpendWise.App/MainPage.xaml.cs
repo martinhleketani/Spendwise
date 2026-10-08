@@ -1,25 +1,33 @@
-﻿namespace SpendWise.App
+﻿
+namespace SpendWise.App
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        // ============================================
+        // OPEN BUDGET NOTIFICATIONS PAGE
+        // ============================================
+
+        private async void OnNotificationsClicked(
+            object sender,
+            EventArgs e)
         {
-            count++;
-
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce(CounterBtn.Text);
+            try
+            {
+                await Shell.Current.GoToAsync(
+                    nameof(NotificationsPage));
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert(
+                    "Navigation Error",
+                    ex.Message,
+                    "OK");
+            }
         }
     }
-
 }

@@ -168,15 +168,17 @@
                                         <RoundRectangle CornerRadius="10" />
                                     </Border.StrokeShape>
 
-                                    <Picker
-                                        x:Name="YearPicker"
-                                        Title="Year"
-                                        TitleColor="#777777"
+                                    <Entry
+                                        x:Name="YearEntry"
+                                        Placeholder="Enter year"
+                                        Keyboard="Numeric"
                                         TextColor="#1E1E1E"
+                                        PlaceholderColor="#777777"
                                         BackgroundColor="Transparent"
                                         FontSize="15"
                                         HorizontalOptions="Fill"
-                                        VerticalOptions="Fill" />
+                                        VerticalOptions="Center"
+                                        MaxLength="4" />
 
                                 </Border>
 

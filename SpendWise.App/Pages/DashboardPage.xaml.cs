@@ -533,6 +533,28 @@ public partial class DashboardPage : ContentPage
                 "OK");
         }
     }
+
+    // ==========================================
+    // OPEN HELP & SUPPORT
+    // ==========================================
+
+    private async void HelpButton_Clicked(
+        object sender,
+        EventArgs e)
+    {
+        try
+        {
+            await Navigation.PushAsync(
+                new HelpPage());
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert(
+                "Navigation Error",
+                ex.Message,
+                "OK");
+        }
+    }
 }
 
 // ==========================================

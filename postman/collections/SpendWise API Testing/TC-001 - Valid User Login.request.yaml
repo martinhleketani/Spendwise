@@ -1,0 +1,21 @@
+$kind: http-request
+description: Verify that a registered user can log in successfully.
+url: "{{base_url}}/api/Auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "test@example.com",
+      "password": "YourTestPassword"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Login returns HTTP 200', function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 1000

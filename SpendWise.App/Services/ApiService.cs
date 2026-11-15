@@ -50,8 +50,7 @@ public class ApiService
             string body = await response.Content.ReadAsStringAsync();
 
             return response.IsSuccessStatusCode
-                ? (true, GetResponseMessage(
-                    body, "Account created successfully."))
+                ? (true, GetResponseMessage(body, "Account created successfully."))
                 : (false, GetErrorMessage(body));
         }
         catch (Exception ex)
@@ -65,10 +64,7 @@ public class ApiService
     // AUTHENTICATION - LOGIN
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        LoginResponse? Data)>
+    public async Task<(bool Success, string Message, LoginResponse? Data)>
         LoginAsync(LoginRequest request)
     {
         try
@@ -85,21 +81,12 @@ public class ApiService
                 body, _jsonOptions);
 
             if (data == null)
-                return (
-                    false,
-                    "The server returned an empty login response.",
-                    null);
+                return (false, "The server returned an empty login response.", null);
 
             if (string.IsNullOrWhiteSpace(data.Token))
-                return (
-                    false,
-                    "The server did not return an authentication token.",
-                    null);
+                return (false, "The server did not return an authentication token.", null);
 
-            return (
-                true,
-                GetResponseMessage(body, "Login successful."),
-                data);
+            return (true, GetResponseMessage(body, "Login successful."), data);
         }
         catch (Exception ex)
         {
@@ -137,9 +124,7 @@ public class ApiService
         catch (Exception ex)
         {
             Debug.WriteLine($"FORGOT PASSWORD ERROR: {ex}");
-            return (
-                false,
-                $"Unable to request password reset: {ex.Message}");
+            return (false, $"Unable to request password reset: {ex.Message}");
         }
     }
 
@@ -147,17 +132,11 @@ public class ApiService
     // VERIFY RESET CODE
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        VerifyResetCodeResponse? Data)>
+    public async Task<(bool Success, string Message, VerifyResetCodeResponse? Data)>
         VerifyResetCodeAsync(VerifyResetCodeRequest request)
     {
         if (request == null)
-            return (
-                false,
-                "Verification information is required.",
-                null);
+            return (false, "Verification information is required.", null);
 
         if (string.IsNullOrWhiteSpace(request.Email))
             return (false, "Email address is required.", null);
@@ -178,21 +157,14 @@ public class ApiService
             if (!response.IsSuccessStatusCode)
                 return (false, GetErrorMessage(body), null);
 
-            var data =
-                JsonSerializer.Deserialize<VerifyResetCodeResponse>(
-                    body, _jsonOptions);
+            var data = JsonSerializer.Deserialize<VerifyResetCodeResponse>(
+                body, _jsonOptions);
 
             if (data == null)
-                return (
-                    false,
-                    "The server returned an empty verification response.",
-                    null);
+                return (false, "The server returned an empty verification response.", null);
 
             if (string.IsNullOrWhiteSpace(data.ResetToken))
-                return (
-                    false,
-                    "The server did not return a password reset token.",
-                    null);
+                return (false, "The server did not return a password reset token.", null);
 
             return (
                 true,
@@ -202,10 +174,7 @@ public class ApiService
         catch (Exception ex)
         {
             Debug.WriteLine($"VERIFY RESET ERROR: {ex}");
-            return (
-                false,
-                $"Unable to verify reset code: {ex.Message}",
-                null);
+            return (false, $"Unable to verify reset code: {ex.Message}", null);
         }
     }
 
@@ -241,9 +210,7 @@ public class ApiService
         catch (Exception ex)
         {
             Debug.WriteLine($"RESET PASSWORD ERROR: {ex}");
-            return (
-                false,
-                $"Unable to reset password: {ex.Message}");
+            return (false, $"Unable to reset password: {ex.Message}");
         }
     }
 
@@ -251,10 +218,7 @@ public class ApiService
     // DASHBOARD
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        DashboardResponse? Data)>
+    public async Task<(bool Success, string Message, DashboardResponse? Data)>
         GetDashboardAsync(int year, int month)
     {
         return await GetAuthorizedAsync<DashboardResponse>(
@@ -267,29 +231,21 @@ public class ApiService
     // BUDGET - CREATE
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        CreateBudgetResponse? Data)>
+    public async Task<(bool Success, string Message, CreateBudgetResponse? Data)>
         CreateBudgetAsync(CreateBudgetRequest request)
     {
-        return await PostAuthorizedAsync<
-            CreateBudgetRequest,
-            CreateBudgetResponse>(
-                "api/Budget",
-                request,
-                "Budget created successfully.",
-                "Unable to create budget");
+        return await PostAuthorizedAsync<CreateBudgetRequest, CreateBudgetResponse>(
+            "api/Budget",
+            request,
+            "Budget created successfully.",
+            "Unable to create budget");
     }
 
     // =====================================================
     // BUDGET - GET
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        BudgetResponse? Data)>
+    public async Task<(bool Success, string Message, BudgetResponse? Data)>
         GetBudgetAsync(int year, int month)
     {
         return await GetAuthorizedAsync<BudgetResponse>(
@@ -302,10 +258,7 @@ public class ApiService
     // BUDGET ALERTS
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        BudgetAlertsResponse? Data)>
+    public async Task<(bool Success, string Message, BudgetAlertsResponse? Data)>
         GetBudgetAlertsAsync(int year, int month)
     {
         return await GetAuthorizedAsync<BudgetAlertsResponse>(
@@ -318,10 +271,7 @@ public class ApiService
     // TRANSACTIONS
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        List<TransactionResponse>? Data)>
+    public async Task<(bool Success, string Message, List<TransactionResponse>? Data)>
         GetTransactionsAsync()
     {
         return await GetAuthorizedAsync<List<TransactionResponse>>(
@@ -334,29 +284,21 @@ public class ApiService
     // GROCERY - CREATE LIST
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        CreateGroceryListResponse? Data)>
+    public async Task<(bool Success, string Message, CreateGroceryListResponse? Data)>
         CreateGroceryListAsync(CreateGroceryListRequest request)
     {
-        return await PostAuthorizedAsync<
-            CreateGroceryListRequest,
-            CreateGroceryListResponse>(
-                "api/Grocery",
-                request,
-                "Grocery list created successfully.",
-                "Unable to create grocery list");
+        return await PostAuthorizedAsync<CreateGroceryListRequest, CreateGroceryListResponse>(
+            "api/Grocery",
+            request,
+            "Grocery list created successfully.",
+            "Unable to create grocery list");
     }
 
     // =====================================================
     // GROCERY - GET ALL LISTS
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        List<GroceryListSummary>? Data)>
+    public async Task<(bool Success, string Message, List<GroceryListSummary>? Data)>
         GetGroceryListsAsync()
     {
         return await GetAuthorizedAsync<List<GroceryListSummary>>(
@@ -369,10 +311,7 @@ public class ApiService
     // GROCERY - GET ONE LIST
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        GroceryListResponse? Data)>
+    public async Task<(bool Success, string Message, GroceryListResponse? Data)>
         GetGroceryListAsync(int groceryListId)
     {
         return await GetAuthorizedAsync<GroceryListResponse>(
@@ -385,35 +324,22 @@ public class ApiService
     // GROCERY - ADD ITEM
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        AddGroceryItemResponse? Data)>
-        AddGroceryItemAsync(
-            int groceryListId,
-            AddGroceryItemRequest request)
+    public async Task<(bool Success, string Message, AddGroceryItemResponse? Data)>
+        AddGroceryItemAsync(int groceryListId, AddGroceryItemRequest request)
     {
-        return await PostAuthorizedAsync<
-            AddGroceryItemRequest,
-            AddGroceryItemResponse>(
-                $"api/Grocery/{groceryListId}/items",
-                request,
-                "Item added successfully.",
-                "Unable to add grocery item");
+        return await PostAuthorizedAsync<AddGroceryItemRequest, AddGroceryItemResponse>(
+            $"api/Grocery/{groceryListId}/items",
+            request,
+            "Item added successfully.",
+            "Unable to add grocery item");
     }
 
     // =====================================================
     // GROCERY - CHECK BUDGET
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        GroceryBudgetCheckResponse? Data)>
-        CheckGroceryBudgetAsync(
-            int groceryListId,
-            int month,
-            int year)
+    public async Task<(bool Success, string Message, GroceryBudgetCheckResponse? Data)>
+        CheckGroceryBudgetAsync(int groceryListId, int month, int year)
     {
         var request = new GroceryBudgetCheckRequest
         {
@@ -421,27 +347,19 @@ public class ApiService
             Year = year
         };
 
-        return await PostAuthorizedAsync<
-            GroceryBudgetCheckRequest,
-            GroceryBudgetCheckResponse>(
-                $"api/Grocery/{groceryListId}/budget-check",
-                request,
-                "Grocery budget checked successfully.",
-                "Unable to check grocery budget");
+        return await PostAuthorizedAsync<GroceryBudgetCheckRequest, GroceryBudgetCheckResponse>(
+            $"api/Grocery/{groceryListId}/budget-check",
+            request,
+            "Grocery budget checked successfully.",
+            "Unable to check grocery budget");
     }
 
     // =====================================================
     // GROCERY - CHECKOUT
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        GroceryCheckoutResponse? Data)>
-        CheckoutGroceryAsync(
-            int groceryListId,
-            int month,
-            int year)
+    public async Task<(bool Success, string Message, GroceryCheckoutResponse? Data)>
+        CheckoutGroceryAsync(int groceryListId, int month, int year)
     {
         var request = new GroceryCheckoutRequest
         {
@@ -449,13 +367,11 @@ public class ApiService
             Year = year
         };
 
-        return await PostAuthorizedAsync<
-            GroceryCheckoutRequest,
-            GroceryCheckoutResponse>(
-                $"api/Grocery/{groceryListId}/checkout",
-                request,
-                "Purchase recorded successfully.",
-                "Unable to record grocery purchase");
+        return await PostAuthorizedAsync<GroceryCheckoutRequest, GroceryCheckoutResponse>(
+            $"api/Grocery/{groceryListId}/checkout",
+            request,
+            "Purchase recorded successfully.",
+            "Unable to record grocery purchase");
     }
 
     // =====================================================
@@ -463,9 +379,7 @@ public class ApiService
     // =====================================================
 
     public async Task<(bool Success, string Message)>
-        DeleteGroceryItemAsync(
-            int groceryListId,
-            int groceryItemId)
+        DeleteGroceryItemAsync(int groceryListId, int groceryItemId)
     {
         return await DeleteAuthorizedAsync(
             $"api/Grocery/{groceryListId}/items/{groceryItemId}",
@@ -490,46 +404,34 @@ public class ApiService
     // RETAILER PRICE COMPARISON
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        RetailerPriceComparisonResponse? Data)>
+    public async Task<(bool Success, string Message, RetailerPriceComparisonResponse? Data)>
         GetRetailerPriceComparisonAsync(int groceryListId)
     {
-        return await GetAuthorizedAsync<
-            RetailerPriceComparisonResponse>(
-                $"api/Grocery/{groceryListId}/price-comparison",
-                "Retailer prices loaded successfully.",
-                "Unable to load retailer price comparison");
+        return await GetAuthorizedAsync<RetailerPriceComparisonResponse>(
+            $"api/Grocery/{groceryListId}/price-comparison",
+            "Retailer prices loaded successfully.",
+            "Unable to load retailer price comparison");
     }
 
     // =====================================================
     // PURCHASE - CREATE
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        CreatePurchaseResponse? Data)>
+    public async Task<(bool Success, string Message, CreatePurchaseResponse? Data)>
         CreatePurchaseAsync(CreatePurchaseRequest request)
     {
-        return await PostAuthorizedAsync<
-            CreatePurchaseRequest,
-            CreatePurchaseResponse>(
-                "api/Purchase",
-                request,
-                "Purchase recorded successfully.",
-                "Unable to record purchase");
+        return await PostAuthorizedAsync<CreatePurchaseRequest, CreatePurchaseResponse>(
+            "api/Purchase",
+            request,
+            "Purchase recorded successfully.",
+            "Unable to record purchase");
     }
 
     // =====================================================
     // PURCHASE - HISTORY
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        PurchaseHistoryResponse? Data)>
+    public async Task<(bool Success, string Message, PurchaseHistoryResponse? Data)>
         GetPurchasesAsync(
             string? category = null,
             string? search = null,
@@ -543,49 +445,29 @@ public class ApiService
             var parameters = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(category))
-            {
-                parameters.Add(
-                    $"category={Uri.EscapeDataString(category)}");
-            }
+                parameters.Add($"category={Uri.EscapeDataString(category)}");
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
-                parameters.Add(
-                    $"search={Uri.EscapeDataString(search)}");
-            }
+                parameters.Add($"search={Uri.EscapeDataString(search)}");
 
             if (month.HasValue)
-            {
                 parameters.Add($"month={month.Value}");
-            }
 
             if (year.HasValue)
-            {
                 parameters.Add($"year={year.Value}");
-            }
 
             if (minAmount.HasValue)
-            {
-                parameters.Add(
-                    "minAmount=" +
-                    minAmount.Value.ToString(
-                        CultureInfo.InvariantCulture));
-            }
+                parameters.Add("minAmount=" + minAmount.Value.ToString(
+                    CultureInfo.InvariantCulture));
 
             if (maxAmount.HasValue)
-            {
-                parameters.Add(
-                    "maxAmount=" +
-                    maxAmount.Value.ToString(
-                        CultureInfo.InvariantCulture));
-            }
+                parameters.Add("maxAmount=" + maxAmount.Value.ToString(
+                    CultureInfo.InvariantCulture));
 
             string url = "api/Purchase";
 
             if (parameters.Count > 0)
-            {
                 url += "?" + string.Join("&", parameters);
-            }
 
             return await GetAuthorizedAsync<PurchaseHistoryResponse>(
                 url,
@@ -595,28 +477,19 @@ public class ApiService
         catch (Exception ex)
         {
             Debug.WriteLine($"GET PURCHASES ERROR: {ex}");
-
-            return (
-                false,
-                $"Unable to load purchase history: {ex.Message}",
-                null);
+            return (false, $"Unable to load purchase history: {ex.Message}", null);
         }
     }
 
     // =====================================================
     // PURCHASE - DELETE
-    // NEW METHOD
     // =====================================================
 
     public async Task<(bool Success, string Message)>
         DeletePurchaseAsync(int purchaseId)
     {
         if (purchaseId <= 0)
-        {
-            return (
-                false,
-                "Invalid purchase ID.");
-        }
+            return (false, "Invalid purchase ID.");
 
         return await DeleteAuthorizedAsync(
             $"api/Purchase/{purchaseId}",
@@ -628,29 +501,35 @@ public class ApiService
     // REPORTS - MONTHLY
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        MonthlyReportResponse? Data)>
+    public async Task<(bool Success, string Message, MonthlyReportResponse? Data)>
         GetMonthlyReportAsync(int year, int month)
     {
         if (month < 1 || month > 12)
             return (false, "Month must be between 1 and 12.", null);
 
-        return await GetAuthorizedAsync<MonthlyReportResponse>(
+        if (year < 2020 || year > 2100)
+            return (false, "Invalid year.", null);
+
+        Debug.WriteLine($"MONTHLY REPORT: Starting request for {year}/{month}");
+
+        var result = await GetAuthorizedAsync<MonthlyReportResponse>(
             $"api/Reports/monthly/{year}/{month}",
             "Monthly report loaded successfully.",
             "Unable to load monthly report");
+
+        Debug.WriteLine(
+            $"MONTHLY REPORT: Request completed. Success = {result.Success}");
+
+        Debug.WriteLine($"MONTHLY REPORT: Message = {result.Message}");
+
+        return result;
     }
 
     // =====================================================
     // REPORTS - RETAILERS
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        RetailerReportResponse? Data)>
+    public async Task<(bool Success, string Message, RetailerReportResponse? Data)>
         GetRetailerReportAsync(int year, int month)
     {
         if (month < 1 || month > 12)
@@ -666,29 +545,17 @@ public class ApiService
     // REPORTS - DATE RANGE
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        DateRangeReportResponse? Data)>
-        GetDateRangeReportAsync(
-            DateTime startDate,
-            DateTime endDate)
+    public async Task<(bool Success, string Message, DateRangeReportResponse? Data)>
+        GetDateRangeReportAsync(DateTime startDate, DateTime endDate)
     {
         if (startDate.Date > endDate.Date)
-        {
-            return (
-                false,
-                "Start date cannot be after end date.",
-                null);
-        }
+            return (false, "Start date cannot be after end date.", null);
 
         string start = startDate.Date.ToString(
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture);
+            "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         string end = endDate.Date.ToString(
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture);
+            "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         string url =
             "api/Reports/range" +
@@ -705,10 +572,7 @@ public class ApiService
     // INSIGHTS
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        InsightsResponse? Data)>
+    public async Task<(bool Success, string Message, InsightsResponse? Data)>
         GetInsightsAsync(int year, int month)
     {
         if (month < 1 || month > 12)
@@ -727,10 +591,7 @@ public class ApiService
     // PROFILE - GET
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        ProfileResponse? Data)>
+    public async Task<(bool Success, string Message, ProfileResponse? Data)>
         GetProfileAsync()
     {
         return await GetAuthorizedAsync<ProfileResponse>(
@@ -743,64 +604,38 @@ public class ApiService
     // PROFILE - UPDATE
     // =====================================================
 
-    public async Task<(
-        bool Success,
-        string Message,
-        UpdateProfileResponse? Data)>
+    public async Task<(bool Success, string Message, UpdateProfileResponse? Data)>
         UpdateProfileAsync(UpdateProfileRequest request)
     {
         if (request == null)
-        {
-            return (
-                false,
-                "Profile information is required.",
-                null);
-        }
+            return (false, "Profile information is required.", null);
 
         if (string.IsNullOrWhiteSpace(request.FullName))
-        {
-            return (
-                false,
-                "Full name is required.",
-                null);
-        }
+            return (false, "Full name is required.", null);
 
         if (string.IsNullOrWhiteSpace(request.Email))
-        {
-            return (
-                false,
-                "Email is required.",
-                null);
-        }
+            return (false, "Email is required.", null);
 
         request.FullName = request.FullName.Trim();
-
-        request.Email = request.Email
-            .Trim()
-            .ToLowerInvariant();
+        request.Email = request.Email.Trim().ToLowerInvariant();
 
         request.PhoneNumber =
             string.IsNullOrWhiteSpace(request.PhoneNumber)
                 ? null
                 : request.PhoneNumber.Trim();
 
-        return await PutAuthorizedAsync<
-            UpdateProfileRequest,
-            UpdateProfileResponse>(
-                "api/Profile",
-                request,
-                "Profile updated successfully.",
-                "Unable to update profile");
+        return await PutAuthorizedAsync<UpdateProfileRequest, UpdateProfileResponse>(
+            "api/Profile",
+            request,
+            "Profile updated successfully.",
+            "Unable to update profile");
     }
 
     // =====================================================
     // SHARED HELPER - AUTHORIZED GET
     // =====================================================
 
-    private async Task<(
-        bool Success,
-        string Message,
-        T? Data)>
+    private async Task<(bool Success, string Message, T? Data)>
         GetAuthorizedAsync<T>(
             string url,
             string successMessage,
@@ -808,52 +643,54 @@ public class ApiService
     {
         try
         {
+            Debug.WriteLine($"API DEBUG 1: Starting GET {url}");
+
+            Debug.WriteLine("API DEBUG 2: Getting authentication token.");
+
             string? token = await GetTokenAsync();
+
+            Debug.WriteLine("API DEBUG 3: Token retrieval completed.");
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                return (
-                    false,
-                    "You are not logged in.",
-                    default);
+                Debug.WriteLine("API DEBUG ERROR: Token is missing.");
+
+                return (false, "You are not logged in.", default);
             }
 
             SetAuthorizationHeader(token);
 
+            Debug.WriteLine($"API DEBUG 4: Sending request to {BaseUrl}{url}");
+
             using var response = await _httpClient.GetAsync(url);
 
-            string body =
-                await response.Content.ReadAsStringAsync();
-
             Debug.WriteLine(
-                $"GET {url} STATUS: {(int)response.StatusCode}");
+                $"API DEBUG 5: Server responded with {(int)response.StatusCode}");
 
-            Debug.WriteLine($"GET {url} RESPONSE: {body}");
+            string body = await response.Content.ReadAsStringAsync();
+
+            Debug.WriteLine($"API DEBUG 6: Response body: {body}");
 
             if (!response.IsSuccessStatusCode)
-            {
-                return (
-                    false,
-                    GetErrorMessage(body),
-                    default);
-            }
+                return (false, GetErrorMessage(body), default);
+
+            Debug.WriteLine("API DEBUG 7: Deserializing response.");
 
             T? data = JsonSerializer.Deserialize<T>(
                 body,
                 _jsonOptions);
 
+            Debug.WriteLine("API DEBUG 8: Deserialization completed.");
+
             if (data == null)
-            {
-                return (
-                    false,
-                    "The server returned an empty response.",
-                    default);
-            }
+                return (false, "The server returned an empty response.", default);
 
             return (true, successMessage, data);
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
+            Debug.WriteLine($"API DEBUG TIMEOUT: {ex}");
+
             return (
                 false,
                 "The connection to the server timed out.",
@@ -861,7 +698,7 @@ public class ApiService
         }
         catch (HttpRequestException ex)
         {
-            Debug.WriteLine($"{errorPrefix} HTTP ERROR: {ex}");
+            Debug.WriteLine($"API DEBUG HTTP ERROR: {ex}");
 
             return (
                 false,
@@ -870,7 +707,7 @@ public class ApiService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"{errorPrefix} ERROR: {ex}");
+            Debug.WriteLine($"API DEBUG GENERAL ERROR: {ex}");
 
             return (
                 false,
@@ -883,10 +720,7 @@ public class ApiService
     // SHARED HELPER - AUTHORIZED POST
     // =====================================================
 
-    private async Task<(
-        bool Success,
-        string Message,
-        TResponse? Data)>
+    private async Task<(bool Success, string Message, TResponse? Data)>
         PostAuthorizedAsync<TRequest, TResponse>(
             string url,
             TRequest request,
@@ -898,76 +732,41 @@ public class ApiService
             string? token = await GetTokenAsync();
 
             if (string.IsNullOrWhiteSpace(token))
-            {
-                return (
-                    false,
-                    "You are not logged in.",
-                    default);
-            }
+                return (false, "You are not logged in.", default);
 
             SetAuthorizationHeader(token);
 
-            using var response =
-                await _httpClient.PostAsJsonAsync(url, request);
+            using var response = await _httpClient.PostAsJsonAsync(url, request);
 
-            string body =
-                await response.Content.ReadAsStringAsync();
+            string body = await response.Content.ReadAsStringAsync();
 
-            Debug.WriteLine(
-                $"POST {url} STATUS: {(int)response.StatusCode}");
-
+            Debug.WriteLine($"POST {url} STATUS: {(int)response.StatusCode}");
             Debug.WriteLine($"POST {url} RESPONSE: {body}");
 
             if (!response.IsSuccessStatusCode)
-            {
-                return (
-                    false,
-                    GetErrorMessage(body),
-                    default);
-            }
+                return (false, GetErrorMessage(body), default);
 
-            TResponse? data =
-                JsonSerializer.Deserialize<TResponse>(
-                    body,
-                    _jsonOptions);
+            TResponse? data = JsonSerializer.Deserialize<TResponse>(
+                body, _jsonOptions);
 
             if (data == null)
-            {
-                return (
-                    false,
-                    "The server returned an empty response.",
-                    default);
-            }
+                return (false, "The server returned an empty response.", default);
 
-            return (
-                true,
-                GetResponseMessage(body, successMessage),
-                data);
+            return (true, GetResponseMessage(body, successMessage), data);
         }
         catch (TaskCanceledException)
         {
-            return (
-                false,
-                "The connection to the server timed out.",
-                default);
+            return (false, "The connection to the server timed out.", default);
         }
         catch (HttpRequestException ex)
         {
             Debug.WriteLine($"{errorPrefix} HTTP ERROR: {ex}");
-
-            return (
-                false,
-                $"Server connection error: {ex.Message}",
-                default);
+            return (false, $"Server connection error: {ex.Message}", default);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"{errorPrefix} ERROR: {ex}");
-
-            return (
-                false,
-                $"{errorPrefix}: {ex.Message}",
-                default);
+            return (false, $"{errorPrefix}: {ex.Message}", default);
         }
     }
 
@@ -975,10 +774,7 @@ public class ApiService
     // SHARED HELPER - AUTHORIZED PUT
     // =====================================================
 
-    private async Task<(
-        bool Success,
-        string Message,
-        TResponse? Data)>
+    private async Task<(bool Success, string Message, TResponse? Data)>
         PutAuthorizedAsync<TRequest, TResponse>(
             string url,
             TRequest request,
@@ -990,76 +786,41 @@ public class ApiService
             string? token = await GetTokenAsync();
 
             if (string.IsNullOrWhiteSpace(token))
-            {
-                return (
-                    false,
-                    "You are not logged in.",
-                    default);
-            }
+                return (false, "You are not logged in.", default);
 
             SetAuthorizationHeader(token);
 
-            using var response =
-                await _httpClient.PutAsJsonAsync(url, request);
+            using var response = await _httpClient.PutAsJsonAsync(url, request);
 
-            string body =
-                await response.Content.ReadAsStringAsync();
+            string body = await response.Content.ReadAsStringAsync();
 
-            Debug.WriteLine(
-                $"PUT {url} STATUS: {(int)response.StatusCode}");
-
+            Debug.WriteLine($"PUT {url} STATUS: {(int)response.StatusCode}");
             Debug.WriteLine($"PUT {url} RESPONSE: {body}");
 
             if (!response.IsSuccessStatusCode)
-            {
-                return (
-                    false,
-                    GetErrorMessage(body),
-                    default);
-            }
+                return (false, GetErrorMessage(body), default);
 
-            TResponse? data =
-                JsonSerializer.Deserialize<TResponse>(
-                    body,
-                    _jsonOptions);
+            TResponse? data = JsonSerializer.Deserialize<TResponse>(
+                body, _jsonOptions);
 
             if (data == null)
-            {
-                return (
-                    false,
-                    "The server returned an empty response.",
-                    default);
-            }
+                return (false, "The server returned an empty response.", default);
 
-            return (
-                true,
-                GetResponseMessage(body, successMessage),
-                data);
+            return (true, GetResponseMessage(body, successMessage), data);
         }
         catch (TaskCanceledException)
         {
-            return (
-                false,
-                "The connection to the server timed out.",
-                default);
+            return (false, "The connection to the server timed out.", default);
         }
         catch (HttpRequestException ex)
         {
             Debug.WriteLine($"{errorPrefix} HTTP ERROR: {ex}");
-
-            return (
-                false,
-                $"Server connection error: {ex.Message}",
-                default);
+            return (false, $"Server connection error: {ex.Message}", default);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"{errorPrefix} ERROR: {ex}");
-
-            return (
-                false,
-                $"{errorPrefix}: {ex.Message}",
-                default);
+            return (false, $"{errorPrefix}: {ex.Message}", default);
         }
     }
 
@@ -1078,57 +839,35 @@ public class ApiService
             string? token = await GetTokenAsync();
 
             if (string.IsNullOrWhiteSpace(token))
-            {
-                return (
-                    false,
-                    "You are not logged in.");
-            }
+                return (false, "You are not logged in.");
 
             SetAuthorizationHeader(token);
 
-            using var response =
-                await _httpClient.DeleteAsync(url);
+            using var response = await _httpClient.DeleteAsync(url);
 
-            string body =
-                await response.Content.ReadAsStringAsync();
+            string body = await response.Content.ReadAsStringAsync();
 
-            Debug.WriteLine(
-                $"DELETE {url} STATUS: {(int)response.StatusCode}");
-
+            Debug.WriteLine($"DELETE {url} STATUS: {(int)response.StatusCode}");
             Debug.WriteLine($"DELETE {url} RESPONSE: {body}");
 
             if (!response.IsSuccessStatusCode)
-            {
-                return (
-                    false,
-                    GetErrorMessage(body));
-            }
+                return (false, GetErrorMessage(body));
 
-            return (
-                true,
-                GetResponseMessage(body, successMessage));
+            return (true, GetResponseMessage(body, successMessage));
         }
         catch (TaskCanceledException)
         {
-            return (
-                false,
-                "The connection to the server timed out.");
+            return (false, "The connection to the server timed out.");
         }
         catch (HttpRequestException ex)
         {
             Debug.WriteLine($"{errorPrefix} HTTP ERROR: {ex}");
-
-            return (
-                false,
-                $"Server connection error: {ex.Message}");
+            return (false, $"Server connection error: {ex.Message}");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"{errorPrefix} ERROR: {ex}");
-
-            return (
-                false,
-                $"{errorPrefix}: {ex.Message}");
+            return (false, $"{errorPrefix}: {ex.Message}");
         }
     }
 
@@ -1160,15 +899,12 @@ public class ApiService
 
         try
         {
-            using JsonDocument document =
-                JsonDocument.Parse(response);
+            using JsonDocument document = JsonDocument.Parse(response);
 
             JsonElement root = document.RootElement;
 
             if (root.ValueKind == JsonValueKind.Object &&
-                root.TryGetProperty(
-                    "message",
-                    out JsonElement message) &&
+                root.TryGetProperty("message", out JsonElement message) &&
                 message.ValueKind == JsonValueKind.String)
             {
                 string? value = message.GetString();
@@ -1196,58 +932,43 @@ public class ApiService
 
         try
         {
-            using JsonDocument document =
-                JsonDocument.Parse(response);
+            using JsonDocument document = JsonDocument.Parse(response);
 
             JsonElement root = document.RootElement;
 
             if (root.ValueKind == JsonValueKind.Object)
             {
-                if (root.TryGetProperty(
-                    "message",
-                    out JsonElement message) &&
+                if (root.TryGetProperty("message", out JsonElement message) &&
                     message.ValueKind == JsonValueKind.String)
                 {
                     return message.GetString()
                         ?? "The request could not be completed.";
                 }
 
-                if (root.TryGetProperty(
-                    "title",
-                    out JsonElement title) &&
+                if (root.TryGetProperty("title", out JsonElement title) &&
                     title.ValueKind == JsonValueKind.String)
                 {
                     return title.GetString()
                         ?? "The request could not be completed.";
                 }
 
-                if (root.TryGetProperty(
-                    "errors",
-                    out JsonElement errors) &&
+                if (root.TryGetProperty("errors", out JsonElement errors) &&
                     errors.ValueKind == JsonValueKind.Object)
                 {
-                    foreach (JsonProperty property
-                        in errors.EnumerateObject())
+                    foreach (JsonProperty property in errors.EnumerateObject())
                     {
-                        if (property.Value.ValueKind !=
-                            JsonValueKind.Array)
+                        if (property.Value.ValueKind != JsonValueKind.Array)
                             continue;
 
-                        foreach (JsonElement error
-                            in property.Value.EnumerateArray())
+                        foreach (JsonElement error in property.Value.EnumerateArray())
                         {
-                            if (error.ValueKind !=
-                                JsonValueKind.String)
+                            if (error.ValueKind != JsonValueKind.String)
                                 continue;
 
-                            string? validationMessage =
-                                error.GetString();
+                            string? validationMessage = error.GetString();
 
-                            if (!string.IsNullOrWhiteSpace(
-                                validationMessage))
-                            {
+                            if (!string.IsNullOrWhiteSpace(validationMessage))
                                 return validationMessage;
-                            }
                         }
                     }
                 }

@@ -11,7 +11,6 @@ namespace SpendWise.App
         private readonly HttpClient _httpClient;
         private readonly AuthStorageService _authStorage;
 
-        // Same API address as your existing ApiService
         private const string ApiBaseUrl =
             "https://localhost:7284/";
 
@@ -194,7 +193,120 @@ namespace SpendWise.App
                     "OK");
             }
         }
+
+        // ============================================
+        // DELETE ONE NOTIFICATION
+        // ============================================
+
+        private async void OnDeleteClicked(
+            object sender,
+            EventArgs e)
+        {
+            if (sender is not Button button ||
+                button.CommandParameter == null)
+                return;
+
+            int id = Convert.ToInt32(
+                button.CommandParameter);
+
+            bool confirm = await DisplayAlert(
+                "Delete Notification",
+                "Are you sure you want to delete this notification?",
+                "Delete",
+                "Cancel");
+
+            if (!confirm)
+                return;
+
+            try
+            {
+                if (!await SetAuthorizationAsync())
+                    return;
+
+                var response = await _httpClient.DeleteAsync(
+                    $"api/BudgetNotifications/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadNotificationsAsync();
+
+                    await DisplayAlert(
+                        "Deleted",
+                        "Notification deleted successfully.",
+                        "OK");
+                }
+                else
+                {
+                    await DisplayAlert(
+                        "Error",
+                        $"Could not delete notification: {response.StatusCode}",
+                        "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert(
+                    "Error",
+                    ex.Message,
+                    "OK");
+            }
+        }
+
+        // ============================================
+        // CLEAR ALL NOTIFICATIONS
+        // ============================================
+
+        private async void OnClearAllClicked(
+            object sender,
+            EventArgs e)
+        {
+            bool confirm = await DisplayAlert(
+                "Clear All Notifications",
+                "Are you sure you want to permanently delete all your notifications?",
+                "Clear All",
+                "Cancel");
+
+            if (!confirm)
+                return;
+
+            try
+            {
+                if (!await SetAuthorizationAsync())
+                    return;
+
+                var response = await _httpClient.DeleteAsync(
+                    "api/BudgetNotifications/clear-all");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadNotificationsAsync();
+
+                    await DisplayAlert(
+                        "Success",
+                        "All notifications have been deleted.",
+                        "OK");
+                }
+                else
+                {
+                    await DisplayAlert(
+                        "Error",
+                        $"Could not clear notifications: {response.StatusCode}",
+                        "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert(
+                    "Error",
+                    ex.Message,
+                    "OK");
+            }
+        }
     }
+
+    // ============================================
+    // NOTIFICATIONS RESPONSE
+    // ============================================
 
     public class NotificationsResponse
     {
@@ -207,6 +319,10 @@ namespace SpendWise.App
         [JsonPropertyName("notifications")]
         public List<NotificationItem> Notifications { get; set; } = new();
     }
+
+    // ============================================
+    // NOTIFICATION MODEL
+    // ============================================
 
     public class NotificationItem
     {

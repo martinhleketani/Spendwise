@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpendWise.Admin", "SpendWise.Admin\SpendWise.Admin.csproj", "{C7FE6E9E-EC24-48FF-93A2-8EAD09E2B179}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{A60CA3C0-78D3-4557-B2E9-A5714190FA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A60CA3C0-78D3-4557-B2E9-A5714190FA08}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A60CA3C0-78D3-4557-B2E9-A5714190FA08}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{C7FE6E9E-EC24-48FF-93A2-8EAD09E2B179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7FE6E9E-EC24-48FF-93A2-8EAD09E2B179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7FE6E9E-EC24-48FF-93A2-8EAD09E2B179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7FE6E9E-EC24-48FF-93A2-8EAD09E2B179}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -157,6 +157,69 @@ namespace SpendWise.API.Controllers
         }
 
         // ============================================
+        // DELETE ONE NOTIFICATION
+        // DELETE: api/BudgetNotifications/5
+        // ============================================
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteNotification(int id)
+        {
+            int? userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var notification = await _context
+                .BudgetNotifications
+                .FirstOrDefaultAsync(n =>
+                    n.Id == id &&
+                    n.UserId == userId.Value);
+
+            if (notification == null)
+            {
+                return NotFound(new
+                {
+                    message = "Notification not found."
+                });
+            }
+
+            _context.BudgetNotifications.Remove(notification);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // ============================================
+        // CLEAR ALL NOTIFICATIONS
+        // DELETE: api/BudgetNotifications/clear-all
+        // ============================================
+
+        [HttpDelete("clear-all")]
+        public async Task<IActionResult> ClearAllNotifications()
+        {
+            int? userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var notifications = await _context
+                .BudgetNotifications
+                .Where(n => n.UserId == userId.Value)
+                .ToListAsync();
+
+            if (notifications.Count > 0)
+            {
+                _context.BudgetNotifications.RemoveRange(
+                    notifications);
+
+                await _context.SaveChangesAsync();
+            }
+
+            return NoContent();
+        }
+
+        // ============================================
         // GET CURRENT USER ID FROM JWT
         // ============================================
 

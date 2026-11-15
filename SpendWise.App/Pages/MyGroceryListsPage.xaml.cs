@@ -89,14 +89,14 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private void SearchEntry_TextChanged(
-        object sender,
+        object? sender,
         TextChangedEventArgs e)
     {
         DisplayFilteredLists();
     }
 
     private void StatusPicker_SelectedIndexChanged(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         DisplayFilteredLists();
@@ -316,7 +316,7 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private async void OpenListButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (sender is not Button button ||
@@ -332,7 +332,7 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private async void DeleteListButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (_isDeleting ||
@@ -402,7 +402,7 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private async void CreateListButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         await Navigation.PushAsync(
@@ -414,7 +414,7 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private async void RefreshButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         await LoadListsAsync();
@@ -425,7 +425,7 @@ public partial class MyGroceryListsPage : ContentPage
     // ==========================================
 
     private async void BackButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (Navigation.NavigationStack.Count > 1)

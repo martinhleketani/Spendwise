@@ -1,4 +1,6 @@
 ﻿
+using SpendWise.App.Pages;
+
 namespace SpendWise.App
 {
     public partial class AppShell : Shell
@@ -10,6 +12,10 @@ namespace SpendWise.App
             Routing.RegisterRoute(
                 nameof(NotificationsPage),
                 typeof(NotificationsPage));
+
+            Routing.RegisterRoute(
+                nameof(HelpPage),
+                typeof(HelpPage));
         }
     }
 }

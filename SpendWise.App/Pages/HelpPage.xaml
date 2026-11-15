@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="SpendWise.App.Pages.HelpPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Help &amp; Support"
+    BackgroundColor="#F5F8F6">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="18">
+
+            <!-- HEADER -->
+            <VerticalStackLayout Spacing="5">
+                <Label
+                    Text="Help &amp; Support"
+                    FontSize="27"
+                    FontAttributes="Bold"
+                    TextColor="#183D2B"/>
+
+                <Label
+                    Text="How can we help you today?"
+                    FontSize="15"
+                    TextColor="#718078"/>
+            </VerticalStackLayout>
+
+            <!-- INTRODUCTION -->
+            <Border
+                BackgroundColor="#E4F4EA"
+                StrokeThickness="0"
+                Padding="18"
+                StrokeShape="RoundRectangle 16">
+
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        Text="Welcome to SpendWise!"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#176B3A"/>
+
+                    <Label
+                        Text="Learn how to manage your money, create budgets, record purchases and organise your grocery shopping."
+                        FontSize="14"
+                        TextColor="#405B4A"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- SEARCH -->
+            <SearchBar
+                x:Name="HelpSearchBar"
+                Placeholder="Search for help..."
+                BackgroundColor="White"
+                TextColor="#26352B"
+                PlaceholderColor="#89958D"
+                CancelButtonColor="#176B3A"
+                TextChanged="HelpSearchBar_TextChanged"/>
+
+            <!-- HELP TOPICS -->
+            <Label
+                Text="Browse Help Topics"
+                FontSize="19"
+                FontAttributes="Bold"
+                TextColor="#183D2B"/>
+
+            <!-- GETTING STARTED -->
+            <Border
+                x:Name="GettingStartedCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="👤  Getting Started"
+                        Clicked="GettingStartedButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="GettingStartedContent"
+                        Text="1. Register using your account details.&#10;2. Log in using your email and password.&#10;3. Explore your Dashboard to view your financial overview.&#10;4. Start by creating your monthly budget."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- BUDGETS -->
+            <Border
+                x:Name="BudgetsCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="💰  Managing Budgets"
+                        Clicked="BudgetsButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="BudgetsContent"
+                        Text="1. Open the Budgets section.&#10;2. Select the option to create a monthly budget.&#10;3. Enter your budget amount and select the relevant month and year.&#10;4. Allocate amounts to your spending categories.&#10;5. Monitor your remaining balances as you record purchases."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- PURCHASES -->
+            <Border
+                x:Name="PurchasesCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="🧾  Purchases &amp; Transactions"
+                        Clicked="PurchasesButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="PurchasesContent"
+                        Text="1. Open the purchase recording section.&#10;2. Enter the purchase description and amount.&#10;3. Select the appropriate spending category.&#10;4. Enter the purchase date and save.&#10;5. View your recorded purchases in Spending History."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- NOTIFICATIONS -->
+            <Border
+                x:Name="NotificationsCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="🔔  Budget Notifications"
+                        Clicked="NotificationsButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="NotificationsContent"
+                        Text="SpendWise can notify you when your spending reaches configured budget thresholds.&#10;&#10;Open Budget Notifications to view your alerts. Review your spending and remaining budget to understand why an alert was generated."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- GROCERY LISTS -->
+            <Border
+                x:Name="GroceriesCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="🛒  Grocery Management"
+                        Clicked="GroceriesButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="GroceriesContent"
+                        Text="1. Open Grocery Lists.&#10;2. Create a new grocery list.&#10;3. Add the products you want to purchase.&#10;4. Specify quantities where available.&#10;5. Review your estimated grocery expenses and manage your list."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- INSIGHTS -->
+            <Border
+                x:Name="InsightsCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="📊  Financial Insights"
+                        Clicked="InsightsButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="InsightsContent"
+                        Text="1. Open the Insights section.&#10;2. Select the year you want to analyse.&#10;3. Review your income and spending information where available.&#10;4. Examine charts and financial summaries to understand your spending patterns."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- REPORTS -->
+            <Border
+                x:Name="ReportsCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="📄  Financial Reports"
+                        Clicked="ReportsButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="ReportsContent"
+                        Text="1. Open the Reports section.&#10;2. Select the reporting period or year where available.&#10;3. Review your financial summaries.&#10;4. Use the available report options to generate or view your financial information."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ACCOUNT -->
+            <Border
+                x:Name="AccountCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="⚙️  Account &amp; Security"
+                        Clicked="AccountButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <Label
+                        x:Name="AccountContent"
+                        Text="1. Open your Profile or Settings section.&#10;2. Review your account information.&#10;3. Update the details available to you.&#10;4. Keep your login credentials private.&#10;5. Log out when using a shared computer."
+                        IsVisible="False"
+                        TextColor="#617067"
+                        FontSize="14"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- FAQ -->
+            <Border
+                x:Name="FaqCard"
+                BackgroundColor="White"
+                Stroke="#E2EAE4"
+                StrokeThickness="1"
+                Padding="14"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Button
+                        x:Name="FaqButton"
+                        Text="❓  Frequently Asked Questions"
+                        Clicked="FaqButton_Clicked"
+                        BackgroundColor="White"
+                        TextColor="#244A34"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Fill"/>
+
+                    <VerticalStackLayout
+                        x:Name="FaqContent"
+                        IsVisible="False"
+                        Spacing="12">
+
+                        <Label
+                            Text="How do I create a monthly budget?"
+                            FontAttributes="Bold"
+                            TextColor="#244A34"
+                            FontSize="14"/>
+
+                        <Label
+                            Text="Open Budgets, choose the option to create a budget, enter the amount and select the relevant month and year."
+                            TextColor="#617067"
+                            FontSize="13"/>
+
+                        <Label
+                            Text="How do I record a purchase?"
+                            FontAttributes="Bold"
+                            TextColor="#244A34"
+                            FontSize="14"/>
+
+                        <Label
+                            Text="Open the purchase recording section, enter the purchase details, amount, category and date, then save."
+                            TextColor="#617067"
+                            FontSize="13"/>
+
+                        <Label
+                            Text="Why do I receive budget notifications?"
+                            FontAttributes="Bold"
+                            TextColor="#244A34"
+                            FontSize="14"/>
+
+                        <Label
+                            Text="Notifications are generated when your spending reaches configured budget thresholds."
+                            TextColor="#617067"
+                            FontSize="13"/>
+
+                        <Label
+                            Text="Can I compare grocery prices?"
+                            FontAttributes="Bold"
+                            TextColor="#244A34"
+                            FontSize="14"/>
+
+                        <Label
+                            Text="Use the grocery features available in your version of SpendWise to manage your shopping list and review available cost information."
+                            TextColor="#617067"
+                            FontSize="13"/>
+
+                        <Label
+                            Text="Why are my financial reports empty?"
+                            FontAttributes="Bold"
+                            TextColor="#244A34"
+                            FontSize="14"/>
+
+                        <Label
+                            Text="Check that you have recorded financial transactions for the selected reporting period and that the selected year is correct."
+                            TextColor="#617067"
+                            FontSize="13"/>
+
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- CONTACT SUPPORT -->
+            <Border
+                BackgroundColor="#E4F4EA"
+                StrokeThickness="0"
+                Padding="18"
+                StrokeShape="RoundRectangle 14">
+
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        Text="Still need help?"
+                        FontSize="19"
+                        FontAttributes="Bold"
+                        TextColor="#176B3A"/>
+
+                    <Label
+                        Text="If you are experiencing a problem while using SpendWise, contact your system administrator for assistance."
+                        FontSize="14"
+                        TextColor="#405B4A"/>
+
+                    <Button
+                        Text="Contact Support"
+                        Clicked="ContactSupportButton_Clicked"
+                        BackgroundColor="#176B3A"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="10"
+                        HorizontalOptions="Fill"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

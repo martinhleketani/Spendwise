@@ -2,23 +2,24 @@
 
 **Martin SpendWise** is a full-stack personal finance, budgeting and grocery management application developed using .NET MAUI, ASP.NET Core Web API and MySQL.
 
-The application is designed to help users manage monthly budgets, record purchases, monitor spending, organise grocery lists and make informed financial decisions.
+The application helps users manage monthly budgets, record purchases, monitor spending, organise grocery lists and make informed financial decisions.
 
-The current system focuses on **personal budgeting, purchase tracking, spending monitoring and grocery management**, with future plans to introduce grocery price comparison across major South African retailers.
+The current system focuses on personal budgeting, purchase tracking, spending monitoring and grocery management, with future plans to introduce grocery price comparison across major South African retailers.
 
 ---
 
 ## 🚀 Project Overview
 
-Martin SpendWise is a personal finance management system that combines financial tracking and grocery planning in one application.
+Martin SpendWise combines financial tracking and grocery planning in one application.
 
-The project consists of:
+The project currently consists of:
 
-- A **.NET MAUI application** for the user interface
-- An **ASP.NET Core Web API** for backend services and business logic
-- A **MySQL database** for persistent data storage
-- **Entity Framework Core** for database operations
-- **JWT authentication** for securing user accounts and API requests
+- A **.NET MAUI application** for the customer interface.
+- An **ASP.NET Core Web API** for backend services and business logic.
+- A **MySQL database** for persistent data storage.
+- **Entity Framework Core** for database operations.
+- **JWT authentication** for securing user accounts and API requests.
+- An administration portal currently under development.
 
 The application follows a client-server architecture, with the frontend communicating with the backend through REST API endpoints.
 
@@ -40,8 +41,6 @@ The Windows desktop application is the current development and testing target.
 
 ### 💵 Budget Management
 
-SpendWise allows users to:
-
 - Create monthly budgets
 - Manage budget categories
 - Allocate funds to spending categories
@@ -51,11 +50,7 @@ SpendWise allows users to:
 - Monitor budget utilisation
 - Receive notifications when spending reaches configured thresholds
 
-Budget notifications help users identify when they are approaching or exceeding their allocated spending limits.
-
 ### 💳 Transaction Management
-
-Users can:
 
 - Record financial transactions
 - Record purchases and expenses
@@ -68,8 +63,6 @@ Users can:
 
 ### 🧾 Purchase Recording
 
-The purchase recording functionality allows users to:
-
 - Record purchases against monthly budgets
 - Select the relevant spending category
 - Enter purchase amounts and descriptions
@@ -79,8 +72,6 @@ The purchase recording functionality allows users to:
 
 ### 🛒 Grocery Management
 
-SpendWise includes grocery planning functionality that allows users to:
-
 - Create grocery lists
 - Add grocery products
 - Manage grocery list items
@@ -89,11 +80,7 @@ SpendWise includes grocery planning functionality that allows users to:
 - Organise grocery purchases
 - Monitor grocery-related spending
 
-The grocery management module helps users plan purchases and understand their estimated grocery costs.
-
 ### 📊 Financial Summaries and Insights
-
-SpendWise provides financial information through:
 
 - Spending summaries
 - Budget utilisation information
@@ -102,22 +89,71 @@ SpendWise provides financial information through:
 - Average purchase amounts
 - Financial activity overviews
 
-These features help users understand how their money is being spent.
-
 ---
 
-## 🚧 Currently Under Development
+## 🚧 Current Development Progress
 
-The current development phase focuses on improving the reliability, functionality and user experience of the existing application.
+### 1. SpendWise Admin Portal
 
-### 🗑️ Purchase Deletion
+An administrator portal is being developed to support future administration and management of the SpendWise platform.
 
-A Delete Purchase feature is currently being implemented.
+The initial development work includes:
+
+- Creating a separate ASP.NET Core MVC Admin project.
+- Creating an administrator login page.
+- Designing the login interface using HTML and CSS.
+- Implementing an administrator login view model.
+- Creating an `AdminAccountController`.
+- Configuring the Admin Portal to open the login page by default.
+- Configuring static file support for CSS and other frontend resources.
+- Resolving the initial CSS file path issue.
+- Successfully opening the Admin Login page in the browser.
+
+**Current status:** The Admin Login interface is working. Administrator authentication has not yet been connected to the API.
+
+### Planned Admin Portal Functionality
+
+The administration portal is intended to provide:
+
+- Administrator authentication
+- Admin dashboard
+- User management
+- Wallet management
+- Transaction monitoring
+- Payment management
+- Transfer monitoring
+- Reconciliation
+- Financial reports
+- Security and audit logs
+- System settings
+
+The long-term architecture will use the existing SpendWise API as the shared backend for the customer application and administrator portal, with separate authentication and permissions.
+
+The proposed consolidation of the Admin Portal into the existing API project has not yet been completed.
+
+### 2. SpendWise Pay – Future Expansion
+
+SpendWise is being considered for expansion into a financial platform supporting:
+
+- Person-to-person payments
+- Merchant payments
+- Direct bank payments
+- A SpendWise digital wallet
+- Wallet deposits and withdrawals
+- Payment history
+- Automatic transaction recording
+
+The payment functionality requires further technical, regulatory and provider research before implementation.
+
+Initial development and testing will use a controlled test environment. Real customer funds will not be handled until the necessary approvals, provider arrangements and safeguards are in place.
+
+### 3. Purchase Deletion
+
+A Delete Purchase feature is being implemented.
 
 The intended functionality includes:
 
 - Displaying a Delete Purchase button in Spending History
-- Allowing users to remove incorrectly recorded purchases
 - Requesting confirmation before deletion
 - Deleting purchases through authenticated API endpoints
 - Refreshing transaction history after successful deletion
@@ -125,9 +161,9 @@ The intended functionality includes:
 - Restoring the appropriate budget balance
 - Preventing users from deleting purchases belonging to other accounts
 
-**Current status:** The deletion functionality is still being debugged and tested. It is not yet considered fully operational.
+**Current status:** The deletion functionality is still being debugged and tested.
 
-### 🔄 Transaction Management Improvements
+### 4. Transaction Management Improvements
 
 Current improvements include:
 
@@ -138,7 +174,7 @@ Current improvements include:
 - Testing API communication
 - Improving the consistency of displayed financial information
 
-### 🎨 User Interface Improvements
+### 5. User Interface Improvements
 
 Ongoing improvements include:
 
@@ -149,11 +185,11 @@ Ongoing improvements include:
 - Improving loading indicators and error feedback
 - Ensuring consistent styling throughout the application
 
-### 🧪 Testing and Debugging
+### 6. Testing and Debugging
 
 Development testing focuses on:
 
-- Authentication and authorization
+- Authentication and authorisation
 - Budget calculations
 - Purchase recording
 - Transaction retrieval
@@ -162,51 +198,76 @@ Development testing focuses on:
 - Error handling
 - Frontend and backend integration
 
+### 7. Development Environment – 15 November 2026
+
+The following development environment issues were identified:
+
+**Visual Studio startup configuration**
+
+- The Admin Website was successfully launched using `dotnet run`.
+- Visual Studio was attempting to start the Android emulator when the intended target was the Admin Website and API.
+- Multiple startup project configuration was investigated.
+- Running the API and Admin Website through separate terminal sessions was identified as an alternative development approach.
+
+**Android SDK installation**
+
+Visual Studio reported missing Android SDK components required for building `SpendWise.App` for Android:
+
+- Android SDK Build-Tools 34 (`build-tools;34.0.0`)
+- Android SDK Command-line Tools (`cmdline-tools;11.0`)
+
+The installation attempts failed because the development environment reported that a network connection was unavailable.
+
+This issue affects Android-targeted builds. It does not mean that the existing Windows desktop application or backend is broken.
+
+**Visual Studio spelling messages**
+
+Spelling warnings were reported for words such as:
+
+- Organise
+- Utilisation
+- Categorise
+- Optimisation
+
+These are valid British English spellings. The messages are spelling-checker warnings rather than C# compilation errors.
+
 ---
 
 ## 🔮 Future Development
 
-The following features are planned for future versions of Martin SpendWise and are not currently presented as completed functionality.
-
 ### 🏪 Grocery Retailer Price Comparison
 
-A major future objective is to integrate grocery pricing information from South African retailers, potentially including:
+Potential retailer integrations include:
 
 - Shoprite
 - Checkers
 - Pick n Pay
 
-The goal is to help users compare grocery prices from multiple retailers through one application.
-
-#### Planned Features
+Planned features:
 
 - Search for grocery products across supported retailers
 - Compare prices for similar products
-- View available grocery specials and promotions
+- View grocery specials and promotions
 - Compare shopping basket totals
 - Identify cheaper product alternatives
 - View product price history
 - Recommend cost-effective shopping options
 - Estimate how a grocery basket fits within a user's budget
 
-Retailer integration will depend on access to reliable, permitted pricing data and appropriate methods for keeping product information up to date.
+Retailer integration will depend on access to reliable, permitted pricing data.
 
-**Status: Planned for future development. Live retailer price comparison is not yet available.**
+**Status: Planned. Live retailer price comparison is not yet available.**
 
 ### 🛍️ Smart Grocery Basket
 
-Planned functionality includes:
-
-- Building a grocery basket from a shopping list
-- Estimating the total cost of the basket
-- Comparing basket costs across supported retailers
-- Identifying potential savings
-- Suggesting cheaper product alternatives
-- Helping users stay within their grocery budgets
+- Build grocery baskets from shopping lists
+- Estimate total basket costs
+- Compare basket costs across supported retailers
+- Identify potential savings
+- Suggest cheaper product alternatives
+- Help users stay within grocery budgets
 
 ### 📈 Advanced Financial Analytics
-
-Future enhancements may include:
 
 - Interactive financial dashboards
 - Bar charts, pie charts and line charts
@@ -219,16 +280,12 @@ Future enhancements may include:
 
 ### 📱 Cross-Platform Expansion
 
-Planned improvements include:
-
 - Android deployment
 - iOS deployment
 - Improved mobile layouts
 - Enhanced cross-platform compatibility
 
 ### ☁️ Cloud and Production Deployment
-
-Long-term technical improvements include:
 
 - Cloud-hosted backend services
 - Production database hosting
@@ -244,43 +301,55 @@ Long-term technical improvements include:
 
 Martin SpendWise follows a client-server architecture.
 
+### Current Architecture
+
 ```text
-             MARTIN SPENDWISE
-                    |
-                    v
-           .NET MAUI Application
-              (C# and XAML)
-                    |
-                    | HTTPS / REST / JSON
-                    v
-          ASP.NET Core Web API
-                (.NET 8)
-                    |
-                    | Entity Framework Core
-                    v
-                  MySQL
-                    |
-                    v
-            Persistent Storage
+              MARTIN SPENDWISE
+                     |
+          +----------+----------+
+          |                     |
+          v                     v
+   .NET MAUI App          SpendWise Admin
+   Customer Interface    (MVC - in development)
+          |                     |
+          |                     |
+          +----------+----------+
+                     |
+                     v
+             ASP.NET Core API
+                  (.NET 8)
+                     |
+                     v
+             Entity Framework Core
+                     |
+                     v
+                   MySQL
+                     |
+                     v
+             Persistent Storage
 ```
+
+The intended architecture will use the existing API as the shared backend, with separate customer and administrator access.
 
 ### Frontend Layer
 
 The .NET MAUI application is responsible for:
 
-- Displaying the user interface
+- Displaying the customer interface
 - Handling user interaction
 - Managing navigation
 - Presenting budgets and transactions
 - Displaying grocery lists
 - Communicating with the backend API
 
+The Admin Portal will provide a separate interface for authorised administrators.
+
 ### Backend Layer
 
 The ASP.NET Core Web API handles:
 
 - User authentication
-- Authorization
+- Authorisation
 - Business logic
 - Budget calculations
 - Transaction processing
@@ -291,7 +360,7 @@ The ASP.NET Core Web API handles:
 
 ### Database Layer
 
-MySQL is used to store application information, including:
+MySQL stores:
 
 - User accounts
 - Budgets
@@ -313,11 +382,14 @@ Entity Framework Core is used to communicate with the database.
 - C#
 - .NET MAUI
 - XAML
+- HTML
+- CSS
 
 ### Backend
 
 - C#
 - ASP.NET Core Web API
+- ASP.NET Core MVC
 - .NET 8
 - REST APIs
 
@@ -333,7 +405,6 @@ Entity Framework Core is used to communicate with the database.
 - ASP.NET Core Password Hashing
 - ASP.NET Core User Secrets
 - Protected API endpoints
-- Secure backend configuration
 
 ### Development Tools
 
@@ -347,11 +418,9 @@ Entity Framework Core is used to communicate with the database.
 
 ## 🔒 Security
 
-Security is an important part of the SpendWise architecture.
-
 Sensitive information must not be committed to the public repository.
 
-The following information must **never be uploaded to GitHub**:
+The following information must never be uploaded to GitHub:
 
 - Database passwords
 - Database connection strings containing credentials
@@ -362,7 +431,7 @@ The following information must **never be uploaded to GitHub**:
 - Private service credentials
 - Other authentication secrets
 
-Development credentials are intended to be managed using **ASP.NET Core User Secrets**.
+Development credentials are intended to be managed using ASP.NET Core User Secrets.
 
 The public `appsettings.json` should contain only non-sensitive configuration.
 
@@ -380,11 +449,13 @@ The public `appsettings.json` should contain only non-sensitive configuration.
 
 Actual credentials are intentionally excluded from the repository.
 
-### Authorization
+### Authorisation
 
 Protected API endpoints require valid authentication tokens.
 
-Backend authorization must ensure that users can only access or modify records associated with their own accounts.
+Backend authorisation must ensure that users can only access or modify records associated with their own accounts.
+
+Administrator accounts will require separate role-based permissions and secure authentication.
 
 ---
 
@@ -392,14 +463,14 @@ Backend authorization must ensure that users can only access or modify records a
 
 ### Requirements
 
-Install:
-
 - Visual Studio 2022 or later
 - .NET 8 SDK
 - .NET MAUI workload
 - MySQL Server
 - MySQL Workbench (recommended)
 - Git
+
+For Android builds, the appropriate Android SDK components must also be installed.
 
 ### Step 1: Clone the Repository
 
@@ -411,7 +482,7 @@ Open the repository in Visual Studio using the solution file.
 
 ### Step 2: Configure the Backend
 
-Configure the required development credentials using ASP.NET Core User Secrets.
+Configure development credentials using ASP.NET Core User Secrets.
 
 Typical configuration values include:
 
@@ -422,34 +493,48 @@ Email configuration
 External API credentials (when applicable)
 ```
 
-The actual values depend on the local development environment.
-
 ### Step 3: Configure MySQL
 
-- Ensure MySQL Server is running
-- Create or configure the required database
-- Configure the database connection string
-- Apply Entity Framework Core migrations where required
+- Ensure MySQL Server is running.
+- Create or configure the required database.
+- Configure the database connection string.
+- Apply Entity Framework Core migrations where required.
 
 ### Step 4: Run the API
 
-- Open the API project in Visual Studio
-- Select the API startup profile
-- Start the ASP.NET Core Web API
-- Use Swagger to test available endpoints
+- Open the API project.
+- Select the API startup profile.
+- Start the ASP.NET Core Web API.
+- Use Swagger to test available endpoints.
 
 ### Step 5: Run the .NET MAUI Application
 
-- Start the API first
-- Set the .NET MAUI application as the startup project
-- Run the Windows application
-- Ensure the client API base URL matches the running backend address
+- Start the API first.
+- Set the .NET MAUI application as the startup project.
+- Run the Windows application.
+- Ensure the client API base URL matches the running backend address.
 
-The application requires the backend and database to be correctly configured for features that depend on persistent data.
+### Step 6: Run the Admin Portal
+
+The current Admin MVC project can be started separately during development.
+
+```bash
+cd SpendWise.Admin
+dotnet run
+```
+
+The API can be started in another terminal:
+
+```bash
+cd SpendWise.API
+dotnet run
+```
+
+The Admin Portal's authentication and API integration are still under development.
 
 ---
 
-## 📁 Project Structure
+## 📁 Current Project Structure
 
 ```text
 SpendWise/
@@ -470,23 +555,30 @@ SpendWise/
 │   ├── Migrations/
 │   └── Program.cs
 │
+├── SpendWise.Admin/
+│   ├── Controllers/
+│   ├── Models/
+│   ├── Views/
+│   ├── wwwroot/
+│   └── Program.cs
+│
 ├── README.md
 └── .gitignore
 ```
 
-The structure above illustrates the main application components. The actual repository layout may differ slightly.
+The Admin project is currently separate. Its planned consolidation into the API project has not yet been performed.
 
 ---
 
 ## 🎯 Project Purpose
 
-Martin SpendWise was developed as a practical software engineering project demonstrating the integration of:
+Martin SpendWise demonstrates the integration of:
 
 - Cross-platform application development
 - Backend API development
 - Relational database design
 - Object-oriented programming
-- Authentication and authorization
+- Authentication and authorisation
 - Personal finance management
 - Budget monitoring
 - Transaction processing
@@ -497,9 +589,9 @@ Martin SpendWise was developed as a practical software engineering project demon
 - Software testing and debugging
 - Version control and project documentation
 
-The project demonstrates the development of a real-world software system, from database design and backend implementation to the user-facing application.
+The project demonstrates the development of a practical software system, from database design and backend implementation to the user-facing application.
 
-It also serves as a practical software development portfolio project.
+It also serves as a software development portfolio project.
 
 ---
 
@@ -514,10 +606,13 @@ It also serves as a practical software development portfolio project.
 | Phase 5 | Budget threshold notifications | Implemented |
 | Phase 6 | Purchase deletion and budget restoration | In progress |
 | Phase 7 | UI improvements and integration testing | In progress |
-| Phase 8 | Retailer price comparison | Planned |
-| Phase 9 | Grocery basket optimisation | Planned |
-| Phase 10 | Advanced analytics and reporting | Planned |
-| Phase 11 | Mobile and cloud deployment | Planned |
+| Phase 8 | Admin Portal and authentication | In progress |
+| Phase 9 | Admin/API architecture consolidation | Planned |
+| Phase 10 | SpendWise Pay architecture and provider integration | Planned |
+| Phase 11 | Retailer price comparison | Planned |
+| Phase 12 | Grocery basket optimisation | Planned |
+| Phase 13 | Advanced analytics and reporting | Planned |
+| Phase 14 | Mobile and cloud deployment | Planned |
 
 *Implemented indicates functionality developed within the project; it does not necessarily mean production-ready or fully tested.*
 
@@ -540,11 +635,7 @@ GitHub: [martinhleketani](https://github.com/martinhleketani)
 
 **Status: Active Development**
 
-Martin SpendWise is an ongoing full-stack software development project.
-
-### What We Have Now
-
-The current application focuses on:
+### What We Have
 
 - User authentication and account management
 - Monthly budget creation and monitoring
@@ -554,18 +645,24 @@ The current application focuses on:
 - Budget threshold notifications
 - Grocery list management
 - Financial summaries
+- Initial Admin Portal login interface
 
 ### What We Are Currently Working On
 
 - Purchase deletion
 - Accurate budget restoration after deleting purchases
 - Transaction management improvements
+- Admin Portal development
+- Admin authentication architecture
 - User interface enhancements
 - Error handling and validation
 - Frontend and backend integration testing
 
 ### What We Plan to Build Next
 
+- Admin dashboard and administration functionality
+- Admin/API architecture consolidation
+- SpendWise Pay
 - Grocery price comparison across supported South African retailers
 - Retailer specials and promotions
 - Smart grocery basket comparison
@@ -576,7 +673,7 @@ The current application focuses on:
 
 ### Long-Term Vision
 
-The long-term vision is to develop Martin SpendWise into a comprehensive personal finance and grocery management platform that helps South African consumers manage their budgets, understand their spending and make more cost-effective shopping decisions.
+The long-term vision is to develop Martin SpendWise into a comprehensive personal finance and grocery management platform that helps South African consumers manage their budgets, understand their spending, make more cost-effective shopping decisions and eventually access integrated payment services.
 
 ---
 

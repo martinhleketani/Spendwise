@@ -9,10 +9,7 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- ============================================= -->
         <!-- HEADER -->
-        <!-- ============================================= -->
-
         <Grid
             Grid.Row="0"
             BackgroundColor="#146B3A"
@@ -62,11 +59,7 @@
 
         </Grid>
 
-
-        <!-- ============================================= -->
         <!-- SCROLLABLE CONTENT -->
-        <!-- ============================================= -->
-
         <ScrollView
             Grid.Row="1"
             VerticalScrollBarVisibility="Default">
@@ -75,11 +68,7 @@
                 Padding="20"
                 Spacing="18">
 
-
-                <!-- ===================================== -->
                 <!-- MONTH / YEAR -->
-                <!-- ===================================== -->
-
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -102,7 +91,6 @@
                             Text="Choose the month you want to analyse."
                             FontSize="13"
                             TextColor="#6B7D72" />
-
 
                         <Grid
                             ColumnDefinitions="*,*"
@@ -144,8 +132,7 @@
 
                             </VerticalStackLayout>
 
-
-                            <!-- YEAR -->
+                            <!-- MANUAL YEAR INPUT -->
                             <VerticalStackLayout
                                 Grid.Column="1"
                                 Spacing="5">
@@ -167,22 +154,23 @@
                                         <RoundRectangle CornerRadius="10" />
                                     </Border.StrokeShape>
 
-                                    <Picker
-                                        x:Name="YearPicker"
-                                        Title="Year"
-                                        TitleColor="#777777"
+                                    <Entry
+                                        x:Name="YearEntry"
+                                        Placeholder="Enter year"
+                                        Keyboard="Numeric"
                                         TextColor="#173C2A"
+                                        PlaceholderColor="#777777"
                                         BackgroundColor="Transparent"
                                         FontSize="15"
                                         HorizontalOptions="Fill"
-                                        VerticalOptions="Fill" />
+                                        VerticalOptions="Center"
+                                        MaxLength="4" />
 
                                 </Border>
 
                             </VerticalStackLayout>
 
                         </Grid>
-
 
                         <Button
                             x:Name="LoadMonthlyReportButton"
@@ -198,11 +186,7 @@
 
                 </Border>
 
-
-                <!-- ===================================== -->
                 <!-- LOADING -->
-                <!-- ===================================== -->
-
                 <ActivityIndicator
                     x:Name="LoadingIndicator"
                     IsRunning="False"
@@ -210,11 +194,7 @@
                     Color="#146B3A"
                     HorizontalOptions="Center" />
 
-
-                <!-- ===================================== -->
                 <!-- ERROR -->
-                <!-- ===================================== -->
-
                 <Border
                     x:Name="ErrorCard"
                     IsVisible="False"
@@ -234,11 +214,7 @@
 
                 </Border>
 
-
-                <!-- ===================================== -->
                 <!-- MONTHLY SUMMARY -->
-                <!-- ===================================== -->
-
                 <VerticalStackLayout
                     x:Name="MonthlyReportSection"
                     IsVisible="False"
@@ -276,7 +252,6 @@
 
                     </Grid>
 
-
                     <!-- TOTAL SPENT -->
                     <Border
                         BackgroundColor="#146B3A"
@@ -312,7 +287,6 @@
 
                     </Border>
 
-
                     <!-- SUMMARY CARDS -->
                     <Grid
                         ColumnDefinitions="*,*"
@@ -347,7 +321,6 @@
 
                         </Border>
 
-
                         <Border
                             Grid.Column="1"
                             BackgroundColor="White"
@@ -378,7 +351,6 @@
                         </Border>
 
                     </Grid>
-
 
                     <!-- CATEGORY BREAKDOWN -->
                     <Border
@@ -420,7 +392,6 @@
                         </VerticalStackLayout>
 
                     </Border>
-
 
                     <!-- BIGGEST TRANSACTION -->
                     <Border
@@ -495,11 +466,7 @@
 
                 </VerticalStackLayout>
 
-
-                <!-- ===================================== -->
                 <!-- RETAILER REPORT -->
-                <!-- ===================================== -->
-
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -537,7 +504,6 @@
 
                 </Border>
 
-
                 <!-- RETAILER RESULTS -->
                 <VerticalStackLayout
                     x:Name="RetailerReportSection"
@@ -549,7 +515,6 @@
                         FontSize="20"
                         FontAttributes="Bold"
                         TextColor="#173C2A" />
-
 
                     <Grid
                         ColumnDefinitions="*,*"
@@ -584,7 +549,6 @@
 
                         </Border>
 
-
                         <Border
                             Grid.Column="1"
                             BackgroundColor="White"
@@ -615,7 +579,6 @@
                         </Border>
 
                     </Grid>
-
 
                     <Grid
                         ColumnDefinitions="*,*"
@@ -650,7 +613,6 @@
 
                         </Border>
 
-
                         <Border
                             Grid.Column="1"
                             BackgroundColor="White"
@@ -681,7 +643,6 @@
                         </Border>
 
                     </Grid>
-
 
                     <Border
                         BackgroundColor="White"
@@ -717,7 +678,6 @@
                         </VerticalStackLayout>
 
                     </Border>
-
 
                     <Border
                         x:Name="HighestRetailerCard"
@@ -758,11 +718,7 @@
 
                 </VerticalStackLayout>
 
-
-                <!-- ===================================== -->
                 <!-- CUSTOM DATE RANGE -->
-                <!-- ===================================== -->
-
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -785,7 +741,6 @@
                             Text="Generate a spending report between two dates."
                             FontSize="12"
                             TextColor="#718078" />
-
 
                         <Grid
                             ColumnDefinitions="*,*"
@@ -826,7 +781,6 @@
 
                             </VerticalStackLayout>
 
-
                             <!-- END DATE -->
                             <VerticalStackLayout
                                 Grid.Column="1"
@@ -864,7 +818,6 @@
 
                         </Grid>
 
-
                         <Button
                             x:Name="LoadDateRangeReportButton"
                             Text="Generate Date Range Report"
@@ -879,11 +832,7 @@
 
                 </Border>
 
-
-                <!-- ===================================== -->
                 <!-- DATE RANGE RESULTS -->
-                <!-- ===================================== -->
-
                 <VerticalStackLayout
                     x:Name="DateRangeReportSection"
                     IsVisible="False"
@@ -904,7 +853,6 @@
                             TextColor="#718078" />
 
                     </VerticalStackLayout>
-
 
                     <!-- DATE RANGE TOTAL -->
                     <Border
@@ -941,7 +889,6 @@
 
                     </Border>
 
-
                     <!-- DATE RANGE SUMMARY CARDS -->
                     <Grid
                         ColumnDefinitions="*,*"
@@ -976,7 +923,6 @@
 
                         </Border>
 
-
                         <Border
                             Grid.Column="1"
                             BackgroundColor="White"
@@ -1007,7 +953,6 @@
                         </Border>
 
                     </Grid>
-
 
                     <!-- CATEGORY BREAKDOWN -->
                     <Border
@@ -1044,7 +989,6 @@
 
                     </Border>
 
-
                     <!-- RETAILER BREAKDOWN -->
                     <Border
                         BackgroundColor="White"
@@ -1079,7 +1023,6 @@
                         </VerticalStackLayout>
 
                     </Border>
-
 
                     <!-- TRANSACTIONS -->
                     <Border
@@ -1118,7 +1061,6 @@
                     </Border>
 
                 </VerticalStackLayout>
-
 
                 <!-- BOTTOM SPACE -->
                 <BoxView

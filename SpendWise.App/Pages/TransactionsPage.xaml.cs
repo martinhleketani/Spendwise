@@ -297,7 +297,10 @@ public partial class TransactionsPage : ContentPage
             HorizontalOptions = LayoutOptions.End,
             CommandParameter = transaction.Id,
             IsEnabled = !_isDeleting && transaction.Id > 0,
-            IsVisible = string.Equals(transaction.Type, "Purchase", StringComparison.OrdinalIgnoreCase)
+            IsVisible = string.Equals(
+                transaction.Type,
+                "Purchase",
+                StringComparison.OrdinalIgnoreCase)
         };
 
         deleteButton.Clicked += DeletePurchaseButton_Clicked;
@@ -332,7 +335,7 @@ public partial class TransactionsPage : ContentPage
     // ==========================================
 
     private async void DeletePurchaseButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (_isDeleting || _isLoading)
@@ -366,9 +369,15 @@ public partial class TransactionsPage : ContentPage
             return;
         }
 
-        if (!string.Equals(selectedTransaction.Type, "Purchase", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(
+            selectedTransaction.Type,
+            "Purchase",
+            StringComparison.OrdinalIgnoreCase))
         {
-            await DisplayAlert("Cannot Delete", "Only purchase transactions can be deleted here.", "OK");
+            await DisplayAlert(
+                "Cannot Delete",
+                "Only purchase transactions can be deleted here.",
+                "OK");
             return;
         }
 
@@ -390,7 +399,8 @@ public partial class TransactionsPage : ContentPage
 
         try
         {
-            var result = await _apiService.DeletePurchaseAsync(transactionId);
+            var result =
+                await _apiService.DeletePurchaseAsync(transactionId);
 
             if (!result.Success)
             {
@@ -605,7 +615,7 @@ public partial class TransactionsPage : ContentPage
     // ==========================================
 
     private async void BackButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (Navigation.NavigationStack.Count > 1)
@@ -620,14 +630,14 @@ public partial class TransactionsPage : ContentPage
     }
 
     private async void RefreshButton_Clicked(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         await LoadTransactionsAsync();
     }
 
     private void TransactionFilterPicker_SelectedIndexChanged(
-        object sender,
+        object? sender,
         EventArgs e)
     {
         if (_isLoading)

@@ -1,0 +1,206 @@
+﻿
+/* =========================================
+   SPENDWISE ADMIN LOGIN
+   ========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #F3F7F4;
+    color: #24352A;
+}
+
+/* Main container */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+}
+
+/* Login card */
+
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    background: #FFFFFF;
+    padding: 42px;
+    border-radius: 18px;
+    box-shadow: 0 12px 45px rgba(20, 70, 40, 0.08);
+}
+
+/* Brand section */
+
+.brand {
+    text-align: center;
+    margin-bottom: 38px;
+}
+
+.brand-icon {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 12px;
+    background: #146B3A;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.brand h1 {
+    margin: 0;
+    color: #146B3A;
+    font-size: 27px;
+}
+
+.brand p {
+    color: #839187;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+/* Welcome section */
+
+.welcome h2 {
+    margin-bottom: 8px;
+    font-size: 25px;
+    color: #24352A;
+}
+
+.welcome p {
+    color: #7A887E;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+}
+
+/* Form fields */
+
+.form-group {
+    margin-bottom: 21px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: bold;
+        margin-bottom: 9px;
+    }
+
+    .form-group input {
+        width: 100%;
+        height: 48px;
+        padding: 0 14px;
+        border: 1px solid #DCE5DE;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+    }
+
+        .form-group input:focus {
+            border-color: #146B3A;
+            box-shadow: 0 0 0 3px rgba(20, 107, 58, 0.10);
+        }
+
+/* Login options */
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0 25px;
+    font-size: 12px;
+}
+
+.remember {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+}
+
+    .remember input {
+        accent-color: #146B3A;
+    }
+
+.forgot-text {
+    color: #146B3A;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Login button */
+
+.login-button {
+    width: 100%;
+    height: 49px;
+    border: none;
+    border-radius: 8px;
+    background: #146B3A;
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+    .login-button:hover {
+        background: #10552E;
+    }
+
+/* Validation messages */
+
+.validation-summary,
+.field-error {
+    color: #B42318;
+    font-size: 12px;
+}
+
+    .validation-summary:empty {
+        display: none;
+    }
+
+/* Security message */
+
+.security-note {
+    margin-top: 25px;
+    text-align: center;
+    color: #718078;
+    font-size: 12px;
+}
+
+    .security-note span {
+        margin-right: 5px;
+    }
+
+/* Footer */
+
+footer {
+    text-align: center;
+    margin-top: 35px;
+    color: #9AA69E;
+    font-size: 11px;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 480px) {
+
+    .login-card {
+        padding: 28px 22px;
+    }
+
+    .welcome h2 {
+        font-size: 23px;
+    }
+}

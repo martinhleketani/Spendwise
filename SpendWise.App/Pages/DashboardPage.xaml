@@ -395,32 +395,48 @@
         <!-- BOTTOM NAVIGATION -->
         <Grid Grid.Row="2"
               BackgroundColor="White"
-              Padding="12,8"
-              ColumnDefinitions="*,*,*,*">
+              Padding="4,8"
+              ColumnDefinitions="*,*,*,*,*">
 
             <Button Grid.Column="0"
                     Text="Home"
+                    FontSize="11"
+                    Padding="2"
                     BackgroundColor="Transparent"
                     TextColor="#146B3A"
                     FontAttributes="Bold" />
 
             <Button Grid.Column="1"
                     Text="Grocery"
+                    FontSize="11"
+                    Padding="2"
                     BackgroundColor="Transparent"
                     TextColor="#666666"
                     Clicked="GroceryButton_Clicked" />
 
             <Button Grid.Column="2"
                     Text="Budget"
+                    FontSize="11"
+                    Padding="2"
                     BackgroundColor="Transparent"
                     TextColor="#666666"
                     Clicked="BudgetButton_Clicked" />
 
             <Button Grid.Column="3"
                     Text="Profile"
+                    FontSize="11"
+                    Padding="2"
                     BackgroundColor="Transparent"
                     TextColor="#666666"
                     Clicked="ProfileButton_Clicked" />
+
+            <Button Grid.Column="4"
+                    Text="Help"
+                    FontSize="11"
+                    Padding="2"
+                    BackgroundColor="Transparent"
+                    TextColor="#146B3A"
+                    Clicked="HelpButton_Clicked" />
         </Grid>
 
     </Grid>

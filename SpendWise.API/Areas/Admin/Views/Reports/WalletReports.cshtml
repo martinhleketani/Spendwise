@@ -1,0 +1,832 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Wallet Reports";
+
+
+
+    var totalWallets = (int)(ViewBag.TotalWallets ?? 0);
+
+    var activeWallets = (int)(ViewBag.ActiveWallets ?? 0);
+
+    var suspendedWallets = (int)(ViewBag.SuspendedWallets ?? 0);
+
+    var closedWallets = (int)(ViewBag.ClosedWallets ?? 0);
+
+
+
+    var totalWalletTransactions =
+
+        (int)(ViewBag.TotalWalletTransactions ?? 0);
+
+
+
+    var pendingTransactions =
+
+        (int)(ViewBag.PendingWalletTransactions ?? 0);
+
+
+
+    var completedTransactions =
+
+        (int)(ViewBag.CompletedWalletTransactions ?? 0);
+
+
+
+    var failedTransactions =
+
+        (int)(ViewBag.FailedWalletTransactions ?? 0);
+
+
+
+    var reversedTransactions =
+
+        (int)(ViewBag.ReversedWalletTransactions ?? 0);
+
+
+
+    var walletList = ViewBag.WalletList;
+
+    var recentTransactions = ViewBag.RecentWalletTransactions;
+
+    var completedTotals = ViewBag.CompletedWalletTotals;
+
+
+
+    var walletStatusChart =
+
+        ViewBag.WalletStatusChart?.ToString()
+
+        ?? "{\"labels\":[],\"values\":[]}";
+}
+
+<style>
+    .report-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+
+        .report-heading h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .report-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .back-link {
+        background: #286B48;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .back-link:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .report-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h2 {
+            font-size: 26px;
+            margin: 0;
+            color: #26352C;
+        }
+
+        .summary-card small {
+            display: block;
+            margin-top: 8px;
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .report-panel {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+        .report-panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .report-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 18px;
+        line-height: 1.7;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        max-width: 500px;
+        margin: auto;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .analytics-card {
+        background: #F4F7F5;
+        padding: 17px;
+        border-radius: 9px;
+    }
+
+        .analytics-card h3 {
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .status-item {
+        background: #F4F7F5;
+        padding: 15px;
+        border-radius: 9px;
+    }
+
+        .status-item span {
+            display: block;
+            color: #839087;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .status-item strong {
+            font-size: 22px;
+            color: #26352C;
+        }
+
+    .analytics-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .analytics-table th,
+        .analytics-table td {
+            padding: 11px 8px;
+            text-align: left;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+        }
+
+        .analytics-table th {
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 320px;
+        padding: 10px 12px;
+        border: 1px solid #E5ECE7;
+        border-radius: 7px;
+        font-size: 12px;
+        outline: none;
+    }
+
+        .search-input:focus {
+            border-color: #286B48;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+        .report-table th {
+            background: #F4F7F5;
+            color: #65736A;
+            font-size: 11px;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            color: #26352C;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .status-active,
+    .status-completed,
+    .status-posted {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-suspended,
+    .status-pending,
+    .status-draft {
+        background: #FFF4DF;
+        color: #946A19;
+    }
+
+    .status-closed,
+    .status-failed,
+    .status-reversed {
+        background: #FCEBED;
+        color: #B54752;
+    }
+
+    .record-count {
+        color: #839087;
+        font-size: 11px;
+    }
+
+    .empty-state {
+        padding: 25px;
+        text-align: center;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    .notice {
+        background: #F4F7F5;
+        border-left: 4px solid #286B48;
+        border-radius: 7px;
+        padding: 13px 15px;
+        color: #65736A;
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 18px;
+    }
+
+    @@media(max-width: 1000px) {
+        .report-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media(max-width: 700px) {
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media(max-width: 600px) {
+        .report-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .report-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input {
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- PAGE HEADING -->
+
+<div class="report-heading">
+    <div>
+        <h1>Wallet Reports</h1>
+        <p>Monitor customer wallets and wallet activity.</p>
+    </div>
+
+    <a class="back-link" href="@Url.Action("Index")">
+        ← Reports Dashboard
+    </a>
+</div>
+
+<!-- WALLET SUMMARY -->
+
+<div class="report-summary">
+
+    <div class="summary-card">
+        <span>Total Wallets</span>
+        <h2>@totalWallets</h2>
+        <small>All registered wallet accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Active Wallets</span>
+        <h2>@activeWallets</h2>
+        <small>Currently active accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Suspended Wallets</span>
+        <h2>@suspendedWallets</h2>
+        <small>Currently suspended accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Closed Wallets</span>
+        <h2>@closedWallets</h2>
+        <small>Closed wallet accounts</small>
+    </div>
+
+</div>
+
+<!-- WALLET STATUS CHART -->
+
+<div class="report-panel">
+
+    <h2>Wallet Status Distribution</h2>
+
+    <p class="report-description">
+        Breakdown of customer wallets according to their current account status.
+    </p>
+
+    <div class="chart-container">
+        <canvas id="walletStatusChart"></canvas>
+    </div>
+
+</div>
+
+<!-- WALLET TRANSACTION ACTIVITY -->
+
+<div class="report-panel">
+
+    <h2>Wallet Transaction Activity</h2>
+
+    <p class="report-description">
+        Overview of recorded deposits, payments, refunds and other wallet movements.
+    </p>
+
+    <div class="status-grid">
+
+        <div class="status-item">
+            <span>Total Wallet Transactions</span>
+            <strong>@totalWalletTransactions</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Completed</span>
+            <strong>@completedTransactions</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Pending</span>
+            <strong>@pendingTransactions</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Failed</span>
+            <strong>@failedTransactions</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Reversed</span>
+            <strong>@reversedTransactions</strong>
+        </div>
+
+    </div>
+
+    <div class="notice">
+        Transaction amounts are stored as positive values. The transaction type
+        determines their financial direction. The totals below are grouped by
+        currency and transaction type and include completed transactions only.
+    </div>
+
+    <h2>Completed Financial Movements</h2>
+
+    <div class="table-responsive">
+
+        <table class="analytics-table">
+
+            <thead>
+                <tr>
+                    <th>Currency</th>
+                    <th>Transaction Type</th>
+                    <th>Transaction Count</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (completedTotals != null && completedTotals.Count > 0)
+
+                {
+                    foreach (var item in completedTotals)
+                    {
+                        <tr>
+                            <td>@item.Currency</td>
+                            <td>@item.Type</td>
+                            <td>@item.TransactionCount</td>
+                            <td>
+                                @item.Currency @(((decimal)item.TotalAmount).ToString("N2"))
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            No completed wallet transactions found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- WALLET ACCOUNTS -->
+
+<div class="report-panel">
+
+    <h2>Wallet Accounts</h2>
+
+    <p class="report-description">
+        Review registered customer wallet accounts and their account details.
+        The latest 100 wallet accounts are displayed.
+    </p>
+
+    <div class="table-toolbar">
+
+        <input type="text"
+               id="walletSearch"
+               class="search-input"
+               placeholder="Search wallet number, customer or status..." />
+
+        <span class="record-count" id="walletRecordCount">
+            Showing up to 100 records
+        </span>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="walletsTable">
+
+            <thead>
+                <tr>
+                    <th>Wallet ID</th>
+                    <th>Wallet Number</th>
+                    <th>Customer</th>
+                    <th>User ID</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (walletList != null && walletList.Count > 0)
+
+                {
+                    foreach (var wallet in walletList)
+                    {
+                        <tr>
+                            <td>#@wallet.Id</td>
+                            <td>@wallet.WalletNumber</td>
+
+                            <td>
+                                @(wallet.User?.FullName ?? "Unknown")
+                            </td>
+
+                            <td>@wallet.UserId</td>
+                            <td>@wallet.Currency</td>
+
+                            <td>
+                                <span class="status-badge status-@wallet.Status.ToLowerInvariant()">
+                                    @wallet.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @wallet.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+
+                            <td>
+                                @wallet.UpdatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            No wallet accounts found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- WALLET TRANSACTION HISTORY -->
+
+<div class="report-panel">
+
+    <h2>Wallet Transaction History</h2>
+
+    <p class="report-description">
+        Review the latest 100 wallet financial transactions.
+    </p>
+
+    <div class="table-toolbar">
+
+        <input type="text"
+               id="walletTransactionSearch"
+               class="search-input"
+               placeholder="Search reference, customer or transaction type..." />
+
+        <span class="record-count" id="walletTransactionRecordCount">
+            Showing up to 100 records
+        </span>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="walletTransactionsTable">
+
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Reference</th>
+                    <th>Wallet Number</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th>Completed Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (recentTransactions != null &&
+                recentTransactions.Count > 0)
+
+                {
+                    foreach (var transaction in recentTransactions)
+                    {
+                        <tr>
+                            <td>#@transaction.Id</td>
+                            <td>@transaction.Reference</td>
+
+                            <td>
+                                @(transaction.Wallet?.WalletNumber ?? "Unknown")
+                            </td>
+
+                            <td>
+                                @(transaction.Wallet?.User?.FullName ?? "Unknown")
+                            </td>
+
+                            <td>@transaction.Type</td>
+
+                            <td>
+                                @(transaction.Category ?? "Uncategorised")
+                            </td>
+
+                            <td>
+                                @(((decimal)transaction.Amount).ToString("N2"))
+                            </td>
+
+                            <td>@transaction.Currency</td>
+
+                            <td>
+                                <span class="status-badge status-@transaction.Status.ToLowerInvariant()">
+                                    @transaction.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @transaction.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+
+                            <!-- FIXED: CompletedAt is a non-nullable DateTime -->
+
+                            <td>
+                                @transaction.CompletedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="11" class="empty-state">
+                            No wallet transactions found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // WALLET STATUS CHART
+
+            const walletStatusData =
+        @Html.Raw(walletStatusChart);
+
+            const walletStatusCanvas =
+                document.getElementById("walletStatusChart");
+
+            if (walletStatusCanvas) {
+
+                new Chart(walletStatusCanvas, {
+                    type: "doughnut",
+
+                    data: {
+                        labels: walletStatusData.labels,
+
+                        datasets: [{
+                            label: "Wallet Accounts",
+                            data: walletStatusData.values,
+
+                            backgroundColor: [
+                                "#286B48",
+                                "#D6A43B",
+                                "#D65C68",
+                                "#839087",
+                                "#26966B"
+                            ],
+
+                            borderWidth: 1
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            // WALLET ACCOUNT SEARCH
+
+            function setupTableSearch(inputId, tableId, countId) {
+
+                const input = document.getElementById(inputId);
+
+                const rows = document.querySelectorAll(
+                    "#" + tableId + " tbody tr"
+                );
+
+                const count = document.getElementById(countId);
+
+                if (!input || !count) return;
+
+                function updateSearch() {
+
+                    const searchValue =
+                        input.value.toLowerCase().trim();
+
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+
+                        if (row.querySelector(".empty-state")) {
+                            return;
+                        }
+
+                        const matches =
+                            row.textContent.toLowerCase().includes(searchValue);
+
+                        row.style.display = matches ? "" : "none";
+
+                        if (matches) {
+                            visibleCount++;
+                        }
+
+                    });
+
+                    count.textContent =
+                        "Showing " + visibleCount + " records";
+                }
+
+                input.addEventListener("input", updateSearch);
+
+                updateSearch();
+            }
+
+            setupTableSearch(
+                "walletSearch",
+                "walletsTable",
+                "walletRecordCount"
+            );
+
+            setupTableSearch(
+                "walletTransactionSearch",
+                "walletTransactionsTable",
+                "walletTransactionRecordCount"
+            );
+
+        });
+    </script>
+}

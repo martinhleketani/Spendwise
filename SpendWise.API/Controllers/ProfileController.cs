@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpendWise.API.Data;
@@ -26,24 +27,20 @@ namespace SpendWise.API.Controllers
             var userId = GetCurrentUserId();
 
             if (userId == null)
-            {
                 return Unauthorized(new
                 {
                     message = "Invalid user authentication."
                 });
-            }
 
             var user = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user == null)
-            {
                 return NotFound(new
                 {
                     message = "User account not found."
                 });
-            }
 
             return Ok(new
             {
@@ -64,38 +61,39 @@ namespace SpendWise.API.Controllers
             var userId = GetCurrentUserId();
 
             if (userId == null)
-            {
                 return Unauthorized(new
                 {
                     message = "Invalid user authentication."
                 });
-            }
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user == null)
-            {
                 return NotFound(new
                 {
                     message = "User account not found."
                 });
-            }
 
-            var fullName = request.FullName.Trim();
-            var email = request.Email.Trim().ToLowerInvariant();
+            var fullName = request.FullName?.Trim() ?? "";
+            var email = request.Email?.Trim().ToLowerInvariant() ?? "";
 
-            string? phoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber)
-                ? null
-                : request.PhoneNumber.Trim();
+            string? phoneNumber =
+                string.IsNullOrWhiteSpace(request.PhoneNumber)
+                    ? null
+                    : request.PhoneNumber.Trim();
 
             if (string.IsNullOrWhiteSpace(fullName))
-            {
                 return BadRequest(new
                 {
                     message = "Full name is required."
                 });
-            }
+
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest(new
+                {
+                    message = "Email is required."
+                });
 
             var emailAlreadyExists = await _context.Users
                 .AnyAsync(u =>
@@ -103,12 +101,10 @@ namespace SpendWise.API.Controllers
                     u.Id != user.Id);
 
             if (emailAlreadyExists)
-            {
                 return Conflict(new
                 {
                     message = "An account with this email already exists."
                 });
-            }
 
             if (phoneNumber != null)
             {
@@ -118,13 +114,11 @@ namespace SpendWise.API.Controllers
                         u.Id != user.Id);
 
                 if (phoneAlreadyExists)
-                {
                     return Conflict(new
                     {
                         message =
                             "An account with this phone number already exists."
                     });
-                }
             }
 
             user.FullName = fullName;
@@ -148,20 +142,49 @@ namespace SpendWise.API.Controllers
             });
         }
 
+        // DELETE: api/Profile
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMyAccount()
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized(new
+                {
+                    message = "Invalid user authentication."
+                });
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+            if (user == null)
+                return NotFound(new
+                {
+                    message = "User account not found."
+                });
+
+            // Only the authenticated user's account is deleted.
+            // Related records are handled by configured cascade deletion.
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Your account has been permanently deleted."
+            });
+        }
+
         private int? GetCurrentUserId()
         {
             var userIdClaim =
                 User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrWhiteSpace(userIdClaim))
-            {
                 return null;
-            }
 
             if (!int.TryParse(userIdClaim, out var userId))
-            {
                 return null;
-            }
 
             return userId;
         }

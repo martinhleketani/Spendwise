@@ -1,0 +1,552 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.TransactionManagementIndexViewModel
+
+@using System.Linq
+@using System.Globalization
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Transaction Management";
+
+
+
+    string DisplayCategory(string? category)
+
+    {
+
+        if (string.IsNullOrWhiteSpace(category))
+
+            return "Not specified";
+
+
+
+        return category.Trim().ToLowerInvariant() switch
+
+        {
+
+            "grocery" => "Groceries",
+
+            "groceries" => "Groceries",
+
+            "entertainment" => "Entertainment",
+
+            "other" => "Other",
+
+            "transport" => "Transport",
+
+            "utilities" => "Utilities",
+
+            _ => category
+
+        };
+
+    }
+}
+
+<style>
+    /* PAGE HEADING AND BACK BUTTON */
+
+    .admin-page-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 18px;
+        background: #286B48;
+        color: #FFFFFF;
+        border: 1px solid #286B48;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    /* TRANSACTION STATISTICS */
+
+    .transaction-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        margin: 10px 0 25px;
+    }
+
+    .stat-card {
+        background: #FFFFFF;
+        padding: 23px;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+    }
+
+        .stat-card span {
+            display: block;
+            color: #839087;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card h2 {
+            font-size: 27px;
+            color: #286B48;
+            margin: 0;
+        }
+
+    /* TRANSACTION DIRECTORY */
+
+    .directory {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 24px;
+    }
+
+    .directory-header {
+        margin-bottom: 22px;
+    }
+
+        .directory-header h2 {
+            font-size: 19px;
+            color: #173F2B;
+            margin: 0;
+        }
+
+    /* SEARCH AND FILTERS */
+
+    .filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+        .filter-form input,
+        .filter-form select {
+            padding: 11px 13px;
+            border: 1px solid #D8E2DA;
+            border-radius: 7px;
+            background: #FFFFFF;
+            color: #26352C;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .filter-form input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-form button {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 7px;
+            background: #286B48;
+            color: #FFFFFF;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+            .filter-form button:hover {
+                background: #173F2B;
+            }
+
+    .reset-link {
+        display: inline-flex;
+        align-items: center;
+        color: #286B48;
+        text-decoration: none;
+        font-size: 13px;
+        padding: 10px;
+        font-weight: 600;
+    }
+
+        .reset-link:hover {
+            color: #173F2B;
+            text-decoration: underline;
+        }
+
+    /* TRANSACTION TABLE */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .transaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+        .transaction-table th {
+            text-align: left;
+            padding: 14px 12px;
+            background: #F8FAF8;
+            color: #6B7B70;
+            font-size: 12px;
+            font-weight: 700;
+            border-bottom: 1px solid #E5ECE7;
+        }
+
+        .transaction-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #EDF1ED;
+            font-size: 13px;
+            color: #26352C;
+        }
+
+        .transaction-table tbody tr:hover {
+            background: #FAFCFA;
+        }
+
+    .reference {
+        font-weight: 700;
+        color: #286B48 !important;
+    }
+
+    .amount {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .customer-email {
+        display: inline-block;
+        margin-top: 4px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    .category-label {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #E8F4EC;
+        color: #286B48;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .view-link {
+        color: #286B48;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+        .view-link:hover {
+            color: #173F2B;
+            text-decoration: underline;
+        }
+
+    /* EMPTY STATE */
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 15px;
+        color: #839087;
+        font-size: 13px;
+    }
+
+        .empty-state strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #173F2B;
+            font-size: 15px;
+        }
+
+    /* FOOTER */
+
+    .transaction-footer {
+        margin-top: 25px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    /* RESPONSIVE DESIGN */
+
+    @@media (max-width: 700px) {
+        .transaction-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .directory {
+            padding: 17px;
+        }
+
+        .filter-form {
+            flex-direction: column;
+        }
+
+            .filter-form input,
+            .filter-form select,
+            .filter-form button {
+                width: 100%;
+            }
+
+        .reset-link {
+            justify-content: center;
+        }
+
+        .admin-page-heading {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<!-- PAGE INTRODUCTION -->
+
+<div class="admin-page-heading">
+
+    <div>
+        <h2 style="font-size:20px; color:#173F2B; margin-bottom:7px;">
+            Transaction Management
+        </h2>
+
+        <p style="font-size:13px; color:#839087; margin:0;">
+            Monitor and view customer transactions recorded on SpendWise.
+        </p>
+    </div>
+
+    <a href="@Url.Action("Index", "AdminDashboard", new { area = "Admin" })"
+       class="admin-back-button">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+<!-- TRANSACTION STATISTICS -->
+
+<section class="transaction-stats">
+
+    <div class="stat-card">
+
+        <span>Total Transactions</span>
+
+        <h2>@Model.TotalTransactions</h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Total Recorded Value</span>
+
+        <h2>
+            @Model.TotalTransactionValue.ToString(
+                     "C2",
+                     CultureInfo.GetCultureInfo("en-ZA"))
+        </h2>
+
+    </div>
+
+</section>
+
+<!-- TRANSACTION DIRECTORY -->
+
+<section class="directory">
+
+    <div class="directory-header">
+
+        <h2>Transaction Directory</h2>
+
+    </div>
+
+    <!-- SEARCH AND FILTERS -->
+
+    <form method="get"
+          action="/Admin/TransactionManagement/Index"
+          class="filter-form">
+
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               placeholder="Search reference, customer or description..." />
+
+        <select name="type">
+
+            <option value="">All Types</option>
+
+            @foreach (var item in Model.Types)
+            {
+
+                if (Model.SelectedType == item)
+
+                {
+                    <option value="@item" selected>@item</option>
+                }
+
+                else
+
+                {
+                    <option value="@item">@item</option>
+                }
+            }
+
+        </select>
+
+        <!-- CATEGORY FILTER -->
+
+        <select name="category">
+
+            <option value="">All Categories</option>
+
+            @foreach (var item in Model.Categories)
+            {
+
+                bool isSelected = string.Equals(
+
+                Model.SelectedCategory,
+
+                item,
+
+                StringComparison.OrdinalIgnoreCase);
+
+
+
+                if (isSelected)
+
+                {
+                    <option value="@item" selected>@item</option>
+                }
+
+                else
+
+                {
+                    <option value="@item">@item</option>
+                }
+            }
+
+        </select>
+
+        <button type="submit">
+            Search
+        </button>
+
+        <a href="/Admin/TransactionManagement/Index"
+           class="reset-link">
+            Reset
+        </a>
+
+    </form>
+
+    <!-- TRANSACTION TABLE -->
+
+    <div class="table-wrapper">
+
+        @if (Model.Transactions.Any())
+
+        {
+            <table class="transaction-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Reference</th>
+                        <th>Customer</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var transaction in Model.Transactions)
+                    {
+                        <tr>
+
+                            <td>
+                                #@transaction.Id
+                            </td>
+
+                            <td class="reference">
+                                @transaction.Reference
+                            </td>
+
+                            <td>
+                                <strong>@transaction.CustomerName</strong>
+
+                                <br />
+
+                                <span class="customer-email">
+                                    @transaction.CustomerEmail
+                                </span>
+                            </td>
+
+                            <td>
+                                @transaction.Type
+                            </td>
+
+                            <td>
+                                <span class="category-label">
+                                    @DisplayCategory(transaction.Category)
+                                </span>
+                            </td>
+
+                            <td class="amount">
+                                @transaction.Amount.ToString(
+                                         "C2",
+                                         CultureInfo.GetCultureInfo("en-ZA"))
+                            </td>
+
+                            <td>
+                                @transaction.CreatedAt.ToString("dd MMM yyyy")
+                            </td>
+
+                            <td>
+                                <a href="/Admin/TransactionManagement/Details/@transaction.Id"
+                                   class="view-link">
+                                    View details
+                                </a>
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+        }
+
+        else
+
+        {
+            <div class="empty-state">
+
+                <strong>No transactions found</strong>
+
+                There are no transactions matching your search
+                or filter criteria.
+
+            </div>
+        }
+
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+
+<div class="transaction-footer">
+    © @DateTime.UtcNow.Year SpendWise Administration Portal.
+</div>

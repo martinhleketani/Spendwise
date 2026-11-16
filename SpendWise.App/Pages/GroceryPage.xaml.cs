@@ -19,17 +19,10 @@ public partial class GroceryPage : ContentPage
     private readonly int? _listIdToOpen;
     private bool _initialListLoaded;
 
-    private static readonly Color Green =
-        Color.FromArgb("#146B3A");
-
-    private static readonly Color Dark =
-        Color.FromArgb("#172B20");
-
-    private static readonly Color Gray =
-        Color.FromArgb("#68776E");
-
-    private static readonly Color Red =
-        Color.FromArgb("#B42318");
+    private static readonly Color Green = Color.FromArgb("#146B3A");
+    private static readonly Color Dark = Color.FromArgb("#172B20");
+    private static readonly Color Gray = Color.FromArgb("#68776E");
+    private static readonly Color Red = Color.FromArgb("#B42318");
 
     public GroceryPage()
     {
@@ -51,6 +44,7 @@ public partial class GroceryPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
         await LoadGroceryListsAsync();
 
         if (_listIdToOpen.HasValue && !_initialListLoaded)
@@ -65,8 +59,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void SelectRetailerButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         if (_isCompleted)
         {
@@ -77,8 +70,7 @@ public partial class GroceryPage : ContentPage
             return;
         }
 
-        string[] retailers =
-            RetailerPicker.Items.ToArray();
+        string[] retailers = RetailerPicker.Items.ToArray();
 
         string selected = await DisplayActionSheet(
             "Select Retailer",
@@ -105,15 +97,12 @@ public partial class GroceryPage : ContentPage
             RetailerPicker.SelectedItem?.ToString()
             ?? "Select a retailer";
 
-        SelectRetailerButton.Text =
-            retailer + "  ▼";
+        SelectRetailerButton.Text = retailer + "  ▼";
     }
 
     private int GetRetailerIndex(string retailer)
     {
-        for (int i = 0;
-             i < RetailerPicker.Items.Count;
-             i++)
+        for (int i = 0; i < RetailerPicker.Items.Count; i++)
         {
             if (string.Equals(
                 RetailerPicker.Items[i],
@@ -132,20 +121,17 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private void AddItemButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
         if (_isCompleted)
         {
-            ShowError(
-                "This list is completed. Create a new list.");
+            ShowError("This list is completed. Create a new list.");
             return;
         }
 
-        string name =
-            ProductNameEntry.Text?.Trim() ?? "";
+        string name = ProductNameEntry.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -155,11 +141,9 @@ public partial class GroceryPage : ContentPage
 
         if (!int.TryParse(
                 QuantityEntry.Text,
-                out int quantity) ||
-            quantity <= 0)
+                out int quantity) || quantity <= 0)
         {
-            ShowError(
-                "Enter a valid quantity greater than zero.");
+            ShowError("Enter a valid quantity greater than zero.");
             return;
         }
 
@@ -167,8 +151,7 @@ public partial class GroceryPage : ContentPage
 
         if (price <= 0)
         {
-            ShowError(
-                "Enter a valid price greater than R0.");
+            ShowError("Enter a valid price greater than R0.");
             return;
         }
 
@@ -197,9 +180,7 @@ public partial class GroceryPage : ContentPage
 
                 if (item.DatabaseId.HasValue)
                 {
-                    item.PendingOldDatabaseId ??=
-                        item.DatabaseId;
-
+                    item.PendingOldDatabaseId ??= item.DatabaseId;
                     item.DatabaseId = null;
                 }
             }
@@ -220,14 +201,12 @@ public partial class GroceryPage : ContentPage
         }
         catch (OverflowException)
         {
-            ShowError(
-                "The quantity or price is too large.");
+            ShowError("The quantity or price is too large.");
         }
     }
 
     private void EditItemButton_Clicked(
-        object? sender,
-        EventArgs e)
+        object? sender, EventArgs e)
     {
         if (_isCompleted ||
             sender is not Button button ||
@@ -245,15 +224,10 @@ public partial class GroceryPage : ContentPage
         _editingItemId = item.LocalId;
 
         ProductNameEntry.Text = item.ProductName;
-
-        QuantityEntry.Text =
-            item.Quantity.ToString(
-                CultureInfo.InvariantCulture);
-
-        PriceEntry.Text =
-            item.UnitPrice.ToString(
-                "0.00",
-                CultureInfo.InvariantCulture);
+        QuantityEntry.Text = item.Quantity.ToString(
+            CultureInfo.InvariantCulture);
+        PriceEntry.Text = item.UnitPrice.ToString(
+            "0.00", CultureInfo.InvariantCulture);
 
         ProductFormTitleLabel.Text = "Edit Product";
         AddItemButton.Text = "Save Changes";
@@ -263,8 +237,7 @@ public partial class GroceryPage : ContentPage
     }
 
     private void CancelEditButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         ResetProductForm();
         HideError();
@@ -295,14 +268,11 @@ public partial class GroceryPage : ContentPage
         {
             ItemsLayout.Children.Add(new Label
             {
-                Text =
-                    "Your basket is empty.\nAdd a product to get started.",
+                Text = "Your basket is empty.\nAdd a product to get started.",
                 FontSize = 13,
                 TextColor = Gray,
-                HorizontalTextAlignment =
-                    TextAlignment.Center,
-                HorizontalOptions =
-                    LayoutOptions.Fill,
+                HorizontalTextAlignment = TextAlignment.Center,
+                HorizontalOptions = LayoutOptions.Fill,
                 Margin = new Thickness(0, 20)
             });
 
@@ -311,8 +281,7 @@ public partial class GroceryPage : ContentPage
 
         foreach (var item in _items)
         {
-            ItemsLayout.Children.Add(
-                CreateItemView(item));
+            ItemsLayout.Children.Add(CreateItemView(item));
         }
     }
 
@@ -320,44 +289,29 @@ public partial class GroceryPage : ContentPage
     {
         var border = new Border
         {
-            BackgroundColor =
-                Color.FromArgb("#F7FAF8"),
+            BackgroundColor = Color.FromArgb("#F7FAF8"),
             Stroke = Color.FromArgb("#E4EAE6"),
             StrokeThickness = 1,
             Padding = new Thickness(12),
-            StrokeShape =
-                new Microsoft.Maui.Controls.Shapes
-                    .RoundRectangle
-                {
-                    CornerRadius = new CornerRadius(10)
-                }
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(10)
+            }
         };
 
-        var layout = new VerticalStackLayout
-        {
-            Spacing = 10
-        };
+        var layout = new VerticalStackLayout { Spacing = 10 };
 
         var header = new Grid
         {
             ColumnSpacing = 10,
             ColumnDefinitions =
             {
-                new ColumnDefinition
-                {
-                    Width = GridLength.Star
-                },
-                new ColumnDefinition
-                {
-                    Width = GridLength.Auto
-                }
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
             }
         };
 
-        var information = new VerticalStackLayout
-        {
-            Spacing = 4
-        };
+        var information = new VerticalStackLayout { Spacing = 4 };
 
         information.Children.Add(new Label
         {
@@ -369,8 +323,7 @@ public partial class GroceryPage : ContentPage
 
         information.Children.Add(new Label
         {
-            Text =
-                $"{item.Quantity} × R {item.UnitPrice:N2}",
+            Text = $"{item.Quantity} × R {item.UnitPrice:N2}",
             FontSize = 12,
             TextColor = Gray
         });
@@ -394,17 +347,13 @@ public partial class GroceryPage : ContentPage
 
         if (!_isCompleted)
         {
-            var actions = new HorizontalStackLayout
-            {
-                Spacing = 8
-            };
+            var actions = new HorizontalStackLayout { Spacing = 8 };
 
             var editButton = new Button
             {
                 Text = "Edit",
                 FontSize = 12,
-                BackgroundColor =
-                    Color.FromArgb("#E8F3EC"),
+                BackgroundColor = Color.FromArgb("#E8F3EC"),
                 TextColor = Green,
                 CornerRadius = 8,
                 HeightRequest = 38,
@@ -412,15 +361,13 @@ public partial class GroceryPage : ContentPage
                 CommandParameter = item.LocalId
             };
 
-            editButton.Clicked +=
-                EditItemButton_Clicked;
+            editButton.Clicked += EditItemButton_Clicked;
 
             var removeButton = new Button
             {
                 Text = "Remove",
                 FontSize = 12,
-                BackgroundColor =
-                    Color.FromArgb("#FCEDEA"),
+                BackgroundColor = Color.FromArgb("#FCEDEA"),
                 TextColor = Red,
                 CornerRadius = 8,
                 HeightRequest = 38,
@@ -428,8 +375,7 @@ public partial class GroceryPage : ContentPage
                 CommandParameter = item.LocalId
             };
 
-            removeButton.Clicked +=
-                RemoveItemButton_Clicked;
+            removeButton.Clicked += RemoveItemButton_Clicked;
 
             actions.Children.Add(editButton);
             actions.Children.Add(removeButton);
@@ -446,8 +392,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void RemoveItemButton_Clicked(
-        object? sender,
-        EventArgs e)
+        object? sender, EventArgs e)
     {
         HideError();
 
@@ -456,8 +401,7 @@ public partial class GroceryPage : ContentPage
             button.CommandParameter is not Guid id)
             return;
 
-        var item = _items.FirstOrDefault(
-            x => x.LocalId == id);
+        var item = _items.FirstOrDefault(x => x.LocalId == id);
 
         if (item == null)
             return;
@@ -479,11 +423,9 @@ public partial class GroceryPage : ContentPage
 
                 foreach (int databaseId in ids)
                 {
-                    var result =
-                        await _apiService
-                            .DeleteGroceryItemAsync(
-                                _savedGroceryListId.Value,
-                                databaseId);
+                    var result = await _apiService.DeleteGroceryItemAsync(
+                        _savedGroceryListId.Value,
+                        databaseId);
 
                     if (!result.Success)
                     {
@@ -503,8 +445,7 @@ public partial class GroceryPage : ContentPage
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Unable to remove product: {ex.Message}");
+            ShowError($"Unable to remove product: {ex.Message}");
         }
         finally
         {
@@ -517,15 +458,13 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void ClearItemsButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
         if (_isCompleted)
         {
-            ShowError(
-                "Completed lists cannot be changed.");
+            ShowError("Completed lists cannot be changed.");
             return;
         }
 
@@ -561,11 +500,8 @@ public partial class GroceryPage : ContentPage
 
                     foreach (int id in ids)
                     {
-                        var result =
-                            await _apiService
-                                .DeleteGroceryItemAsync(
-                                    _savedGroceryListId.Value,
-                                    id);
+                        var result = await _apiService.DeleteGroceryItemAsync(
+                            _savedGroceryListId.Value, id);
 
                         if (!result.Success)
                         {
@@ -586,8 +522,7 @@ public partial class GroceryPage : ContentPage
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Unable to clear basket: {ex.Message}");
+            ShowError($"Unable to clear basket: {ex.Message}");
         }
     }
 
@@ -596,20 +531,15 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void SaveListButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         if (_isSaving || _isCompleted)
             return;
 
         HideError();
 
-        string listName =
-            ListNameEntry.Text?.Trim() ?? "";
-
-        string retailer =
-            RetailerPicker.SelectedItem?.ToString()
-            ?? "";
+        string listName = ListNameEntry.Text?.Trim() ?? "";
+        string retailer = RetailerPicker.SelectedItem?.ToString() ?? "";
 
         if (string.IsNullOrWhiteSpace(listName))
         {
@@ -625,13 +555,11 @@ public partial class GroceryPage : ContentPage
 
         if (_items.Count == 0)
         {
-            ShowError(
-                "Add at least one product before saving.");
+            ShowError("Add at least one product before saving.");
             return;
         }
 
         _isSaving = true;
-
         SaveListButton.IsEnabled = false;
         SaveListButton.Text = "Saving...";
 
@@ -639,19 +567,15 @@ public partial class GroceryPage : ContentPage
         {
             if (!_savedGroceryListId.HasValue)
             {
-                var request =
-                    new CreateGroceryListRequest
-                    {
-                        ListName = listName,
-                        Retailer = retailer
-                    };
+                var request = new CreateGroceryListRequest
+                {
+                    ListName = listName,
+                    Retailer = retailer
+                };
 
-                var result =
-                    await _apiService
-                        .CreateGroceryListAsync(request);
+                var result = await _apiService.CreateGroceryListAsync(request);
 
-                if (!result.Success ||
-                    result.Data == null)
+                if (!result.Success || result.Data == null)
                 {
                     ShowError(result.Message);
                     return;
@@ -664,11 +588,9 @@ public partial class GroceryPage : ContentPage
             {
                 if (item.PendingOldDatabaseId.HasValue)
                 {
-                    var result =
-                        await _apiService
-                            .DeleteGroceryItemAsync(
-                                _savedGroceryListId.Value,
-                                item.PendingOldDatabaseId.Value);
+                    var result = await _apiService.DeleteGroceryItemAsync(
+                        _savedGroceryListId.Value,
+                        item.PendingOldDatabaseId.Value);
 
                     if (!result.Success)
                     {
@@ -689,21 +611,17 @@ public partial class GroceryPage : ContentPage
                     UnitPrice = item.UnitPrice
                 };
 
-                var addResult =
-                    await _apiService
-                        .AddGroceryItemAsync(
-                            _savedGroceryListId.Value,
-                            request);
+                var addResult = await _apiService.AddGroceryItemAsync(
+                    _savedGroceryListId.Value,
+                    request);
 
-                if (!addResult.Success ||
-                    addResult.Data == null)
+                if (!addResult.Success || addResult.Data == null)
                 {
                     ShowError(addResult.Message);
                     return;
                 }
 
-                item.DatabaseId =
-                    addResult.Data.Item.Id;
+                item.DatabaseId = addResult.Data.Item.Id;
             }
 
             await DisplayAlert(
@@ -715,8 +633,7 @@ public partial class GroceryPage : ContentPage
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Unable to save list: {ex.Message}");
+            ShowError($"Unable to save list: {ex.Message}");
         }
         finally
         {
@@ -737,38 +654,30 @@ public partial class GroceryPage : ContentPage
 
         try
         {
-            var result =
-                await _apiService
-                    .GetGroceryListsAsync();
+            var result = await _apiService.GetGroceryListsAsync();
 
             SavedListsLayout.Children.Clear();
 
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
-                ShowNoSavedLists(
-                    "Unable to load saved lists.");
+                ShowNoSavedLists("Unable to load saved lists.");
                 return;
             }
 
             if (result.Data.Count == 0)
             {
-                ShowNoSavedLists(
-                    "No saved grocery lists yet.");
+                ShowNoSavedLists("No saved grocery lists yet.");
                 return;
             }
 
-            foreach (GroceryListSummary list
-                     in result.Data)
+            foreach (GroceryListSummary list in result.Data)
             {
-                SavedListsLayout.Children.Add(
-                    CreateSavedListView(list));
+                SavedListsLayout.Children.Add(CreateSavedListView(list));
             }
         }
         catch (Exception ex)
         {
-            ShowNoSavedLists(
-                $"Unable to load lists: {ex.Message}");
+            ShowNoSavedLists($"Unable to load lists: {ex.Message}");
         }
         finally
         {
@@ -777,27 +686,20 @@ public partial class GroceryPage : ContentPage
         }
     }
 
-    private View CreateSavedListView(
-        GroceryListSummary list)
+    private View CreateSavedListView(GroceryListSummary list)
     {
         var border = new Border
         {
-            BackgroundColor =
-                Color.FromArgb("#F7FAF8"),
+            BackgroundColor = Color.FromArgb("#F7FAF8"),
             Stroke = Color.FromArgb("#E4EAE6"),
             Padding = new Thickness(12),
-            StrokeShape =
-                new Microsoft.Maui.Controls.Shapes
-                    .RoundRectangle
-                {
-                    CornerRadius = new CornerRadius(10)
-                }
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(10)
+            }
         };
 
-        var layout = new VerticalStackLayout
-        {
-            Spacing = 8
-        };
+        var layout = new VerticalStackLayout { Spacing = 8 };
 
         layout.Children.Add(new Label
         {
@@ -808,8 +710,7 @@ public partial class GroceryPage : ContentPage
 
         layout.Children.Add(new Label
         {
-            Text =
-                $"{list.Retailer} • {list.ItemCount} items",
+            Text = $"{list.Retailer} • {list.ItemCount} items",
             FontSize = 12,
             TextColor = Gray
         });
@@ -830,8 +731,7 @@ public partial class GroceryPage : ContentPage
             CommandParameter = list.Id
         };
 
-        openButton.Clicked +=
-            OpenSavedListButton_Clicked;
+        openButton.Clicked += OpenSavedListButton_Clicked;
 
         layout.Children.Add(openButton);
         border.Content = layout;
@@ -840,8 +740,7 @@ public partial class GroceryPage : ContentPage
     }
 
     private async void OpenSavedListButton_Clicked(
-        object? sender,
-        EventArgs e)
+        object? sender, EventArgs e)
     {
         if (sender is Button button &&
             button.CommandParameter is int listId)
@@ -850,19 +749,15 @@ public partial class GroceryPage : ContentPage
         }
     }
 
-    private async Task LoadSavedListAsync(
-        int groceryListId)
+    private async Task LoadSavedListAsync(int groceryListId)
     {
         HideError();
 
         try
         {
-            var result =
-                await _apiService
-                    .GetGroceryListAsync(groceryListId);
+            var result = await _apiService.GetGroceryListAsync(groceryListId);
 
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
                 ShowError(result.Message);
                 return;
@@ -873,20 +768,16 @@ public partial class GroceryPage : ContentPage
             _savedGroceryListId = list.Id;
             ListNameEntry.Text = list.ListName;
 
-            int retailerIndex =
-                GetRetailerIndex(list.Retailer);
+            int retailerIndex = GetRetailerIndex(list.Retailer);
 
             RetailerPicker.SelectedIndex =
-                retailerIndex >= 0
-                    ? retailerIndex
-                    : 0;
+                retailerIndex >= 0 ? retailerIndex : 0;
 
             UpdateRetailerButton();
 
             _items.Clear();
 
-            foreach (GroceryItemResponse item
-                     in list.Items)
+            foreach (GroceryItemResponse item in list.Items)
             {
                 _items.Add(new LocalGroceryItem
                 {
@@ -898,11 +789,10 @@ public partial class GroceryPage : ContentPage
                 });
             }
 
-            _isCompleted =
-                !string.Equals(
-                    list.Status,
-                    "Active",
-                    StringComparison.OrdinalIgnoreCase);
+            _isCompleted = !string.Equals(
+                list.Status,
+                "Active",
+                StringComparison.OrdinalIgnoreCase);
 
             SaveListButton.IsEnabled = !_isCompleted;
             CheckBudgetButton.IsEnabled = !_isCompleted;
@@ -914,14 +804,12 @@ public partial class GroceryPage : ContentPage
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Unable to open list: {ex.Message}");
+            ShowError($"Unable to open list: {ex.Message}");
         }
     }
 
     private async void LoadListsButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         await LoadGroceryListsAsync();
     }
@@ -943,8 +831,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private void NewListButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
@@ -971,8 +858,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void CheckBudgetButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
@@ -1004,65 +890,44 @@ public partial class GroceryPage : ContentPage
         {
             DateTime today = DateTime.Now;
 
-            var result =
-                await _apiService
-                    .CheckGroceryBudgetAsync(
-                        _savedGroceryListId.Value,
-                        today.Month,
-                        today.Year);
+            var result = await _apiService.CheckGroceryBudgetAsync(
+                _savedGroceryListId.Value,
+                today.Month,
+                today.Year);
 
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
                 ShowError(result.Message);
                 return;
             }
 
-            GroceryBudgetCheckResponse data =
-                result.Data;
+            GroceryBudgetCheckResponse data = result.Data;
 
             var message = new StringBuilder();
 
-            message.AppendLine(
-                $"Basket Total: R {data.ListTotal:N2}");
-
+            message.AppendLine($"Basket Total: R {data.ListTotal:N2}");
             message.AppendLine();
-
-            message.AppendLine(
-                $"Grocery Budget: R {data.GroceryBudgetLimit:N2}");
-
-            message.AppendLine(
-                $"Already Spent: R {data.AlreadySpent:N2}");
-
-            message.AppendLine(
-                $"Available: R {data.AvailableBeforeList:N2}");
-
+            message.AppendLine($"Grocery Budget: R {data.GroceryBudgetLimit:N2}");
+            message.AppendLine($"Already Spent: R {data.AlreadySpent:N2}");
+            message.AppendLine($"Available: R {data.AvailableBeforeList:N2}");
             message.AppendLine();
 
             if (data.WithinBudget)
             {
                 message.AppendLine("Within Budget");
-
-                message.AppendLine(
-                    $"Remaining: R {data.RemainingAfterList:N2}");
+                message.AppendLine($"Remaining: R {data.RemainingAfterList:N2}");
             }
             else
             {
                 message.AppendLine("Over Budget");
-
-                message.AppendLine(
-                    $"Over By: R {data.OverBudgetBy:N2}");
+                message.AppendLine($"Over By: R {data.OverBudgetBy:N2}");
             }
 
-            await DisplayAlert(
-                "Budget Check",
-                message.ToString(),
-                "OK");
+            await DisplayAlert("Budget Check", message.ToString(), "OK");
         }
         catch (Exception ex)
         {
-            ShowError(
-                $"Budget check failed: {ex.Message}");
+            ShowError($"Budget check failed: {ex.Message}");
         }
         finally
         {
@@ -1076,8 +941,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void CheckoutButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
@@ -1102,12 +966,10 @@ public partial class GroceryPage : ContentPage
             return;
         }
 
-        string retailer =
-            RetailerPicker.SelectedItem?.ToString()
+        string retailer = RetailerPicker.SelectedItem?.ToString()
             ?? "Not selected";
 
-        string listName =
-            ListNameEntry.Text?.Trim() ?? "";
+        string listName = ListNameEntry.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(listName))
             listName = "My Grocery Basket";
@@ -1125,28 +987,17 @@ public partial class GroceryPage : ContentPage
         foreach (var item in _items)
         {
             review.AppendLine(item.ProductName);
-
             review.AppendLine(
                 $"{item.Quantity} × R {item.UnitPrice:N2} = R {item.Total:N2}");
-
             review.AppendLine();
         }
 
         review.AppendLine("------------------------");
-
-        review.AppendLine(
-            $"ESTIMATED TOTAL: R {total:N2}");
-
+        review.AppendLine($"ESTIMATED TOTAL: R {total:N2}");
         review.AppendLine();
-
-        review.AppendLine(
-            "Checkout preview only.");
-
-        review.AppendLine(
-            "No payments are processed.");
-
-        review.AppendLine(
-            "No purchases are recorded.");
+        review.AppendLine("Checkout preview only.");
+        review.AppendLine("No payments are processed.");
+        review.AppendLine("No purchases are recorded.");
 
         await DisplayAlert(
             "SpendWise Checkout Review",
@@ -1158,171 +1009,9 @@ public partial class GroceryPage : ContentPage
     {
         CheckoutButton.IsEnabled = true;
 
-        CheckoutButton.Text =
-            _isCompleted
-                ? "Review Completed List"
-                : "Review Checkout";
-    }
-
-    // ==========================================
-    // PRICE COMPARISON
-    // ==========================================
-
-    private async void ComparePricesButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        HideError();
-
-        if (!_savedGroceryListId.HasValue)
-        {
-            await DisplayAlert(
-                "Save First",
-                "Save your grocery list before comparing prices.",
-                "OK");
-            return;
-        }
-
-        if (_items.Count == 0)
-        {
-            ShowError("Your basket is empty.");
-            return;
-        }
-
-        if (_items.Any(x =>
-            !x.DatabaseId.HasValue ||
-            x.PendingOldDatabaseId.HasValue))
-        {
-            await DisplayAlert(
-                "Unsaved Changes",
-                "Save your changes before comparing prices.",
-                "OK");
-            return;
-        }
-
-        ComparePricesButton.IsEnabled = false;
-        ComparePricesButton.Text = "Comparing...";
-
-        try
-        {
-            var result =
-                await _apiService
-                    .GetRetailerPriceComparisonAsync(
-                        _savedGroceryListId.Value);
-
-            if (!result.Success ||
-                result.Data == null)
-            {
-                ShowError(result.Message);
-                return;
-            }
-
-            RetailerPriceComparisonResponse comparison =
-                result.Data;
-
-            if (comparison.Retailers == null ||
-                comparison.Retailers.Count == 0)
-            {
-                await DisplayAlert(
-                    "Price Comparison",
-                    "No verified retailer prices are available.",
-                    "OK");
-                return;
-            }
-
-            var message = new StringBuilder();
-
-            message.AppendLine(
-                comparison.GroceryListName);
-
-            message.AppendLine();
-
-            foreach (RetailerComparisonResponse retailer
-                     in comparison.Retailers)
-            {
-                message.AppendLine(
-                    retailer.RetailerName);
-
-                message.AppendLine(
-                    $"Matched: {retailer.MatchedItemCount}");
-
-                message.AppendLine(
-                    $"Missing: {retailer.MissingItemCount}");
-
-                if (retailer.MatchedItemCount > 0)
-                {
-                    message.AppendLine(
-                        $"Estimated Total: R {retailer.EstimatedTotal:N2}");
-                }
-                else
-                {
-                    message.AppendLine(
-                        "Estimated Total: Unavailable");
-                }
-
-                message.AppendLine(
-                    retailer.HasCompletePricing
-                        ? "Pricing: Complete"
-                        : "Pricing: Incomplete");
-
-                if (retailer.LatestPriceCheckedAt.HasValue)
-                {
-                    message.AppendLine(
-                        "Last Checked: " +
-                        retailer.LatestPriceCheckedAt.Value
-                            .ToLocalTime()
-                            .ToString("dd MMM yyyy"));
-                }
-
-                if (retailer.Items != null)
-                {
-                    foreach (RetailerComparisonItemResponse item
-                             in retailer.Items)
-                    {
-                        if (item.PriceFound &&
-                            item.UnitPrice.HasValue)
-                        {
-                            message.Append(
-                                $"{item.ProductName} × {item.Quantity}: R {item.UnitPrice.Value:N2} each");
-
-                            if (item.TotalPrice.HasValue)
-                            {
-                                message.Append(
-                                    $" = R {item.TotalPrice.Value:N2}");
-                            }
-
-                            message.AppendLine();
-                        }
-                        else
-                        {
-                            message.AppendLine(
-                                $"{item.ProductName}: Price unavailable");
-                        }
-                    }
-                }
-
-                message.AppendLine();
-            }
-
-            message.AppendLine(
-                "Prices are based on verified stored data.");
-
-            await DisplayAlert(
-                "Retailer Price Comparison",
-                message.ToString(),
-                "OK");
-        }
-        catch (Exception ex)
-        {
-            ShowError(
-                $"Unable to compare prices: {ex.Message}");
-        }
-        finally
-        {
-            ComparePricesButton.IsEnabled = true;
-            ComparePricesButton.Text =
-                "Compare Retailer Prices";
-        }
+        CheckoutButton.Text = _isCompleted
+            ? "Review Completed List"
+            : "Review Checkout";
     }
 
     // ==========================================
@@ -1330,8 +1019,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void RefreshButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         HideError();
 
@@ -1351,20 +1039,12 @@ public partial class GroceryPage : ContentPage
     {
         try
         {
-            int quantity =
-                _items.Sum(x => x.Quantity);
+            int quantity = _items.Sum(x => x.Quantity);
+            decimal total = _items.Sum(x => x.Total);
 
-            decimal total =
-                _items.Sum(x => x.Total);
-
-            ItemCountLabel.Text =
-                quantity.ToString();
-
-            EstimatedTotalLabel.Text =
-                $"R {total:N2}";
-
-            ListTotalLabel.Text =
-                $"R {total:N2}";
+            ItemCountLabel.Text = quantity.ToString();
+            EstimatedTotalLabel.Text = $"R {total:N2}";
+            ListTotalLabel.Text = $"R {total:N2}";
         }
         catch (OverflowException)
         {
@@ -1372,8 +1052,7 @@ public partial class GroceryPage : ContentPage
             EstimatedTotalLabel.Text = "Invalid total";
             ListTotalLabel.Text = "Invalid total";
 
-            ShowError(
-                "The basket total is too large.");
+            ShowError("The basket total is too large.");
         }
 
         UpdateCheckoutState();
@@ -1389,10 +1068,7 @@ public partial class GroceryPage : ContentPage
             return 0;
 
         string cleaned = value.Trim()
-            .Replace(
-                "R",
-                "",
-                StringComparison.OrdinalIgnoreCase)
+            .Replace("R", "", StringComparison.OrdinalIgnoreCase)
             .Trim();
 
         if (decimal.TryParse(
@@ -1437,8 +1113,7 @@ public partial class GroceryPage : ContentPage
     // ==========================================
 
     private async void BackButton_Clicked(
-        object sender,
-        EventArgs e)
+        object sender, EventArgs e)
     {
         if (Navigation.NavigationStack.Count > 1)
         {
@@ -1447,8 +1122,7 @@ public partial class GroceryPage : ContentPage
         else
         {
             Application.Current!.MainPage =
-                new NavigationPage(
-                    new DashboardPage());
+                new NavigationPage(new DashboardPage());
         }
     }
 
@@ -1464,14 +1138,12 @@ public partial class GroceryPage : ContentPage
 
         public int? PendingOldDatabaseId { get; set; }
 
-        public string ProductName { get; set; } =
-            string.Empty;
+        public string ProductName { get; set; } = string.Empty;
 
         public int Quantity { get; set; }
 
         public decimal UnitPrice { get; set; }
 
-        public decimal Total =>
-            Quantity * UnitPrice;
+        public decimal Total => Quantity * UnitPrice;
     }
 }

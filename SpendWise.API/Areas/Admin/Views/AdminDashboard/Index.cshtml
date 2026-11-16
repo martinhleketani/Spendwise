@@ -1,0 +1,456 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.AdminDashboardViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "System Overview";
+}
+
+<style>
+    .welcome-banner {
+        background: linear-gradient(110deg, #173F2B, #286B48);
+        border-radius: 15px;
+        padding: 27px 30px;
+        color: white;
+        margin-bottom: 28px;
+    }
+
+        .welcome-banner h2 {
+            font-size: 21px;
+            margin-bottom: 9px;
+        }
+
+        .welcome-banner p {
+            font-size: 13px;
+            opacity: .9;
+            line-height: 1.6;
+        }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 30px 0 17px;
+    }
+
+        .section-heading h3 {
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .section-heading span {
+            font-size: 11px;
+            color: #839087;
+        }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 17px;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 21px;
+        min-width: 0;
+    }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        background: #E8F4EC;
+        flex-shrink: 0;
+    }
+
+    .stat-label {
+        color: #839087;
+        font-size: 12px;
+    }
+
+    .stat-value {
+        font-size: 25px;
+        font-weight: 800;
+        margin-top: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .stat-note {
+        font-size: 11px;
+        color: #839087;
+        margin-top: 8px;
+        line-height: 1.5;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 18px;
+    }
+
+    .panel {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 22px;
+        min-width: 0;
+    }
+
+        .panel h3 {
+            font-size: 15px;
+            margin-bottom: 7px;
+        }
+
+    .panel-subtitle {
+        font-size: 11px;
+        color: #839087;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 14px 0;
+        border-bottom: 1px solid #E5ECE7;
+    }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+    .activity-icon {
+        width: 37px;
+        height: 37px;
+        border-radius: 9px;
+        background: #E8F4EC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .activity-details {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .activity-title {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .activity-description {
+        font-size: 11px;
+        color: #68776D;
+        margin-top: 5px;
+        overflow-wrap: anywhere;
+    }
+
+    .activity-time {
+        font-size: 10px;
+        color: #839087;
+        margin-top: 5px;
+    }
+
+    .activity-type {
+        font-size: 10px;
+        color: #26966B;
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 0;
+        border-bottom: 1px solid #E5ECE7;
+        font-size: 12px;
+    }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #68776D;
+        font-size: 11px;
+        text-align: right;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: #D79543;
+    }
+
+        .status-dot.good {
+            background: #26966B;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 10px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    .dashboard-footer {
+        margin-top: 35px;
+        padding: 20px 0;
+        border-top: 1px solid #E5ECE7;
+        color: #839087;
+        font-size: 11px;
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    @@media (max-width: 1100px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @@media (max-width: 450px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-footer {
+            flex-direction: column;
+        }
+
+        .welcome-banner {
+            padding: 22px;
+        }
+
+        .activity-item {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
+<section class="welcome-banner">
+    <h2>Welcome to SpendWise Administration</h2>
+    <p>
+        Monitor registered customers, transactions, budgets,
+        grocery lists and platform activity from one place.
+    </p>
+</section>
+
+<div class="section-heading">
+    <h3>Platform Overview</h3>
+    <span>Live database statistics</span>
+</div>
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span class="stat-label">Registered Users</span>
+            <div class="stat-icon">♙</div>
+        </div>
+        <div class="stat-value">@Model.RegisteredUsers.ToString("N0")</div>
+        <div class="stat-note">
+            @Model.ActiveUsers.ToString("N0") active customer accounts
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span class="stat-label">Total Transactions</span>
+            <div class="stat-icon">⇄</div>
+        </div>
+        <div class="stat-value">@Model.TotalTransactions.ToString("N0")</div>
+        <div class="stat-note">
+            Total recorded transaction value:
+            R @Model.TotalTransactionValue.ToString("N2")
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span class="stat-label">Monthly Budgets</span>
+            <div class="stat-icon">▤</div>
+        </div>
+        <div class="stat-value">@Model.MonthlyBudgets.ToString("N0")</div>
+        <div class="stat-note">
+            Total budget allocation:
+            R @Model.TotalBudgetAllocation.ToString("N2")
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span class="stat-label">Grocery Lists</span>
+            <div class="stat-icon">▣</div>
+        </div>
+        <div class="stat-value">@Model.GroceryLists.ToString("N0")</div>
+        <div class="stat-note">
+            @Model.ActiveGroceryLists.ToString("N0") active grocery lists
+        </div>
+    </div>
+
+</section>
+
+<div class="section-heading">
+    <h3>Additional Platform Information</h3>
+    <span>Customer activity and notifications</span>
+</div>
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span class="stat-label">Budget Notifications</span>
+            <div class="stat-icon">!</div>
+        </div>
+        <div class="stat-value">@Model.TotalNotifications.ToString("N0")</div>
+        <div class="stat-note">
+            @Model.UnreadNotifications.ToString("N0") unread notifications
+        </div>
+    </div>
+
+</section>
+
+<div class="section-heading">
+    <h3>Administration Centre</h3>
+    <span>Recent platform activity and system status</span>
+</div>
+
+<section class="content-grid">
+
+    <div class="panel">
+        <h3>Recent Activity</h3>
+        <p class="panel-subtitle">
+            Latest customer registrations, transactions,
+            grocery lists and budget notifications.
+        </p>
+
+        @if (Model.RecentActivity.Any())
+
+        {
+            @foreach (var activity in Model.RecentActivity)
+
+            {
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        @activity.Icon
+                    </div>
+
+                    <div class="activity-details">
+                        <div class="activity-title">
+                            @activity.Title
+                        </div>
+
+                        <div class="activity-description">
+                            @activity.Description
+                        </div>
+
+                        <div class="activity-time">
+                            @activity.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")
+                        </div>
+                    </div>
+
+                    <div class="activity-type">
+                        @activity.ActivityType
+                    </div>
+                </div>
+            }
+        }
+
+        else
+
+        {
+            <div class="empty-state">
+                No platform activity has been recorded yet.
+            </div>
+        }
+    </div>
+
+    <div class="panel">
+        <h3>System Status</h3>
+        <p class="panel-subtitle">
+            Status information verified during this dashboard request.
+        </p>
+
+        <div class="status-row">
+            <span>Admin Portal</span>
+            <div class="status-indicator">
+                <span class="status-dot good"></span>
+                @Model.AdminPortalStatus
+            </div>
+        </div>
+
+        <div class="status-row">
+            <span>Database</span>
+            <div class="status-indicator">
+                <span class="status-dot good"></span>
+                @Model.DatabaseStatus
+            </div>
+        </div>
+
+        <div class="status-row">
+            <span>Customer API</span>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                @Model.CustomerApiStatus
+            </div>
+        </div>
+
+        <div class="status-row">
+            <span>SpendWise Pay</span>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                @Model.PaymentStatus
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<footer class="dashboard-footer">
+    <span>
+        © @DateTime.UtcNow.Year SpendWise. All rights reserved.
+    </span>
+
+    <span>
+        System Owner Administration
+    </span>
+</footer>

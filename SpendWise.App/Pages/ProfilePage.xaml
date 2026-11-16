@@ -9,9 +9,7 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- =====================================================
-             HEADER
-             ===================================================== -->
+        <!-- HEADER -->
         <Grid
             Grid.Row="0"
             BackgroundColor="#146B3A"
@@ -61,20 +59,14 @@
 
         </Grid>
 
-
-        <!-- =====================================================
-             CONTENT
-             ===================================================== -->
+        <!-- CONTENT -->
         <ScrollView Grid.Row="1">
 
             <VerticalStackLayout
                 Padding="20"
                 Spacing="18">
 
-
-                <!-- =================================================
-                     LOADING
-                     ================================================= -->
+                <!-- LOADING -->
                 <ActivityIndicator
                     x:Name="LoadingIndicator"
                     IsVisible="False"
@@ -82,10 +74,7 @@
                     Color="#146B3A"
                     HorizontalOptions="Center" />
 
-
-                <!-- =================================================
-                     ERROR
-                     ================================================= -->
+                <!-- ERROR -->
                 <Border
                     x:Name="ErrorCard"
                     IsVisible="False"
@@ -105,10 +94,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     SUCCESS
-                     ================================================= -->
+                <!-- SUCCESS -->
                 <Border
                     x:Name="SuccessCard"
                     IsVisible="False"
@@ -128,10 +114,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     PROFILE HEADER CARD
-                     ================================================= -->
+                <!-- PROFILE HEADER CARD -->
                 <Border
                     BackgroundColor="#146B3A"
                     StrokeThickness="0"
@@ -145,16 +128,12 @@
                         ColumnDefinitions="Auto,*"
                         ColumnSpacing="18">
 
-                        <!-- =========================================
-                             PROFILE PHOTO
-                             ========================================= -->
                         <VerticalStackLayout
                             Grid.Column="0"
                             Spacing="8"
                             HorizontalOptions="Center"
                             VerticalOptions="Center">
 
-                            <!-- Circular avatar -->
                             <Border
                                 WidthRequest="96"
                                 HeightRequest="96"
@@ -169,11 +148,6 @@
 
                                 <Grid>
 
-                                    <!--
-                                        Actual profile photo.
-                                        Hidden until a photo is selected
-                                        or loaded.
-                                    -->
                                     <Image
                                         x:Name="ProfileImage"
                                         IsVisible="False"
@@ -183,11 +157,6 @@
                                         HorizontalOptions="Fill"
                                         VerticalOptions="Fill" />
 
-                                    <!--
-                                        Fallback initial.
-                                        Displayed when the user does not
-                                        have a profile photo.
-                                    -->
                                     <Label
                                         x:Name="ProfileInitialLabel"
                                         Text="?"
@@ -203,8 +172,6 @@
 
                             </Border>
 
-
-                            <!-- CHANGE PHOTO -->
                             <Button
                                 x:Name="ChangePhotoButton"
                                 Text="Change Photo"
@@ -217,8 +184,6 @@
                                 FontAttributes="Bold"
                                 Clicked="ChangePhotoButton_Clicked" />
 
-
-                            <!-- REMOVE PHOTO -->
                             <Button
                                 x:Name="RemovePhotoButton"
                                 Text="Remove Photo"
@@ -235,10 +200,6 @@
 
                         </VerticalStackLayout>
 
-
-                        <!-- =========================================
-                             USER SUMMARY
-                             ========================================= -->
                         <VerticalStackLayout
                             Grid.Column="1"
                             VerticalOptions="Center"
@@ -277,10 +238,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     ACCOUNT INFORMATION
-                     ================================================= -->
+                <!-- ACCOUNT INFORMATION -->
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -304,10 +262,7 @@
                             FontSize="12"
                             TextColor="#718078" />
 
-
-                        <!-- =========================================
-                             FULL NAME
-                             ========================================= -->
+                        <!-- FULL NAME -->
                         <VerticalStackLayout Spacing="6">
 
                             <Label
@@ -341,10 +296,7 @@
 
                         </VerticalStackLayout>
 
-
-                        <!-- =========================================
-                             EMAIL
-                             ========================================= -->
+                        <!-- EMAIL -->
                         <VerticalStackLayout Spacing="6">
 
                             <Label
@@ -379,10 +331,7 @@
 
                         </VerticalStackLayout>
 
-
-                        <!-- =========================================
-                             PHONE
-                             ========================================= -->
+                        <!-- PHONE -->
                         <VerticalStackLayout Spacing="6">
 
                             <Label
@@ -418,10 +367,7 @@
 
                         </VerticalStackLayout>
 
-
-                        <!-- =========================================
-                             SAVE PROFILE
-                             ========================================= -->
+                        <!-- SAVE PROFILE -->
                         <Button
                             x:Name="SaveProfileButton"
                             Text="Save Profile"
@@ -436,10 +382,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     ACCOUNT DETAILS
-                     ================================================= -->
+                <!-- ACCOUNT DETAILS -->
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -458,8 +401,6 @@
                             FontAttributes="Bold"
                             TextColor="#173C2A" />
 
-
-                        <!-- ACCOUNT ID -->
                         <Grid
                             ColumnDefinitions="*,Auto"
                             ColumnSpacing="10">
@@ -480,13 +421,10 @@
 
                         </Grid>
 
-
                         <BoxView
                             HeightRequest="1"
                             BackgroundColor="#E8EEEA" />
 
-
-                        <!-- MEMBER SINCE -->
                         <Grid
                             ColumnDefinitions="*,Auto"
                             ColumnSpacing="10">
@@ -507,13 +445,10 @@
 
                         </Grid>
 
-
                         <BoxView
                             HeightRequest="1"
                             BackgroundColor="#E8EEEA" />
 
-
-                        <!-- STATUS -->
                         <Grid
                             ColumnDefinitions="*,Auto"
                             ColumnSpacing="10">
@@ -538,10 +473,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     PROFILE PHOTO INFORMATION
-                     ================================================= -->
+                <!-- PROFILE PHOTO INFORMATION -->
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -576,10 +508,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     SECURITY
-                     ================================================= -->
+                <!-- SECURITY -->
                 <Border
                     BackgroundColor="White"
                     Stroke="#DCE5DF"
@@ -608,10 +537,7 @@
 
                 </Border>
 
-
-                <!-- =================================================
-                     LOGOUT
-                     ================================================= -->
+                <!-- LOGOUT -->
                 <Button
                     x:Name="LogoutButton"
                     Text="Log Out"
@@ -624,10 +550,46 @@
                     FontAttributes="Bold"
                     Clicked="LogoutButton_Clicked" />
 
+                <!-- DELETE ACCOUNT -->
+                <Border
+                    BackgroundColor="#FFF4F4"
+                    Stroke="#E9B9B9"
+                    StrokeThickness="1"
+                    Padding="18">
 
-                <!-- =================================================
-                     FOOTER
-                     ================================================= -->
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label
+                            Text="Danger Zone"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#B42318" />
+
+                        <Label
+                            Text="Permanently delete your SpendWise account. This action cannot be undone."
+                            FontSize="12"
+                            TextColor="#7A3434"
+                            LineBreakMode="WordWrap" />
+
+                        <Button
+                            x:Name="DeleteAccountButton"
+                            Text="Delete My Account"
+                            HeightRequest="50"
+                            CornerRadius="12"
+                            BackgroundColor="#B42318"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="DeleteAccountButton_Clicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- FOOTER -->
                 <Label
                     Text="Martin SpendWise"
                     FontSize="11"

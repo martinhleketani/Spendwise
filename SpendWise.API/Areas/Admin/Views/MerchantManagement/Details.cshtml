@@ -1,0 +1,439 @@
+﻿@model SpendWise.API.Models.Merchant
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Merchant Details";
+
+
+
+    var statusClass =
+
+        Model.Status == "Active"
+
+            ? "status-active"
+
+            : Model.Status == "Pending"
+
+                ? "status-pending"
+
+                : Model.Status == "Suspended"
+
+                    ? "status-suspended"
+
+                    : Model.Status == "Closed"
+
+                        ? "status-closed"
+
+                        : "status-other";
+
+
+
+    var merchantListUrl = Url.Action(
+
+        "Index",
+
+        "MerchantManagement",
+
+        new { area = "Admin" });
+}
+
+<style>
+    .merchant-details-page {
+        padding: 20px 0 35px;
+        color: #26352C;
+    }
+
+    .merchant-details-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .merchant-details-heading h2 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .merchant-details-heading p {
+            margin: 6px 0 0;
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: #286B48;
+        color: #fff;
+        padding: 11px 18px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background .2s ease;
+        white-space: nowrap;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #fff;
+        }
+
+    .merchant-details-card {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+
+        .merchant-details-card h3 {
+            margin: 0 0 22px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+    .merchant-details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .merchant-detail-item label {
+        display: block;
+        color: #839087;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+    }
+
+    .merchant-detail-item p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .merchant-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-active {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-pending {
+        background: #FFF4DD;
+        color: #936A18;
+    }
+
+    .status-suspended {
+        background: #FCEBED;
+        color: #B53E4B;
+    }
+
+    .status-closed {
+        background: #ECEFF0;
+        color: #58636B;
+    }
+
+    .status-other {
+        background: #F0F1F0;
+        color: #68766D;
+    }
+
+    .merchant-alert {
+        padding: 12px 15px;
+        border-radius: 7px;
+        margin-bottom: 18px;
+        font-size: 13px;
+    }
+
+    .merchant-alert-success {
+        background: #E8F4EC;
+        color: #286B48;
+        border: 1px solid #C9E4D1;
+    }
+
+    .merchant-alert-error {
+        background: #FCEBED;
+        color: #B53E4B;
+        border: 1px solid #F2C9CE;
+    }
+
+    .merchant-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 25px;
+    }
+
+    .merchant-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 7px;
+        padding: 11px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s ease;
+    }
+
+    .merchant-button-suspend {
+        background: #FCEBED;
+        color: #B53E4B;
+    }
+
+        .merchant-button-suspend:hover {
+            background: #B53E4B;
+            color: #fff;
+        }
+
+    .merchant-button-reactivate {
+        background: #286B48;
+        color: #fff;
+    }
+
+        .merchant-button-reactivate:hover {
+            background: #173F2B;
+            color: #fff;
+        }
+
+    .merchant-information-note {
+        margin-top: 18px;
+        padding: 14px;
+        background: #F4F7F5;
+        border-radius: 7px;
+        color: #68766D;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .merchant-no-action {
+        color: #839087;
+        font-size: 13px;
+        margin-top: 20px;
+    }
+
+    @@media (max-width: 650px) {
+        .merchant-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .merchant-details-card {
+            padding: 18px;
+        }
+    }
+</style>
+
+<div class="merchant-details-page">
+
+    <!-- PAGE HEADING -->
+
+    <div class="merchant-details-heading">
+
+        <div>
+            <h2>Merchant Details</h2>
+            <p>
+                Review merchant registration and account information.
+            </p>
+        </div>
+
+        <a href="@merchantListUrl"
+           class="admin-back-button">
+            &#8592; Back to Merchant Management
+        </a>
+
+    </div>
+
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["Success"] != null)
+
+    {
+        <div class="merchant-alert merchant-alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    <!-- ERROR MESSAGE -->
+    @if (TempData["Error"] != null)
+
+    {
+        <div class="merchant-alert merchant-alert-error">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- BUSINESS INFORMATION -->
+
+    <div class="merchant-details-card">
+
+        <h3>Business Information</h3>
+
+        <div class="merchant-details-grid">
+
+            <div class="merchant-detail-item">
+                <label>Merchant ID</label>
+                <p>#@Model.Id</p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Business Name</label>
+                <p>@Model.BusinessName</p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Contact Person</label>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.ContactPerson)
+                        ? "Not provided"
+                        : Model.ContactPerson)
+                </p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Email Address</label>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.Email)
+                        ? "Not provided"
+                        : Model.Email)
+                </p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Phone Number</label>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                        ? "Not provided"
+                        : Model.PhoneNumber)
+                </p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Business Address</label>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.BusinessAddress)
+                        ? "Not provided"
+                        : Model.BusinessAddress)
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ACCOUNT INFORMATION -->
+
+    <div class="merchant-details-card">
+
+        <h3>Account Information</h3>
+
+        <div class="merchant-details-grid">
+
+            <div class="merchant-detail-item">
+                <label>Account Status</label>
+                <p>
+                    <span class="merchant-status @statusClass">
+                        @Model.Status
+                    </span>
+                </p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Registration Date</label>
+                <p>
+                    @Model.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy HH:mm")
+                </p>
+            </div>
+
+            <div class="merchant-detail-item">
+                <label>Last Updated</label>
+                <p>
+                    @(Model.UpdatedAt.HasValue
+                        ? Model.UpdatedAt.Value.ToLocalTime().ToString("dd MMMM yyyy HH:mm")
+                        : "Never updated")
+                </p>
+            </div>
+
+        </div>
+
+        <!-- MERCHANT ACCOUNT ACTIONS -->
+
+        <div class="merchant-actions">
+
+            @if (Model.Status == "Pending" || Model.Status == "Active")
+            {
+                <form action="@Url.Action(
+                    "Suspend",
+                    "MerchantManagement",
+                    new { area = "Admin", id = Model.Id })"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to suspend this merchant?');">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="merchant-button merchant-button-suspend">
+                        Suspend Merchant
+                    </button>
+
+                </form>
+            }
+
+            @if (Model.Status == "Suspended")
+            {
+                <form action="@Url.Action(
+                    "Reactivate",
+                    "MerchantManagement",
+                    new { area = "Admin", id = Model.Id })"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to reactivate this merchant?');">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="merchant-button merchant-button-reactivate">
+                        Reactivate Merchant
+                    </button>
+
+                </form>
+            }
+
+            @if (Model.Status == "Closed")
+            {
+                <p class="merchant-no-action">
+                    This merchant account is closed. No further account actions are available.
+                </p>
+            }
+
+        </div>
+
+        <!-- INFORMATION NOTE -->
+
+        <div class="merchant-information-note">
+            Merchant account management allows administrators to review
+            registration details and control merchant account status.
+            Suspending a merchant changes its account status but does not
+            automatically reverse or settle existing transactions.
+        </div>
+
+    </div>
+
+</div>

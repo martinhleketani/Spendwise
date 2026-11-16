@@ -1,0 +1,423 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.UserManagementListItem
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Customer Details";
+
+
+
+    string customerInitial = string.IsNullOrWhiteSpace(Model.FullName)
+
+        ? "U"
+
+        : Model.FullName.Trim().Substring(0, 1).ToUpperInvariant();
+
+
+
+    var customerDirectoryUrl = Url.Action(
+
+        "Index",
+
+        "UserManagement",
+
+        new { area = "Admin" }
+
+    );
+}
+
+<style>
+    .admin-page-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 18px;
+        background: #286B48;
+        color: #FFFFFF;
+        border: 1px solid #286B48;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    .details-card {
+        max-width: 900px;
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 30px;
+    }
+
+    .breadcrumb {
+        margin-bottom: 22px;
+        font-size: 13px;
+        color: #839087;
+    }
+
+        .breadcrumb a {
+            color: #286B48;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+            .breadcrumb a:hover {
+                color: #173F2B;
+                text-decoration: underline;
+            }
+
+    .customer-header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid #E5ECE7;
+        margin-bottom: 25px;
+    }
+
+    .avatar {
+        width: 62px;
+        height: 62px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #E8F4EC;
+        color: #286B48;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .customer-name {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .customer-name h2 {
+            font-size: 21px;
+            color: #173F2B;
+            margin-bottom: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .customer-name p {
+            font-size: 13px;
+            color: #839087;
+            margin: 0;
+        }
+
+    .status {
+        display: inline-block;
+        padding: 7px 13px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .status.active {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        .status.inactive {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+    .section-title {
+        font-size: 16px;
+        color: #173F2B;
+        margin-bottom: 20px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .detail-item {
+        padding: 17px;
+        border: 1px solid #E5ECE7;
+        border-radius: 9px;
+        background: #F8FAF8;
+        min-width: 0;
+    }
+
+    .detail-label {
+        display: block;
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 9px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #26352C;
+        overflow-wrap: anywhere;
+    }
+
+    .notice {
+        margin-top: 25px;
+        padding: 16px;
+        border-radius: 9px;
+        background: #E8F4EC;
+        color: #286B48;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+        .notice strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .notice p {
+            margin: 0;
+        }
+
+    .details-footer {
+        margin-top: 25px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    @@media (max-width: 600px) {
+        .details-card {
+            padding: 18px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .customer-header {
+            flex-wrap: wrap;
+        }
+
+        .status {
+            margin-left: 80px;
+        }
+
+        .admin-page-heading {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<!-- PAGE INTRODUCTION -->
+
+<div class="admin-page-heading">
+
+    <div>
+        <h2 style="font-size:20px; color:#173F2B; margin-bottom:7px;">
+            Customer Details
+        </h2>
+
+        <p style="font-size:13px; color:#839087; margin:0;">
+            View registered SpendWise customer information.
+        </p>
+    </div>
+
+    <a href="@customerDirectoryUrl"
+       class="admin-back-button">
+        ← Back to Customer Directory
+    </a>
+
+</div>
+
+<!-- BREADCRUMB -->
+
+<div class="breadcrumb">
+
+    <a href="@Url.Action("Index", "AdminDashboard", new { area = "Admin" })">
+        Dashboard
+    </a>
+
+    /
+
+    <a href="@customerDirectoryUrl">
+        User Management
+    </a>
+
+    / Customer Details
+
+</div>
+
+<!-- CUSTOMER DETAILS -->
+
+<section class="details-card">
+
+    <!-- CUSTOMER HEADER -->
+
+    <div class="customer-header">
+
+        <div class="avatar" aria-label="Customer avatar">
+            @customerInitial
+        </div>
+
+        <div class="customer-name">
+
+            <h2>
+                @(string.IsNullOrWhiteSpace(Model.FullName)
+                    ? "Unnamed Customer"
+                    : Model.FullName)
+            </h2>
+
+            <p>
+                Customer ID: #@Model.Id
+            </p>
+
+        </div>
+
+        @if (Model.IsActive)
+
+        {
+            <span class="status active">
+                Active Account
+            </span>
+        }
+
+        else
+
+        {
+            <span class="status inactive">
+                Inactive Account
+            </span>
+        }
+
+    </div>
+
+    <!-- PERSONAL INFORMATION -->
+
+    <h3 class="section-title">
+        Personal Information
+    </h3>
+
+    <div class="details-grid">
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Customer ID
+            </span>
+
+            <span class="detail-value">
+                #@Model.Id
+            </span>
+
+        </div>
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Full Name
+            </span>
+
+            <span class="detail-value">
+                @(string.IsNullOrWhiteSpace(Model.FullName)
+                    ? "Not provided"
+                    : Model.FullName)
+            </span>
+
+        </div>
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Email Address
+            </span>
+
+            <span class="detail-value">
+                @(string.IsNullOrWhiteSpace(Model.Email)
+                    ? "Not provided"
+                    : Model.Email)
+            </span>
+
+        </div>
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Phone Number
+            </span>
+
+            <span class="detail-value">
+                @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                    ? "Not provided"
+                    : Model.PhoneNumber)
+            </span>
+
+        </div>
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Registration Date
+            </span>
+
+            <span class="detail-value">
+                @Model.CreatedAt.ToString("dd MMMM yyyy")
+            </span>
+
+        </div>
+
+        <div class="detail-item">
+
+            <span class="detail-label">
+                Account Status
+            </span>
+
+            <span class="detail-value">
+                @(Model.IsActive ? "Active" : "Inactive")
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- ADMINISTRATOR NOTICE -->
+
+    <div class="notice">
+
+        <strong>
+            Read-only administrator access
+        </strong>
+
+        <p>
+            This page is for viewing customer information only.
+            Administrators cannot delete, edit, deactivate or
+            reactivate customer accounts through this module.
+            Customers manage their own account deletion requests.
+        </p>
+
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+
+<div class="details-footer">
+    © @DateTime.UtcNow.Year SpendWise Administration Portal.
+</div>

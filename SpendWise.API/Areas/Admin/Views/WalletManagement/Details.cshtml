@@ -1,0 +1,623 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.WalletManagementDetailsViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Wallet Details";
+
+
+
+    var statusClass = Model.Status == "Active"
+
+        ? "status-active"
+
+        : Model.Status == "Suspended"
+
+            ? "status-suspended"
+
+            : Model.Status == "Closed"
+
+                ? "status-closed"
+
+                : "status-other";
+}
+
+<style>
+    .wallet-details-page {
+        padding: 10px 0 30px;
+        color: #30283a;
+    }
+
+    .wallet-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .wallet-top h2 {
+            font-size: 25px;
+            font-weight: 750;
+            margin: 0 0 6px;
+        }
+
+        .wallet-top p {
+            color: #898292;
+            font-size: 13px;
+            margin: 0;
+        }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #65477f;
+        background: #f0eaf7;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        transition: all .2s ease;
+        cursor: pointer;
+    }
+
+        .back-link:hover {
+            background: #65477f;
+            color: #fff;
+        }
+
+    .wallet-profile {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        padding: 23px;
+        margin-bottom: 22px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+    .wallet-profile-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 22px;
+    }
+
+        .wallet-profile-heading h4 {
+            font-size: 17px;
+            font-weight: 750;
+            margin: 0 0 5px;
+        }
+
+        .wallet-profile-heading p {
+            color: #928b99;
+            font-size: 12px;
+            margin: 0;
+        }
+
+    .wallet-status {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 7px 12px;
+        font-size: 10px;
+        font-weight: 750;
+    }
+
+    .status-active {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+    .status-suspended {
+        color: #9b6a20;
+        background: #fff4df;
+    }
+
+    .status-closed {
+        color: #a04444;
+        background: #fceaea;
+    }
+
+    .status-other {
+        color: #67577c;
+        background: #f0eaf7;
+    }
+
+    .wallet-information {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .information-label {
+        font-size: 11px;
+        color: #928b99;
+        margin-bottom: 7px;
+    }
+
+    .information-value {
+        font-size: 13px;
+        color: #30283a;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .wallet-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 17px;
+        margin-bottom: 23px;
+    }
+
+    .wallet-stat {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 12px;
+        padding: 19px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+    .stat-label {
+        color: #928b99;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 11px;
+    }
+
+    .stat-value {
+        color: #30283a;
+        font-size: 21px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .stat-description {
+        color: #9992a0;
+        font-size: 10px;
+        margin-top: 7px;
+    }
+
+    .wallet-transactions {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+    .transactions-heading {
+        padding: 21px;
+        border-bottom: 1px solid #f0edf3;
+    }
+
+        .transactions-heading h4 {
+            font-size: 16px;
+            font-weight: 750;
+            margin: 0 0 5px;
+        }
+
+        .transactions-heading p {
+            color: #928b99;
+            font-size: 12px;
+            margin: 0;
+        }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .transaction-table {
+        width: 100%;
+        min-width: 950px;
+        border-collapse: collapse;
+    }
+
+        .transaction-table th {
+            background: #faf9fb;
+            color: #817989;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 14px 15px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .transaction-table td {
+            padding: 15px;
+            border-top: 1px solid #f1eef4;
+            color: #514a59;
+            font-size: 11px;
+            vertical-align: middle;
+        }
+
+    .transaction-type {
+        font-weight: 750;
+        color: #30283a;
+    }
+
+    .transaction-description {
+        color: #928b99;
+        margin-top: 4px;
+        font-size: 10px;
+    }
+
+    .transaction-reference {
+        color: #65477f;
+        font-weight: 700;
+    }
+
+    .transaction-amount {
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .amount-credit {
+        color: #28784e;
+    }
+
+    .amount-debit {
+        color: #a04444;
+    }
+
+    .transaction-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .transaction-completed {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+    .transaction-pending {
+        color: #9b6a20;
+        background: #fff4df;
+    }
+
+    .transaction-failed,
+    .transaction-reversed {
+        color: #a04444;
+        background: #fceaea;
+    }
+
+    .transaction-other {
+        color: #67577c;
+        background: #f0eaf7;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #928b99;
+    }
+
+        .empty-state h5 {
+            color: #514a59;
+            font-weight: 700;
+            margin: 12px 0 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            margin: 0;
+        }
+
+    .transactions-footer {
+        border-top: 1px solid #f0edf3;
+        padding: 14px 20px;
+        color: #928b99;
+        font-size: 11px;
+    }
+
+    @@media (max-width: 1100px) {
+        .wallet-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .wallet-information {
+            grid-template-columns: 1fr;
+        }
+
+        .wallet-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="wallet-details-page">
+
+    <!-- PAGE HEADER -->
+    <div class="wallet-top">
+
+        <div>
+            <h2>Wallet Details</h2>
+            <p>View customer wallet information and financial activity.</p>
+        </div>
+
+        <!-- BACK TO WALLETS -->
+        <a href="@Url.Action("Index", "WalletManagement", new { area = "Admin" })"
+           class="back-link">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Wallets
+
+        </a>
+
+    </div>
+
+    <!-- CUSTOMER AND WALLET INFORMATION -->
+    <div class="wallet-profile">
+
+        <div class="wallet-profile-heading">
+
+            <div>
+                <h4>Customer Wallet Information</h4>
+                <p>Account ownership and wallet details.</p>
+            </div>
+
+            <span class="wallet-status @statusClass">
+                @Model.Status
+            </span>
+
+        </div>
+
+        <div class="wallet-information">
+
+            <div>
+                <div class="information-label">Customer Name</div>
+                <div class="information-value">
+                    @Model.CustomerName
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Customer Email</div>
+                <div class="information-value">
+                    @Model.CustomerEmail
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Customer ID</div>
+                <div class="information-value">
+                    #@Model.UserId
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Wallet Number</div>
+                <div class="information-value">
+                    @Model.WalletNumber
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Currency</div>
+                <div class="information-value">
+                    @Model.Currency
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Wallet ID</div>
+                <div class="information-value">
+                    #@Model.WalletId
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Date Created</div>
+                <div class="information-value">
+                    @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                </div>
+            </div>
+
+            <div>
+                <div class="information-label">Last Updated</div>
+                <div class="information-value">
+                    @Model.UpdatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FINANCIAL SUMMARY -->
+    <div class="wallet-stats">
+
+        <div class="wallet-stat">
+            <div class="stat-label">Total Deposits</div>
+            <div class="stat-value">
+                @Model.Currency @Model.TotalDeposits.ToString("N2")
+            </div>
+            <div class="stat-description">
+                Completed deposits
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="stat-label">Total Refunds</div>
+            <div class="stat-value">
+                @Model.Currency @Model.TotalRefunds.ToString("N2")
+            </div>
+            <div class="stat-description">
+                Completed refunds
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="stat-label">Total Payments</div>
+            <div class="stat-value">
+                @Model.Currency @Model.TotalPayments.ToString("N2")
+            </div>
+            <div class="stat-description">
+                Completed payments
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="stat-label">Calculated Balance</div>
+            <div class="stat-value">
+                @Model.Currency @Model.CalculatedBalance.ToString("N2")
+            </div>
+            <div class="stat-description">
+                Deposits + refunds - payments
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TRANSACTION HISTORY -->
+    <div class="wallet-transactions">
+
+        <div class="transactions-heading">
+            <h4>Wallet Transaction History</h4>
+            <p>Financial records associated with this customer wallet.</p>
+        </div>
+
+        @if (Model.Transactions != null && Model.Transactions.Any())
+
+        {
+            <div class="table-wrapper">
+
+                <table class="transaction-table">
+
+                    <thead>
+                        <tr>
+                            <th>Transaction</th>
+                            <th>Reference</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date Created</th>
+                            <th>Date Completed</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var transaction in Model.Transactions)
+
+                        {
+                            var isCredit =
+                            transaction.Type == "Deposit" ||
+                            transaction.Type == "Refund";
+
+                            var amountClass = isCredit
+                            ? "amount-credit"
+                            : "amount-debit";
+
+                            var statusClassForTransaction =
+                            transaction.Status == "Completed"
+                            ? "transaction-completed"
+                            : transaction.Status == "Pending"
+                            ? "transaction-pending"
+                            : transaction.Status == "Failed" ||
+                            transaction.Status == "Reversed"
+                            ? "transaction-failed"
+                            : "transaction-other";
+
+                            <tr>
+
+                                <td>
+                                    <div class="transaction-type">
+                                        @transaction.Type
+                                    </div>
+
+                                    <div class="transaction-description">
+                                        @transaction.Description
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="transaction-reference">
+                                        @transaction.Reference
+                                    </span>
+
+                                    @if (!string.IsNullOrWhiteSpace(transaction.ExternalReference))
+
+                                    {
+                                        <div class="transaction-description">
+                                            External: @transaction.ExternalReference
+                                        </div>
+                                    }
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(transaction.Category)
+                                        ? "—"
+                                        : transaction.Category)
+                                </td>
+
+                                <td>
+                                    <span class="transaction-amount @amountClass">
+                                        @(isCredit ? "+" : "-")
+                                        @transaction.Currency
+                                        @transaction.Amount.ToString("N2")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="transaction-status @statusClassForTransaction">
+                                        @transaction.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @transaction.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                                </td>
+
+                                <td>
+                                    @(transaction.CompletedAt.HasValue
+                                        ? transaction.CompletedAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                                        : "—")
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+        else
+
+        {
+            <div class="empty-state">
+
+                <i class="bi bi-receipt"
+                   style="font-size:36px; color:#b7a7c8;"></i>
+
+                <h5>No wallet transactions yet</h5>
+
+                <p>
+                    Wallet transactions will appear here when financial activity is recorded.
+                </p>
+
+            </div>
+        }
+
+        <div class="transactions-footer">
+            Total records: @(Model.Transactions?.Count ?? 0)
+        </div>
+
+    </div>
+
+</div>

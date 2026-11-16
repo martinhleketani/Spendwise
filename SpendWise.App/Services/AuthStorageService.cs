@@ -1,4 +1,5 @@
-﻿namespace SpendWise.App.Services;
+﻿
+namespace SpendWise.App.Services;
 
 public class AuthStorageService
 {
@@ -7,6 +8,10 @@ public class AuthStorageService
     private const string UserNameKey = "user_name";
     private const string UserEmailKey = "user_email";
 
+    // =====================================================
+    // SAVE LOGIN DETAILS
+    // =====================================================
+
     public async Task SaveLoginAsync(
         string token,
         int userId,
@@ -14,9 +19,6 @@ public class AuthStorageService
         string email)
     {
 #if WINDOWS
-        // Temporary Windows development storage.
-        // We will replace this with production-secure storage
-        // before deployment.
         Preferences.Default.Set(TokenKey, token);
         Preferences.Default.Set(UserIdKey, userId.ToString());
         Preferences.Default.Set(UserNameKey, fullName);
@@ -24,50 +26,55 @@ public class AuthStorageService
 
         await Task.CompletedTask;
 #else
+        await SecureStorage.Default.SetAsync(TokenKey, token);
         await SecureStorage.Default.SetAsync(
-            TokenKey,
-            token);
+            UserIdKey, userId.ToString());
 
         await SecureStorage.Default.SetAsync(
-            UserIdKey,
-            userId.ToString());
+            UserNameKey, fullName);
 
         await SecureStorage.Default.SetAsync(
-            UserNameKey,
-            fullName);
-
-        await SecureStorage.Default.SetAsync(
-            UserEmailKey,
-            email);
+            UserEmailKey, email);
 #endif
     }
+
+    // =====================================================
+    // GET AUTHENTICATION TOKEN
+    // =====================================================
 
     public async Task<string?> GetTokenAsync()
     {
 #if WINDOWS
         return await Task.FromResult(
-            Preferences.Default.Get(
-                TokenKey,
-                string.Empty));
+            Preferences.Default.Get(TokenKey, string.Empty));
 #else
-        return await SecureStorage.Default.GetAsync(
-            TokenKey);
+        return await SecureStorage.Default.GetAsync(TokenKey);
 #endif
     }
+
+    // =====================================================
+    // GET USER NAME
+    // =====================================================
 
     public string GetUserName()
     {
         return Preferences.Default.Get(
-            UserNameKey,
-            string.Empty);
+            UserNameKey, string.Empty);
     }
+
+    // =====================================================
+    // GET USER EMAIL
+    // =====================================================
 
     public string GetUserEmail()
     {
         return Preferences.Default.Get(
-            UserEmailKey,
-            string.Empty);
+            UserEmailKey, string.Empty);
     }
+
+    // =====================================================
+    // LOGOUT / CLEAR SAVED LOGIN DETAILS
+    // =====================================================
 
     public void Logout()
     {

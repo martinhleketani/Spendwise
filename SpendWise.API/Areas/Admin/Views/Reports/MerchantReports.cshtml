@@ -1,0 +1,578 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Merchant Reports";
+
+
+
+    var totalMerchants = (int)(ViewBag.TotalMerchants ?? 0);
+
+    var activeMerchants = (int)(ViewBag.ActiveMerchants ?? 0);
+
+    var pendingMerchants = (int)(ViewBag.PendingMerchants ?? 0);
+
+    var suspendedMerchants = (int)(ViewBag.SuspendedMerchants ?? 0);
+
+    var closedMerchants = (int)(ViewBag.ClosedMerchants ?? 0);
+
+
+
+    var merchantList = ViewBag.MerchantList;
+
+
+
+    var merchantStatusChart =
+
+        ViewBag.MerchantStatusChart?.ToString()
+
+        ?? "{\"labels\":[],\"values\":[]}";
+}
+
+<style>
+    .report-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+
+        .report-heading h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .report-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .back-link {
+        background: #286B48;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .back-link:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .report-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h2 {
+            font-size: 26px;
+            margin: 0;
+            color: #26352C;
+        }
+
+        .summary-card small {
+            display: block;
+            margin-top: 8px;
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .report-panel {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+        .report-panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .report-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 18px;
+        line-height: 1.7;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        max-width: 550px;
+        margin: auto;
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .status-item {
+        background: #F4F7F5;
+        padding: 16px;
+        border-radius: 9px;
+    }
+
+        .status-item span {
+            display: block;
+            color: #839087;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .status-item strong {
+            font-size: 23px;
+            color: #26352C;
+        }
+
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 340px;
+        padding: 10px 12px;
+        border: 1px solid #E5ECE7;
+        border-radius: 7px;
+        font-size: 12px;
+        outline: none;
+    }
+
+        .search-input:focus {
+            border-color: #286B48;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+        .report-table th {
+            background: #F4F7F5;
+            color: #65736A;
+            font-size: 11px;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            color: #26352C;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-pending {
+        background: #FFF4DF;
+        color: #946A19;
+    }
+
+    .status-suspended,
+    .status-closed {
+        background: #FCEBED;
+        color: #B54752;
+    }
+
+    .record-count {
+        color: #839087;
+        font-size: 11px;
+    }
+
+    .empty-state {
+        padding: 25px;
+        text-align: center;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    .notice {
+        background: #F4F7F5;
+        border-left: 4px solid #286B48;
+        border-radius: 7px;
+        padding: 13px 15px;
+        color: #65736A;
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 18px;
+    }
+
+    @@media(max-width: 950px) {
+        .report-summary,
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media(max-width: 600px) {
+        .report-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .report-summary,
+        .status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input {
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- PAGE HEADING -->
+
+<div class="report-heading">
+    <div>
+        <h1>Merchant Reports</h1>
+        <p>Monitor registered merchants and merchant account activity.</p>
+    </div>
+
+    <a class="back-link" href="@Url.Action("Index")">
+        ← Reports Dashboard
+    </a>
+</div>
+
+<!-- SUMMARY CARDS -->
+
+<div class="report-summary">
+
+    <div class="summary-card">
+        <span>Total Merchants</span>
+        <h2>@totalMerchants</h2>
+        <small>All registered merchants</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Active Merchants</span>
+        <h2>@activeMerchants</h2>
+        <small>Approved active merchants</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Pending Merchants</span>
+        <h2>@pendingMerchants</h2>
+        <small>Awaiting administrator review</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Suspended Merchants</span>
+        <h2>@suspendedMerchants</h2>
+        <small>Currently suspended merchants</small>
+    </div>
+
+</div>
+
+<!-- MERCHANT ACCOUNT STATUS -->
+
+<div class="report-panel">
+
+    <h2>Merchant Account Status</h2>
+
+    <p class="report-description">
+        Distribution of merchants according to their current registration status.
+    </p>
+
+    <div class="status-grid">
+
+        <div class="status-item">
+            <span>Active</span>
+            <strong>@activeMerchants</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Pending</span>
+            <strong>@pendingMerchants</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Suspended</span>
+            <strong>@suspendedMerchants</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Closed</span>
+            <strong>@closedMerchants</strong>
+        </div>
+
+    </div>
+
+    <div class="chart-container">
+        <canvas id="merchantStatusChart"></canvas>
+    </div>
+
+</div>
+
+<!-- MERCHANT REGISTRATION HISTORY -->
+
+<div class="report-panel">
+
+    <h2>Merchant Registration Analytics</h2>
+
+    <p class="report-description">
+        Review the registration dates of merchants in the merchant directory.
+        The records below contain their actual registration dates.
+    </p>
+
+    <div class="notice">
+        Merchant registrations are currently displayed in the records table.
+        We will add the monthly registration trend after extending the controller
+        with monthly registration data.
+    </div>
+
+</div>
+
+<!-- MERCHANT RECORDS -->
+
+<div class="report-panel">
+
+    <h2>Merchant Records</h2>
+
+    <p class="report-description">
+        Review registered businesses, their contact details and account statuses.
+    </p>
+
+    <div class="table-toolbar">
+
+        <input type="text"
+               id="merchantSearch"
+               class="search-input"
+               placeholder="Search business, contact, email or status..." />
+
+        <span class="record-count" id="merchantRecordCount">
+            Showing all merchant records
+        </span>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="merchantsTable">
+
+            <thead>
+                <tr>
+                    <th>Merchant ID</th>
+                    <th>Business Name</th>
+                    <th>Contact Person</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Business Address</th>
+                    <th>Status</th>
+                    <th>Registration Date</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (merchantList != null && merchantList.Count > 0)
+
+                {
+                    foreach (var merchant in merchantList)
+                    {
+                        <tr>
+                            <td>#@merchant.Id</td>
+
+                            <td>@merchant.BusinessName</td>
+
+                            <td>
+                                @(merchant.ContactPerson ?? "Not provided")
+                            </td>
+
+                            <td>
+                                @(merchant.Email ?? "Not provided")
+                            </td>
+
+                            <td>
+                                @(merchant.PhoneNumber ?? "Not provided")
+                            </td>
+
+                            <td>
+                                @(merchant.BusinessAddress ?? "Not provided")
+                            </td>
+
+                            <td>
+                                <span class="status-badge status-@merchant.Status.ToLowerInvariant()">
+                                    @merchant.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @merchant.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+
+                            <td>
+                                @merchant.UpdatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            No merchant records found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // MERCHANT STATUS CHART
+
+            const merchantStatusData =
+        @Html.Raw(merchantStatusChart);
+
+            const chartCanvas =
+                document.getElementById("merchantStatusChart");
+
+            if (chartCanvas) {
+
+                new Chart(chartCanvas, {
+                    type: "doughnut",
+
+                    data: {
+                        labels: merchantStatusData.labels,
+
+                        datasets: [{
+                            label: "Merchants",
+
+                            data: merchantStatusData.values,
+
+                            backgroundColor: [
+                                "#286B48",
+                                "#D6A43B",
+                                "#D65C68",
+                                "#839087"
+                            ],
+
+                            borderWidth: 1
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+        // MERCHANT TABLE SEARCH
+
+        const merchantSearch =
+            document.getElementById("merchantSearch");
+
+        const merchantRows =
+            document.querySelectorAll("#merchantsTable tbody tr");
+
+        const merchantRecordCount =
+            document.getElementById("merchantRecordCount");
+
+        if (merchantSearch) {
+
+            merchantSearch.addEventListener("input", function () {
+
+                const searchValue =
+                    this.value.toLowerCase().trim();
+
+                let visibleCount = 0;
+
+                merchantRows.forEach(row => {
+
+                    const matches =
+                        row.textContent.toLowerCase().includes(searchValue);
+
+                    row.style.display =
+                        matches ? "" : "none";
+
+                    if (matches) {
+                        visibleCount++;
+                    }
+
+                });
+
+                merchantRecordCount.textContent =
+                    "Showing " + visibleCount + " records";
+
+            });
+
+        }
+    </script>
+}

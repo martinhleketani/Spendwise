@@ -1,0 +1,796 @@
+﻿@model IEnumerable<SpendWise.API.Models.AuditLog>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Audit Logs";
+
+
+
+    var modules = ViewBag.Modules as IEnumerable<string>
+
+        ?? Enumerable.Empty<string>();
+
+
+
+    var actions = ViewBag.Actions as IEnumerable<string>
+
+        ?? Enumerable.Empty<string>();
+
+
+
+    string search = ViewBag.Search as string ?? "";
+
+    string selectedModule = ViewBag.SelectedModule as string ?? "";
+
+    string selectedAction = ViewBag.SelectedAction as string ?? "";
+
+    string fromDate = ViewBag.FromDate as string ?? "";
+
+    string toDate = ViewBag.ToDate as string ?? "";
+
+
+
+    int totalLogs = ViewBag.TotalLogs ?? 0;
+
+    int todayLogs = ViewBag.TodayLogs ?? 0;
+
+    int adminCount = ViewBag.AdminCount ?? 0;
+
+    int filteredLogs = ViewBag.FilteredLogs ?? 0;
+
+
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+
+    int totalPages = ViewBag.TotalPages ?? 0;
+
+    int totalRecords = ViewBag.TotalRecords ?? 0;
+
+
+
+    string GetActionClass(string action)
+
+    {
+
+        return action?.ToLowerInvariant() switch
+
+        {
+
+            "created" or "approved" or "activated" or
+
+            "initialized" or "reactivated"
+
+                => "audit-status-success",
+
+
+
+            "updated" or "modified" or "backfilled"
+
+                => "audit-status-info",
+
+
+
+            "deleted" or "suspended" or "rejected"
+
+                => "audit-status-danger",
+
+
+
+            _ => "audit-status-neutral"
+
+        };
+
+    }
+
+
+
+    string GetModuleIcon(string module)
+
+    {
+
+        return module?.ToLowerInvariant() switch
+
+        {
+
+            "users" => "bi-people",
+
+            "transactions" => "bi-arrow-left-right",
+
+            "wallets" => "bi-wallet2",
+
+            "merchants" => "bi-shop",
+
+            "ledger" => "bi-journal-text",
+
+            "authentication" => "bi-shield-lock",
+
+            "settings" => "bi-gear",
+
+            _ => "bi-folder2"
+
+        };
+
+    }
+
+
+
+    string IndexUrl(int pageNumber = 1)
+
+    {
+
+        return Url.Action(
+
+            "Index",
+
+            "AuditLogs",
+
+            new
+
+            {
+
+                area = "Admin",
+
+                search,
+
+                module = selectedModule,
+
+                actionFilter = selectedAction,
+
+                fromDate,
+
+                toDate,
+
+                page = pageNumber
+
+            }) ?? "/Admin/AuditLogs";
+
+    }
+}
+
+<style>
+    .audit-page {
+        width: 100%;
+    }
+
+    .audit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+        .audit-header h2 {
+            font-size: 25px;
+            font-weight: 700;
+            color: #30263b;
+            margin-bottom: 7px;
+        }
+
+        .audit-header p {
+            color: #77717f;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+    .audit-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .audit-stat-card {
+        background: #fff;
+        border: 1px solid #ece7f0;
+        border-radius: 13px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-width: 0;
+    }
+
+    .audit-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1eafa;
+        color: #77549a;
+        font-size: 21px;
+        flex-shrink: 0;
+    }
+
+    .audit-stat-info span {
+        display: block;
+        color: #817b88;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .audit-stat-info strong {
+        display: block;
+        font-size: 23px;
+        color: #30263b;
+        font-weight: 700;
+    }
+
+    .audit-panel {
+        background: #fff;
+        border: 1px solid #ece7f0;
+        border-radius: 13px;
+        margin-bottom: 22px;
+        overflow: hidden;
+    }
+
+    .audit-panel-header {
+        padding: 19px 21px;
+        border-bottom: 1px solid #eeeaf1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+        .audit-panel-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #30263b;
+        }
+
+    .audit-panel-body {
+        padding: 21px;
+    }
+
+    .audit-filter-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 13px;
+        align-items: end;
+    }
+
+    .audit-field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5f5868;
+        margin-bottom: 7px;
+    }
+
+    .audit-field input,
+    .audit-field select {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #e3dce9;
+        border-radius: 8px;
+        padding: 8px 11px;
+        background: #fff;
+        color: #403849;
+        font-size: 13px;
+        outline: none;
+    }
+
+        .audit-field input:focus,
+        .audit-field select:focus {
+            border-color: #9875b5;
+            box-shadow: 0 0 0 3px rgba(152,117,181,.12);
+        }
+
+    .audit-filter-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 17px;
+        flex-wrap: wrap;
+    }
+
+    .audit-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .audit-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+        .audit-table th {
+            background: #faf8fc;
+            color: #716979;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 700;
+            padding: 14px 17px;
+            border-bottom: 1px solid #eeeaf1;
+            white-space: nowrap;
+        }
+
+        .audit-table td {
+            padding: 15px 17px;
+            border-bottom: 1px solid #f0edf2;
+            vertical-align: middle;
+            color: #4b4453;
+            font-size: 13px;
+        }
+
+        .audit-table tbody tr:hover {
+            background: #fcfaff;
+        }
+
+    .audit-admin-name {
+        font-weight: 650;
+        color: #342b3e;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .audit-admin-email {
+        color: #88818f;
+        font-size: 11px;
+        display: block;
+    }
+
+    .audit-description {
+        max-width: 290px;
+        line-height: 1.5;
+        color: #615a68;
+    }
+
+    .audit-module {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #69527f;
+        background: #f4eff8;
+        border-radius: 7px;
+        padding: 6px 9px;
+        font-size: 11px;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .audit-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .audit-status-success {
+        color: #28734d;
+        background: #e9f6ef;
+    }
+
+    .audit-status-info {
+        color: #526a9c;
+        background: #edf1fa;
+    }
+
+    .audit-status-danger {
+        color: #a64d58;
+        background: #faecee;
+    }
+
+    .audit-status-neutral {
+        color: #766b80;
+        background: #f0edf3;
+    }
+
+    .audit-date {
+        color: #554e5c;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .audit-id {
+        color: #81798a;
+        font-weight: 650;
+    }
+
+    .audit-empty {
+        text-align: center;
+        padding: 55px 20px;
+    }
+
+        .audit-empty i {
+            font-size: 39px;
+            color: #b6a5c6;
+            display: block;
+            margin-bottom: 13px;
+        }
+
+        .audit-empty h5 {
+            color: #403649;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .audit-empty p {
+            color: #88818f;
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+
+    .audit-pagination {
+        padding: 17px 21px;
+        border-top: 1px solid #eeeaf1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .audit-pagination-info {
+        color: #827a89;
+        font-size: 12px;
+    }
+
+    .audit-pagination-links {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .audit-page-link {
+        min-width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+        border: 1px solid #e7e0ec;
+        border-radius: 7px;
+        color: #665478;
+        background: #fff;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+        .audit-page-link:hover {
+            background: #f5f0f9;
+            color: #60447e;
+        }
+
+        .audit-page-link.active {
+            background: #77549a;
+            color: #fff;
+            border-color: #77549a;
+        }
+
+        .audit-page-link.disabled {
+            pointer-events: none;
+            opacity: .4;
+        }
+
+    @@media (max-width: 1100px) {
+        .audit-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .audit-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .audit-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .audit-panel-body {
+            padding: 15px;
+        }
+
+        .audit-header h2 {
+            font-size: 21px;
+        }
+    }
+</style>
+
+<div class="audit-page">
+
+    <div class="audit-header">
+        <div>
+            <h2>Audit Logs</h2>
+            <p>Monitor administrator activities and review important system events.</p>
+        </div>
+    </div>
+
+    <!-- STATISTICS -->
+
+    <div class="audit-stats">
+
+        <div class="audit-stat-card">
+            <div class="audit-stat-icon">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div class="audit-stat-info">
+                <span>Total Audit Logs</span>
+                <strong>@totalLogs.ToString("N0")</strong>
+            </div>
+        </div>
+
+        <div class="audit-stat-card">
+            <div class="audit-stat-icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="audit-stat-info">
+                <span>Today's Activities (UTC)</span>
+                <strong>@todayLogs.ToString("N0")</strong>
+            </div>
+        </div>
+
+        <div class="audit-stat-card">
+            <div class="audit-stat-icon">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div class="audit-stat-info">
+                <span>Administrators Recorded</span>
+                <strong>@adminCount.ToString("N0")</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FILTER PANEL -->
+
+    <div class="audit-panel">
+
+        <div class="audit-panel-header">
+            <h5><i class="bi bi-funnel me-2"></i>Search and Filter</h5>
+            <span class="text-muted small">
+                @filteredLogs.ToString("N0") matching records
+            </span>
+        </div>
+
+        <div class="audit-panel-body">
+
+            <form method="get"
+                  action="@Url.Action("Index", "AuditLogs", new { area = "Admin" })">
+
+                <div class="audit-filter-grid">
+
+                    <div class="audit-field">
+                        <label for="search">Search</label>
+                        <input type="text"
+                               id="search"
+                               name="search"
+                               value="@search"
+                               placeholder="Administrator, email or description..." />
+                    </div>
+
+                    <div class="audit-field">
+                        <label for="module">Module</label>
+                        <select id="module" name="module">
+                            <option value="">All Modules</option>
+                            @foreach (var item in modules)
+
+                            {
+
+                                if (selectedModule == item)
+
+                                {
+                                    <option value="@item" selected>@item</option>
+                                }
+
+                                else
+
+                                {
+                                    <option value="@item">@item</option>
+                                }
+
+                            }
+                        </select>
+                    </div>
+
+                    <div class="audit-field">
+                        <label for="actionFilter">Action</label>
+                        <select id="actionFilter" name="actionFilter">
+                            <option value="">All Actions</option>
+                            @foreach (var item in actions)
+
+                            {
+
+                                if (selectedAction == item)
+
+                                {
+                                    <option value="@item" selected>@item</option>
+                                }
+
+                                else
+
+                                {
+                                    <option value="@item">@item</option>
+                                }
+
+                            }
+                        </select>
+                    </div>
+
+                    <div class="audit-field">
+                        <label for="fromDate">From Date (UTC)</label>
+                        <input type="date"
+                               id="fromDate"
+                               name="fromDate"
+                               value="@fromDate" />
+                    </div>
+
+                    <div class="audit-field">
+                        <label for="toDate">To Date (UTC)</label>
+                        <input type="date"
+                               id="toDate"
+                               name="toDate"
+                               value="@toDate" />
+                    </div>
+
+                </div>
+
+                <div class="audit-filter-actions">
+
+                    <button type="submit"
+                            class="admin-btn admin-btn-primary">
+                        <i class="bi bi-search me-1"></i>
+                        Apply Filters
+                    </button>
+
+                    <a href="@Url.Action("Index", "AuditLogs", new { area = "Admin" })"
+                       class="admin-btn admin-btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Reset
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ACTIVITY HISTORY -->
+
+    <div class="audit-panel">
+
+        <div class="audit-panel-header">
+            <h5><i class="bi bi-clock-history me-2"></i>Activity History</h5>
+            <span class="text-muted small">
+                @totalRecords.ToString("N0") records found
+            </span>
+        </div>
+
+        <div class="audit-table-wrapper">
+
+            @if (Model != null && Model.Any())
+            {
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Administrator</th>
+                            <th>Action</th>
+                            <th>Module</th>
+                            <th>Description</th>
+                            <th>Date and Time (UTC)</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var log in Model)
+
+                        {
+                            <tr>
+                                <td>
+                                    <span class="audit-id">#@log.Id</span>
+                                </td>
+
+                                <td>
+                                    <span class="audit-admin-name">@log.AdminName</span>
+                                    <span class="audit-admin-email">@log.AdminEmail</span>
+                                </td>
+
+                                <td>
+                                    <span class="audit-status @GetActionClass(log.Action)">
+                                        @log.Action
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="audit-module">
+                                        <i class="bi @GetModuleIcon(log.Module)"></i>
+                                        @log.Module
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="audit-description">
+                                        @log.Description
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="audit-date">
+                                        @DateTime.SpecifyKind(
+                                                 log.CreatedAt,
+                                                 DateTimeKind.Utc
+                                                 ).ToString("dd MMM yyyy, HH:mm")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a href="@Url.Action(
+                                        "Details",
+                                        "AuditLogs",
+                                        new { area = "Admin", id = log.Id })"
+                                       class="admin-btn admin-btn-outline admin-btn-sm">
+                                        <i class="bi bi-eye me-1"></i>
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="audit-empty">
+                    <i class="bi bi-journal-x"></i>
+                    <h5>No Audit Logs Found</h5>
+                    <p>
+                        There are no audit records matching your search
+                        or filter criteria.
+                    </p>
+                </div>
+            }
+
+        </div>
+
+        <!-- PAGINATION -->
+        @if (totalPages > 1)
+
+        {
+            <div class="audit-pagination">
+
+                <div class="audit-pagination-info">
+                    Page @currentPage of @totalPages
+                    · @totalRecords.ToString("N0") records
+                </div>
+
+                <div class="audit-pagination-links">
+
+                    <a href="@(currentPage > 1 ? IndexUrl(currentPage - 1) : "#")"
+                       class="audit-page-link @(currentPage <= 1 ? "disabled" : "")">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a href="@IndexUrl(i)"
+                           class="audit-page-link @(currentPage == i ? "active" : "")">
+                            @i
+                        </a>
+                    }
+
+                    <a href="@(currentPage < totalPages ? IndexUrl(currentPage + 1) : "#")"
+                       class="audit-page-link @(currentPage >= totalPages ? "disabled" : "")">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+</div>

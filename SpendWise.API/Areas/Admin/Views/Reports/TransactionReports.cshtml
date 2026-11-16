@@ -1,0 +1,665 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Transaction Reports";
+
+
+
+    var totalTransactions = (int)(ViewBag.TotalTransactions ?? 0);
+
+    var totalAmount = (decimal)(ViewBag.TotalTransactionAmount ?? 0m);
+
+    var averageAmount = (decimal)(ViewBag.AverageTransactionAmount ?? 0m);
+
+
+
+    var transactionTypes = ViewBag.TransactionTypes;
+
+    var transactionCategories = ViewBag.TransactionCategories;
+
+    var recentTransactions = ViewBag.RecentTransactions;
+
+
+
+    var typeChart =
+
+        ViewBag.TransactionTypeChart?.ToString()
+
+        ?? "{\"labels\":[],\"values\":[]}";
+}
+
+<style>
+    .report-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+
+        .report-heading h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .report-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .back-link {
+        background: #286B48;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .back-link:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .report-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h2 {
+            font-size: 25px;
+            margin: 0;
+            color: #26352C;
+        }
+
+        .summary-card small {
+            display: block;
+            margin-top: 8px;
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .report-panel {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+        .report-panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .report-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .analytics-card {
+        background: #F4F7F5;
+        padding: 17px;
+        border-radius: 9px;
+    }
+
+        .analytics-card h3 {
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+    .analytics-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .analytics-table th,
+        .analytics-table td {
+            padding: 10px 7px;
+            text-align: left;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+        }
+
+        .analytics-table th {
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .search-input,
+    .filter-input {
+        padding: 10px 12px;
+        border: 1px solid #E5ECE7;
+        border-radius: 7px;
+        font-size: 12px;
+        outline: none;
+        background: white;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 300px;
+    }
+
+        .search-input:focus,
+        .filter-input:focus {
+            border-color: #286B48;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1000px;
+    }
+
+        .report-table th {
+            background: #F4F7F5;
+            color: #65736A;
+            font-size: 11px;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            color: #26352C;
+        }
+
+    .type-badge {
+        display: inline-block;
+        background: #E8F4EC;
+        color: #286B48;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .record-count {
+        color: #839087;
+        font-size: 11px;
+    }
+
+    .empty-state {
+        padding: 25px;
+        text-align: center;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    @@media(max-width: 800px) {
+        .report-summary,
+        .analytics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media(max-width: 600px) {
+        .report-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .report-summary,
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input {
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- PAGE HEADING -->
+
+<div class="report-heading">
+    <div>
+        <h1>Transaction Reports</h1>
+        <p>Monitor and analyse SpendWise transaction activity.</p>
+    </div>
+
+    <a class="back-link" href="@Url.Action("Index")">
+        ← Reports Dashboard
+    </a>
+</div>
+
+<!-- SUMMARY CARDS -->
+
+<div class="report-summary">
+
+    <div class="summary-card">
+        <span>Total Transactions</span>
+        <h2>@totalTransactions</h2>
+        <small>All recorded spending transactions</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Total Transaction Amount</span>
+        <h2>R @totalAmount.ToString("N2")</h2>
+        <small>Sum of recorded transaction amounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Average Transaction Amount</span>
+        <h2>R @averageAmount.ToString("N2")</h2>
+        <small>Average amount per recorded transaction</small>
+    </div>
+
+</div>
+
+<!-- TRANSACTION TYPE CHART -->
+
+<div class="report-panel">
+
+    <h2>Transaction Activity by Type</h2>
+
+    <p class="report-description">
+        Distribution of recorded transactions according to transaction type.
+    </p>
+
+    <div class="chart-container">
+        <canvas id="transactionTypeChart"></canvas>
+    </div>
+
+</div>
+
+<!-- CATEGORY AND TYPE ANALYSIS -->
+
+<div class="report-panel">
+
+    <h2>Transaction Types and Categories</h2>
+
+    <p class="report-description">
+        Breakdown of transaction volumes and recorded amounts.
+    </p>
+
+    <div class="analytics-grid">
+
+        <div class="analytics-card">
+
+            <h3>Transaction Types</h3>
+
+            <div class="table-responsive">
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Count</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @if (transactionTypes != null &&
+                        transactionTypes.Count > 0)
+
+                        {
+
+                            foreach (var item in transactionTypes)
+
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.Count</td>
+                                    <td>R @item.TotalAmount.ToString("N2")</td>
+                                </tr>
+                            }
+
+                        }
+
+                        else
+
+                        {
+                            <tr>
+                                <td colspan="3">No transaction types found.</td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="analytics-card">
+
+            <h3>Transaction Categories</h3>
+
+            <div class="table-responsive">
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @if (transactionCategories != null &&
+                        transactionCategories.Count > 0)
+
+                        {
+
+                            foreach (var item in transactionCategories)
+
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.Count</td>
+                                    <td>R @item.TotalAmount.ToString("N2")</td>
+                                </tr>
+                            }
+
+                        }
+
+                        else
+
+                        {
+                            <tr>
+                                <td colspan="3">No transaction categories found.</td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- TRANSACTION RECORDS -->
+
+<div class="report-panel">
+
+    <h2>Transaction Records</h2>
+
+    <p class="report-description">
+        Review the latest 100 recorded customer spending transactions.
+    </p>
+
+    <div class="table-toolbar">
+
+        <input type="text"
+               id="transactionSearch"
+               class="search-input"
+               placeholder="Search reference, customer, retailer..." />
+
+        <input type="date"
+               id="startDate"
+               class="filter-input"
+               aria-label="Start date" />
+
+        <input type="date"
+               id="endDate"
+               class="filter-input"
+               aria-label="End date" />
+
+        <span class="record-count" id="recordCount">
+            Showing up to 100 records
+        </span>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="transactionsTable">
+
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Reference</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Retailer</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Date Recorded</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (recentTransactions != null &&
+                recentTransactions.Count > 0)
+
+                {
+                    foreach (var transaction in recentTransactions)
+                    {
+                        <tr data-date="@transaction.CreatedAt.ToString("yyyy-MM-dd")">
+
+                            <td>#@transaction.Id</td>
+
+                            <td>@transaction.Reference</td>
+
+                            <td>
+                                @(transaction.User?.FullName ?? "Unknown")
+                            </td>
+
+                            <td>
+                                <span class="type-badge">
+                                    @transaction.Type
+                                </span>
+                            </td>
+
+                            <td>
+                                @(transaction.Category ?? "Uncategorised")
+                            </td>
+
+                            <td>
+                                @(transaction.Retailer ?? "Not provided")
+                            </td>
+
+                            <td>@transaction.Description</td>
+
+                            <td>
+                                R @transaction.Amount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @transaction.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            No transaction records found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // TRANSACTION TYPE CHART
+
+            const typeData =
+        @Html.Raw(typeChart);
+
+            const chartCanvas =
+                document.getElementById("transactionTypeChart");
+
+            if (chartCanvas) {
+
+                new Chart(chartCanvas, {
+                    type: "doughnut",
+
+                    data: {
+                        labels: typeData.labels,
+
+                        datasets: [{
+                            label: "Transactions",
+                            data: typeData.values,
+                            backgroundColor: [
+                                "#286B48",
+                                "#26966B",
+                                "#A7CDB4",
+                                "#D6E9DC",
+                                "#839087",
+                                "#B9C9BE"
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+        // TABLE SEARCH AND DATE FILTERS
+
+        const searchInput =
+            document.getElementById("transactionSearch");
+
+        const startDate =
+            document.getElementById("startDate");
+
+        const endDate =
+            document.getElementById("endDate");
+
+        const rows =
+            document.querySelectorAll("#transactionsTable tbody tr");
+
+        const recordCount =
+            document.getElementById("recordCount");
+
+        function filterTransactions() {
+
+            const searchValue =
+                searchInput.value.toLowerCase().trim();
+
+            const start =
+                startDate.value;
+
+            const end =
+                endDate.value;
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+
+                const rowText =
+                    row.textContent.toLowerCase();
+
+                const transactionDate =
+                    row.dataset.date || "";
+
+                const matchesSearch =
+                    rowText.includes(searchValue);
+
+                const matchesStart =
+                    !start || transactionDate >= start;
+
+                const matchesEnd =
+                    !end || transactionDate <= end;
+
+                const visible =
+                    matchesSearch &&
+                    matchesStart &&
+                    matchesEnd;
+
+                row.style.display =
+                    visible ? "" : "none";
+
+                if (visible) {
+                    visibleCount++;
+                }
+
+            });
+
+            recordCount.textContent =
+                "Showing " + visibleCount + " records";
+        }
+
+        searchInput.addEventListener("input", filterTransactions);
+        startDate.addEventListener("change", filterTransactions);
+        endDate.addEventListener("change", filterTransactions);
+    </script>
+}

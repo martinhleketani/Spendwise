@@ -1,0 +1,728 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Ledger Reports";
+
+
+
+    int totalAccounts = (int)(ViewBag.TotalLedgerAccounts ?? 0);
+
+    int activeAccounts = (int)(ViewBag.ActiveLedgerAccounts ?? 0);
+
+    int inactiveAccounts = (int)(ViewBag.InactiveLedgerAccounts ?? 0);
+
+    int systemAccounts = (int)(ViewBag.SystemAccounts ?? 0);
+
+    int customerAccounts = (int)(ViewBag.CustomerAccounts ?? 0);
+
+
+
+    int totalJournals = (int)(ViewBag.TotalLedgerJournals ?? 0);
+
+    int draftJournals = (int)(ViewBag.DraftJournals ?? 0);
+
+    int postedJournals = (int)(ViewBag.PostedJournals ?? 0);
+
+    int reversedJournals = (int)(ViewBag.ReversedJournals ?? 0);
+
+    int totalEntries = (int)(ViewBag.TotalLedgerEntries ?? 0);
+
+
+
+    var postedTotals = ViewBag.PostedLedgerTotals;
+
+    var ledgerAccounts = ViewBag.LedgerAccounts;
+
+    var ledgerJournals = ViewBag.LedgerJournals;
+}
+
+<style>
+    .report-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+
+        .report-heading h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .report-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .back-link {
+        background: #286B48;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .back-link:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .report-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h2 {
+            font-size: 26px;
+            margin: 0;
+            color: #26352C;
+        }
+
+        .summary-card small {
+            display: block;
+            margin-top: 8px;
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .report-panel {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+        .report-panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .report-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 18px;
+        line-height: 1.7;
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .status-item {
+        background: #F4F7F5;
+        padding: 15px;
+        border-radius: 9px;
+    }
+
+        .status-item span {
+            display: block;
+            color: #839087;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .status-item strong {
+            font-size: 22px;
+            color: #26352C;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+        .report-table th {
+            background: #F4F7F5;
+            color: #65736A;
+            font-size: 11px;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            color: #26352C;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .status-posted,
+    .status-active,
+    .balance-ok {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-draft {
+        background: #FFF4DF;
+        color: #946A19;
+    }
+
+    .status-reversed,
+    .status-inactive,
+    .balance-error {
+        background: #FCEBED;
+        color: #B54752;
+    }
+
+    .notice {
+        background: #F4F7F5;
+        border-left: 4px solid #286B48;
+        border-radius: 7px;
+        padding: 13px 15px;
+        color: #65736A;
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 18px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 350px;
+        padding: 10px 12px;
+        border: 1px solid #E5ECE7;
+        border-radius: 7px;
+        font-size: 12px;
+        outline: none;
+        margin-bottom: 15px;
+    }
+
+        .search-input:focus {
+            border-color: #286B48;
+        }
+
+    .empty-state {
+        padding: 25px;
+        text-align: center;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    .amount {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .record-count {
+        color: #839087;
+        font-size: 11px;
+        margin-left: 10px;
+    }
+
+    @@media(max-width: 950px) {
+        .report-summary,
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media(max-width: 600px) {
+        .report-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .report-summary,
+        .status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input {
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- PAGE HEADING -->
+
+<div class="report-heading">
+    <div>
+        <h1>Ledger Reports</h1>
+        <p>Monitor financial journals, debit entries and credit entries.</p>
+    </div>
+
+    <a class="back-link" href="@Url.Action("Index")">
+        ← Reports Dashboard
+    </a>
+</div>
+
+<!-- SUMMARY CARDS -->
+
+<div class="report-summary">
+
+    <div class="summary-card">
+        <span>Ledger Accounts</span>
+        <h2>@totalAccounts</h2>
+        <small>@activeAccounts active accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Total Journals</span>
+        <h2>@totalJournals</h2>
+        <small>@postedJournals posted journals</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Total Ledger Entries</span>
+        <h2>@totalEntries</h2>
+        <small>Debit and credit records</small>
+    </div>
+
+    <div class="summary-card">
+        <span>System Accounts</span>
+        <h2>@systemAccounts</h2>
+        <small>@customerAccounts customer accounts</small>
+    </div>
+
+</div>
+
+<!-- ACCOUNT ANALYSIS -->
+
+<div class="report-panel">
+
+    <h2>Ledger Account Analysis</h2>
+
+    <p class="report-description">
+        Overview of system and customer accounts and their current activation status.
+    </p>
+
+    <div class="status-grid">
+
+        <div class="status-item">
+            <span>Active Accounts</span>
+            <strong>@activeAccounts</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Inactive Accounts</span>
+            <strong>@inactiveAccounts</strong>
+        </div>
+
+        <div class="status-item">
+            <span>System Accounts</span>
+            <strong>@systemAccounts</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Customer Accounts</span>
+            <strong>@customerAccounts</strong>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JOURNAL STATUS -->
+
+<div class="report-panel">
+
+    <h2>Journal Activity</h2>
+
+    <p class="report-description">
+        Distribution of ledger journals according to their accounting status.
+    </p>
+
+    <div class="status-grid">
+
+        <div class="status-item">
+            <span>Total Journals</span>
+            <strong>@totalJournals</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Draft Journals</span>
+            <strong>@draftJournals</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Posted Journals</span>
+            <strong>@postedJournals</strong>
+        </div>
+
+        <div class="status-item">
+            <span>Reversed Journals</span>
+            <strong>@reversedJournals</strong>
+        </div>
+
+    </div>
+
+    <div class="notice">
+        Posted journals are included in the debit and credit totals below.
+        Draft and reversed journals are excluded from those totals.
+    </div>
+
+</div>
+
+<!-- DEBIT AND CREDIT ANALYSIS -->
+
+<div class="report-panel">
+
+    <h2>Debit and Credit Analysis</h2>
+
+    <p class="report-description">
+        Posted ledger entries grouped by currency and entry type.
+        Debit and credit totals are shown separately for each currency.
+    </p>
+
+    <div class="table-responsive">
+
+        <table class="report-table">
+
+            <thead>
+                <tr>
+                    <th>Currency</th>
+                    <th>Entry Type</th>
+                    <th>Number of Entries</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (postedTotals != null && postedTotals.Count > 0)
+
+                {
+                    foreach (var total in postedTotals)
+                    {
+                        <tr>
+                            <td>@total.Currency</td>
+
+                            <td>
+                                <span class="status-badge @(total.EntryType == "Debit" ? "status-draft" : "status-active")">
+                                    @total.EntryType
+                                </span>
+                            </td>
+
+                            <td>@total.EntryCount</td>
+
+                            <td class="amount">
+                                @total.Currency @(((decimal)total.TotalAmount).ToString("N2"))
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            No posted ledger entries are available.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- LEDGER ACCOUNTS -->
+
+<div class="report-panel">
+
+    <h2>Ledger Account Records</h2>
+
+    <p class="report-description">
+        All ledger accounts registered in the accounting system.
+    </p>
+
+    <input type="text"
+           id="accountSearch"
+           class="search-input"
+           placeholder="Search account code, name, type or currency..." />
+
+    <span class="record-count" id="accountCount"></span>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="accountsTable">
+
+            <thead>
+                <tr>
+                    <th>Account ID</th>
+                    <th>Account Code</th>
+                    <th>Account Name</th>
+                    <th>Account Type</th>
+                    <th>Currency</th>
+                    <th>Wallet ID</th>
+                    <th>Account Category</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (ledgerAccounts != null && ledgerAccounts.Count > 0)
+
+                {
+                    foreach (var account in ledgerAccounts)
+                    {
+                        <tr>
+                            <td>#@account.Id</td>
+                            <td>@account.Code</td>
+                            <td>@account.Name</td>
+                            <td>@account.AccountType</td>
+                            <td>@account.Currency</td>
+
+                            <td>
+                                @(account.WalletId?.ToString() ?? "N/A")
+                            </td>
+
+                            <td>
+                                @(account.IsSystemAccount ? "System" : "Customer")
+                            </td>
+
+                            <td>
+                                <span class="status-badge @(account.IsActive ? "status-active" : "status-inactive")">
+                                    @(account.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            No ledger accounts found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- JOURNAL RECORDS -->
+
+<div class="report-panel">
+
+    <h2>Journal Records</h2>
+
+    <p class="report-description">
+        Review journal references, descriptions, debit and credit totals,
+        and whether each journal balances.
+    </p>
+
+    <input type="text"
+           id="journalSearch"
+           class="search-input"
+           placeholder="Search reference, description or status..." />
+
+    <span class="record-count" id="journalCount"></span>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="journalsTable">
+
+            <thead>
+                <tr>
+                    <th>Journal ID</th>
+                    <th>Reference</th>
+                    <th>Description</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Wallet Transaction</th>
+                    <th>Debit Total</th>
+                    <th>Credit Total</th>
+                    <th>Balance Check</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (ledgerJournals != null && ledgerJournals.Count > 0)
+
+                {
+                    foreach (var journal in ledgerJournals)
+                    {
+                        <tr>
+                            <td>#@journal.Id</td>
+                            <td>@journal.Reference</td>
+                            <td>@journal.Description</td>
+                            <td>@journal.Currency</td>
+
+                            <td>
+                                <span class="status-badge status-@journal.Status.ToLowerInvariant()">
+                                    @journal.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @(journal.WalletTransactionId?.ToString() ?? "N/A")
+                            </td>
+
+                            <td class="amount">
+                                @journal.Currency @(((decimal)journal.DebitTotal).ToString("N2"))
+                            </td>
+
+                            <td class="amount">
+                                @journal.Currency @(((decimal)journal.CreditTotal).ToString("N2"))
+                            </td>
+
+                            <td>
+                                @if (journal.IsBalanced)
+
+                                {
+                                    <span class="status-badge balance-ok">
+                                        Balanced
+                                    </span>
+                                }
+
+                                else
+
+                                {
+                                    <span class="status-badge balance-error">
+                                        Unbalanced
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @journal.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="10" class="empty-state">
+                            No journal records found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        // SEARCH TABLES
+
+        function setupTableSearch(inputId, tableId, countId) {
+
+            const searchInput = document.getElementById(inputId);
+            const table = document.getElementById(tableId);
+            const countElement = document.getElementById(countId);
+
+            if (!searchInput || !table) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+            function updateCount() {
+                const visibleRows = rows.filter(row =>
+                    row.style.display !== "none" &&
+                    !row.querySelector(".empty-state")
+                ).length;
+
+                if (countElement) {
+                    countElement.textContent =
+                        "Showing " + visibleRows + " records";
+                }
+            }
+
+            searchInput.addEventListener("input", function () {
+
+                const searchValue = this.value.toLowerCase().trim();
+
+                rows.forEach(row => {
+
+                    if (row.querySelector(".empty-state")) return;
+
+                    const matches =
+                        row.textContent.toLowerCase().includes(searchValue);
+
+                    row.style.display = matches ? "" : "none";
+
+                });
+
+                updateCount();
+
+            });
+
+            updateCount();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            setupTableSearch(
+                "accountSearch",
+                "accountsTable",
+                "accountCount"
+            );
+
+            setupTableSearch(
+                "journalSearch",
+                "journalsTable",
+                "journalCount"
+            );
+
+        });
+
+    </script>
+
+}

@@ -1,0 +1,444 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.TransactionListItem
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Transaction Details";
+
+
+
+    var type = Model.Type ?? "Unknown";
+
+
+
+    var isCredit =
+
+        type.Equals("Deposit", StringComparison.OrdinalIgnoreCase) ||
+
+        type.Equals("Refund", StringComparison.OrdinalIgnoreCase);
+
+
+
+    var amountClass = isCredit ? "amount-credit" : "amount-debit";
+
+
+
+    var typeClass = isCredit ? "type-credit" : "type-debit";
+}
+
+<style>
+    .transaction-details-page {
+        padding: 10px 0 30px;
+        color: #30283a;
+    }
+
+    .transaction-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .transaction-top h2 {
+            font-size: 25px;
+            font-weight: 750;
+            margin: 0 0 6px;
+        }
+
+        .transaction-top p {
+            color: #898292;
+            font-size: 13px;
+            margin: 0;
+        }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: #286B48;
+        color: #fff;
+        padding: 11px 18px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background .2s ease;
+        white-space: nowrap;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #fff;
+        }
+
+    .transaction-summary {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        padding: 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+    .summary-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .summary-heading h4 {
+            font-size: 17px;
+            font-weight: 750;
+            margin: 0 0 5px;
+        }
+
+        .summary-heading p {
+            color: #928b99;
+            font-size: 12px;
+            margin: 0;
+        }
+
+    .transaction-type {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 750;
+    }
+
+    .type-credit {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+    .type-debit {
+        color: #67577c;
+        background: #f0eaf7;
+    }
+
+    .transaction-amount-card {
+        background: #faf9fb;
+        border: 1px solid #eee9f2;
+        border-radius: 11px;
+        padding: 22px;
+        margin-bottom: 25px;
+    }
+
+    .amount-label {
+        color: #928b99;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 9px;
+    }
+
+    .amount-value {
+        font-size: 29px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .amount-credit {
+        color: #28784e;
+    }
+
+    .amount-debit {
+        color: #a04444;
+    }
+
+    .information-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .information-item {
+        min-width: 0;
+    }
+
+    .information-label {
+        font-size: 11px;
+        color: #928b99;
+        margin-bottom: 7px;
+    }
+
+    .information-value {
+        font-size: 13px;
+        color: #30283a;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+        .information-value a {
+            color: #65477f;
+            text-decoration: none;
+        }
+
+            .information-value a:hover {
+                text-decoration: underline;
+            }
+
+    .details-card {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        padding: 23px;
+        margin-bottom: 22px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+        .details-card h4 {
+            font-size: 16px;
+            font-weight: 750;
+            margin: 0 0 20px;
+        }
+
+    .description-box {
+        background: #faf9fb;
+        border: 1px solid #eee9f2;
+        border-radius: 9px;
+        padding: 17px;
+        color: #514a59;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .empty-value {
+        color: #aaa3b0;
+        font-weight: 500;
+    }
+
+    .transaction-footer {
+        color: #928b99;
+        font-size: 11px;
+        margin-top: 15px;
+    }
+
+    @@media (max-width: 900px) {
+        .information-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .information-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .transaction-summary,
+        .details-card {
+            padding: 18px;
+        }
+
+        .amount-value {
+            font-size: 23px;
+        }
+    }
+</style>
+
+<div class="transaction-details-page">
+
+    <!-- PAGE HEADER -->
+    <div class="transaction-top">
+
+        <div>
+            <h2>Transaction Details</h2>
+            <p>View the complete information for this financial transaction.</p>
+        </div>
+
+        <a href="@Url.Action("Index", "TransactionManagement", new { area = "Admin" })"
+           class="admin-back-button">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Transactions
+
+        </a>
+
+    </div>
+
+    <!-- TRANSACTION SUMMARY -->
+    <div class="transaction-summary">
+
+        <div class="summary-heading">
+
+            <div>
+                <h4>Transaction Summary</h4>
+                <p>Transaction identification and financial information.</p>
+            </div>
+
+            <span class="transaction-type @typeClass">
+                @type
+            </span>
+
+        </div>
+
+        <div class="transaction-amount-card">
+
+            <div class="amount-label">Transaction Amount</div>
+
+            <div class="amount-value @amountClass">
+                @(isCredit ? "+" : "-") R @Model.Amount.ToString("N2")
+            </div>
+
+        </div>
+
+        <div class="information-grid">
+
+            <div class="information-item">
+                <div class="information-label">Transaction ID</div>
+                <div class="information-value">
+                    #@Model.Id
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Customer ID</div>
+                <div class="information-value">
+                    #@Model.UserId
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Transaction Type</div>
+                <div class="information-value">
+                    @type
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Category</div>
+                <div class="information-value">
+                    @(string.IsNullOrWhiteSpace(Model.Category)
+                        ? "Not specified"
+                        : Model.Category)
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Retailer</div>
+                <div class="information-value">
+                    @(string.IsNullOrWhiteSpace(Model.Retailer)
+                        ? "Not specified"
+                        : Model.Retailer)
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Date Created</div>
+                <div class="information-value">
+                    @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CUSTOMER INFORMATION -->
+    <div class="details-card">
+
+        <h4>Customer Information</h4>
+
+        <div class="information-grid">
+
+            <div class="information-item">
+                <div class="information-label">Customer Name</div>
+                <div class="information-value">
+                    @(string.IsNullOrWhiteSpace(Model.CustomerName)
+                        ? "Not available"
+                        : Model.CustomerName)
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Customer Email</div>
+                <div class="information-value">
+                    @if (!string.IsNullOrWhiteSpace(Model.CustomerEmail))
+
+                    {
+                        <a href="mailto:@Model.CustomerEmail">
+                            @Model.CustomerEmail
+                        </a>
+                    }
+
+                    else
+
+                    {
+                        <span class="empty-value">Not available</span>
+                    }
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Customer ID</div>
+                <div class="information-value">
+                    #@Model.UserId
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TRANSACTION REFERENCES -->
+    <div class="details-card">
+
+        <h4>Transaction References</h4>
+
+        <div class="information-grid">
+
+            <div class="information-item">
+                <div class="information-label">Transaction Reference</div>
+                <div class="information-value">
+                    @(string.IsNullOrWhiteSpace(Model.Reference)
+                        ? "Not available"
+                        : Model.Reference)
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Request ID</div>
+                <div class="information-value">
+                    @(string.IsNullOrWhiteSpace(Model.RequestId)
+                        ? "Not available"
+                        : Model.RequestId)
+                </div>
+            </div>
+
+            <div class="information-item">
+                <div class="information-label">Transaction ID</div>
+                <div class="information-value">
+                    #@Model.Id
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div class="details-card">
+
+        <h4>Transaction Description</h4>
+
+        <div class="description-box">
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "No transaction description was provided."
+                : Model.Description)
+        </div>
+
+        <div class="transaction-footer">
+            Transaction record #@Model.Id
+        </div>
+
+    </div>
+
+</div>

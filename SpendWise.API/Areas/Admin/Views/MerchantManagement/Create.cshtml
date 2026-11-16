@@ -1,0 +1,403 @@
+﻿@model SpendWise.API.Models.Merchant
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Register Merchant";
+
+
+
+    var merchantListUrl = Url.Action(
+
+        "Index",
+
+        "MerchantManagement",
+
+        new { area = "Admin" });
+
+
+
+    var createMerchantUrl = Url.Action(
+
+        "Create",
+
+        "MerchantManagement",
+
+        new { area = "Admin" });
+}
+
+<style>
+    .merchant-create-page {
+        max-width: 850px;
+        margin: 0 auto;
+        color: #26352C;
+    }
+
+    .merchant-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+        .merchant-heading h2 {
+            font-size: 23px;
+            margin-bottom: 7px;
+        }
+
+        .merchant-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .merchant-back {
+        background: #286B48;
+        color: white;
+        padding: 11px 17px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+        .merchant-back:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .merchant-form-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 27px;
+    }
+
+    .form-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .form-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 23px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            border: 1px solid #DCE5DE;
+            border-radius: 7px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            color: #26352C;
+            outline: none;
+        }
+
+            .form-group input:focus,
+            .form-group textarea:focus {
+                border-color: #286B48;
+                box-shadow: 0 0 0 3px rgba(40,107,72,0.10);
+            }
+
+        .form-group textarea {
+            min-height: 95px;
+            resize: vertical;
+        }
+
+    .required {
+        color: #D65C68;
+    }
+
+    .field-validation-error,
+    .validation-summary-errors {
+        color: #D65C68;
+        font-size: 12px;
+    }
+
+        .validation-summary-errors ul {
+            padding-left: 18px;
+            margin-bottom: 15px;
+        }
+
+    .text-danger {
+        color: #D65C68;
+        font-size: 12px;
+    }
+
+    .status-information {
+        background: #FFF8E8;
+        border: 1px solid #F1E2B9;
+        color: #806321;
+        padding: 13px 15px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-top: 23px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #E5ECE7;
+    }
+
+    .cancel-button {
+        background: #F0F3F1;
+        color: #526057;
+        padding: 11px 19px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .cancel-button:hover {
+            background: #E2E9E4;
+            color: #26352C;
+        }
+
+    .save-button {
+        background: #286B48;
+        color: white;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 7px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .save-button:hover {
+            background: #173F2B;
+        }
+
+    @@media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: auto;
+        }
+
+        .merchant-form-card {
+            padding: 19px;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+            .form-actions a,
+            .form-actions button {
+                text-align: center;
+                width: 100%;
+            }
+    }
+</style>
+
+<div class="merchant-create-page">
+
+    <div class="merchant-heading">
+
+        <div>
+            <h2>Register New Merchant</h2>
+            <p>Add a business or store to the SpendWise merchant directory.</p>
+        </div>
+
+        <a href="@merchantListUrl" class="merchant-back">
+            &#8592; Back to Merchants
+        </a>
+
+    </div>
+
+    <div class="merchant-form-card">
+
+        <h3 class="form-section-title">Business Information</h3>
+
+        <p class="form-description">
+            Enter the merchant's business and contact information below.
+        </p>
+
+        <form id="merchantRegistrationForm"
+              action="@createMerchantUrl"
+              method="post"
+              onsubmit="alert('Merchant registration form submitted!');">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All"
+                 class="validation-summary-errors">
+            </div>
+
+            <div class="form-grid">
+
+                <!-- BUSINESS NAME -->
+
+                <div class="form-group full-width">
+
+                    <label for="BusinessName">
+                        Business Name <span class="required">*</span>
+                    </label>
+
+                    <input type="text"
+                           id="BusinessName"
+                           name="BusinessName"
+                           value="@Model.BusinessName"
+                           placeholder="Enter registered business name"
+                           maxlength="150"
+                           required />
+
+                    <span asp-validation-for="BusinessName"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- CONTACT PERSON -->
+
+                <div class="form-group">
+
+                    <label for="ContactPerson">
+                        Contact Person
+                    </label>
+
+                    <input type="text"
+                           id="ContactPerson"
+                           name="ContactPerson"
+                           value="@Model.ContactPerson"
+                           placeholder="Enter contact person's name"
+                           maxlength="100" />
+
+                    <span asp-validation-for="ContactPerson"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label for="Email">
+                        Business Email
+                    </label>
+
+                    <input type="email"
+                           id="Email"
+                           name="Email"
+                           value="@Model.Email"
+                           placeholder="business@example.com"
+                           maxlength="150" />
+
+                    <span asp-validation-for="Email"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- PHONE -->
+
+                <div class="form-group">
+
+                    <label for="PhoneNumber">
+                        Phone Number
+                    </label>
+
+                    <input type="tel"
+                           id="PhoneNumber"
+                           name="PhoneNumber"
+                           value="@Model.PhoneNumber"
+                           placeholder="Enter business phone number"
+                           maxlength="20" />
+
+                    <span asp-validation-for="PhoneNumber"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- BUSINESS ADDRESS -->
+
+                <div class="form-group full-width">
+
+                    <label for="BusinessAddress">
+                        Business Address
+                    </label>
+
+                    <textarea id="BusinessAddress"
+                              name="BusinessAddress"
+                              placeholder="Enter the physical business address"
+                              maxlength="300">@Model.BusinessAddress</textarea>
+
+                    <span asp-validation-for="BusinessAddress"
+                          class="text-danger"></span>
+
+                </div>
+
+            </div>
+
+            <div class="status-information">
+
+                <strong>Merchant approval:</strong>
+
+                New merchants will automatically receive Pending status.
+                The administrator can activate them after reviewing their details.
+
+            </div>
+
+            <div class="form-actions">
+
+                <a href="@merchantListUrl"
+                   class="cancel-button">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        id="registerMerchantButton"
+                        class="save-button">
+                    Register Merchant
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

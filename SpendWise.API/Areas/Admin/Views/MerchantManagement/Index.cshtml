@@ -1,0 +1,556 @@
+﻿@model IEnumerable<SpendWise.API.Models.Merchant>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Merchant Management";
+
+
+
+    var search = ViewBag.Search as string ?? "";
+
+
+
+    int totalMerchants = ViewBag.TotalMerchants ?? 0;
+
+    int activeMerchants = ViewBag.ActiveMerchants ?? 0;
+
+    int pendingMerchants = ViewBag.PendingMerchants ?? 0;
+
+    int suspendedMerchants = ViewBag.SuspendedMerchants ?? 0;
+
+
+
+    var createMerchantUrl = Url.Action(
+
+        "Create",
+
+        "MerchantManagement",
+
+        new { area = "Admin" });
+
+
+
+    var dashboardUrl = Url.Action(
+
+        "Index",
+
+        "AdminDashboard",
+
+        new { area = "Admin" });
+}
+
+<style>
+    .merchant-page {
+        padding: 20px 0 35px;
+        color: #26352C;
+    }
+
+    .merchant-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .merchant-heading h2 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .merchant-heading p {
+            margin: 6px 0 0;
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .merchant-heading-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .admin-back-button,
+    .merchant-create-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        color: #fff;
+        padding: 11px 18px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background .2s ease;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .admin-back-button {
+        background: #286B48;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #fff;
+        }
+
+    .merchant-create-button {
+        background: #173F2B;
+    }
+
+        .merchant-create-button:hover {
+            background: #286B48;
+            color: #fff;
+        }
+
+    .merchant-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .merchant-stat {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+        .merchant-stat span {
+            color: #839087;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .merchant-stat h3 {
+            margin: 10px 0 0;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+    .merchant-card {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .merchant-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+        .merchant-toolbar h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .merchant-search {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .merchant-search input {
+            min-width: 240px;
+            padding: 10px 12px;
+            border: 1px solid #DCE5DF;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .merchant-search button {
+            background: #286B48;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+            .merchant-search button:hover {
+                background: #173F2B;
+            }
+
+    .merchant-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+        .merchant-table th {
+            background: #F4F7F5;
+            color: #68766D;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 13px 12px;
+            text-align: left;
+        }
+
+        .merchant-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #EDF1EE;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .merchant-table tr:last-child td {
+            border-bottom: none;
+        }
+
+    .merchant-name {
+        font-weight: 700;
+        color: #26352C;
+    }
+
+    .merchant-secondary {
+        display: block;
+        color: #839087;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .merchant-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-active {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-pending {
+        background: #FFF4DD;
+        color: #936A18;
+    }
+
+    .status-suspended {
+        background: #FCEBED;
+        color: #B53E4B;
+    }
+
+    .status-closed {
+        background: #ECEFF0;
+        color: #58636B;
+    }
+
+    .status-other {
+        background: #F0F1F0;
+        color: #68766D;
+    }
+
+    .merchant-action {
+        display: inline-block;
+        padding: 8px 13px;
+        border-radius: 6px;
+        background: #E8F4EC;
+        color: #286B48;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+        .merchant-action:hover {
+            background: #286B48;
+            color: #fff;
+        }
+
+    .merchant-empty {
+        padding: 45px 15px;
+        text-align: center;
+        color: #839087;
+    }
+
+        .merchant-empty h4 {
+            color: #26352C;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .merchant-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .merchant-alert {
+        padding: 13px 16px;
+        border-radius: 7px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+
+    .merchant-alert-success {
+        background: #E8F4EC;
+        color: #286B48;
+        border: 1px solid #C9E4D1;
+    }
+
+    .merchant-alert-error {
+        background: #FCEBED;
+        color: #B53E4B;
+        border: 1px solid #F2C9CE;
+    }
+
+    @@media (max-width: 900px) {
+        .merchant-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 500px) {
+        .merchant-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .merchant-search input {
+            min-width: 100%;
+        }
+
+        .merchant-search {
+            width: 100%;
+        }
+
+        .merchant-heading-actions {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="merchant-page">
+
+    <!-- PAGE HEADING -->
+
+    <div class="merchant-heading">
+
+        <div>
+            <h2>Merchant Management</h2>
+            <p>Manage registered merchants and store accounts.</p>
+        </div>
+
+        <div class="merchant-heading-actions">
+
+            <a href="@createMerchantUrl"
+               class="merchant-create-button">
+                + Register Merchant
+            </a>
+
+            <a href="@dashboardUrl"
+               class="admin-back-button">
+                &#8592; Back to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- SUCCESS AND ERROR MESSAGES -->
+    @if (TempData["Success"] != null)
+
+    {
+        <div class="merchant-alert merchant-alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+
+    {
+        <div class="merchant-alert merchant-alert-error">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- SUMMARY STATISTICS -->
+
+    <div class="merchant-stats">
+
+        <div class="merchant-stat">
+            <span>Total Merchants</span>
+            <h3>@totalMerchants</h3>
+        </div>
+
+        <div class="merchant-stat">
+            <span>Active Merchants</span>
+            <h3>@activeMerchants</h3>
+        </div>
+
+        <div class="merchant-stat">
+            <span>Pending Merchants</span>
+            <h3>@pendingMerchants</h3>
+        </div>
+
+        <div class="merchant-stat">
+            <span>Suspended Merchants</span>
+            <h3>@suspendedMerchants</h3>
+        </div>
+
+    </div>
+
+    <!-- MERCHANT TABLE -->
+
+    <div class="merchant-card">
+
+        <div class="merchant-toolbar">
+
+            <h3>Registered Merchants</h3>
+
+            <form method="get"
+                  action="@Url.Action("Index", "MerchantManagement", new { area = "Admin" })"
+                  class="merchant-search">
+
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search merchants..." />
+
+                <button type="submit">Search</button>
+
+            </form>
+
+        </div>
+
+        <div class="merchant-table-wrapper">
+
+            <table class="merchant-table">
+
+                <thead>
+                    <tr>
+                        <th>Merchant</th>
+                        <th>Contact Person</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model != null && Model.Any())
+
+                    {
+
+                        foreach (var merchant in Model)
+
+                        {
+                            var statusClass =
+                            merchant.Status == "Active"
+                            ? "status-active"
+                            : merchant.Status == "Pending"
+                            ? "status-pending"
+                            : merchant.Status == "Suspended"
+                            ? "status-suspended"
+                            : merchant.Status == "Closed"
+                            ? "status-closed"
+                            : "status-other";
+
+                            var detailsUrl = Url.Action(
+                            "Details",
+                            "MerchantManagement",
+                            new
+                            {
+
+                                area = "Admin",
+
+                                id = merchant.Id
+                            });
+
+                            <tr>
+
+                                <td>
+                                    <span class="merchant-name">
+                                        @merchant.BusinessName
+                                    </span>
+
+                                    <span class="merchant-secondary">
+                                        Merchant #@merchant.Id
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(merchant.ContactPerson)
+                                        ? "Not provided"
+                                        : merchant.ContactPerson)
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(merchant.Email)
+                                        ? "Not provided"
+                                        : merchant.Email)
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(merchant.PhoneNumber)
+                                        ? "Not provided"
+                                        : merchant.PhoneNumber)
+                                </td>
+
+                                <td>
+                                    <span class="merchant-status @statusClass">
+                                        @merchant.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @merchant.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    <a href="@detailsUrl"
+                                       class="merchant-action">
+                                        View Details
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+
+                    }
+
+                    else
+
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="merchant-empty">
+                                    <h4>No merchants found</h4>
+                                    <p>
+                                        No merchant records match your search.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

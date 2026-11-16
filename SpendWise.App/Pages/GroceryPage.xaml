@@ -12,82 +12,54 @@
 
             <Style x:Key="CardStyle"
                    TargetType="Border">
-                <Setter Property="BackgroundColor"
-                        Value="White" />
-                <Setter Property="Stroke"
-                        Value="#E4EAE6" />
-                <Setter Property="StrokeThickness"
-                        Value="1" />
-                <Setter Property="Padding"
-                        Value="18" />
-                <Setter Property="StrokeShape"
-                        Value="RoundRectangle 14" />
+                <Setter Property="BackgroundColor" Value="White" />
+                <Setter Property="Stroke" Value="#E4EAE6" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Padding" Value="18" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 14" />
             </Style>
 
             <Style x:Key="HeadingStyle"
                    TargetType="Label">
-                <Setter Property="FontSize"
-                        Value="18" />
-                <Setter Property="FontAttributes"
-                        Value="Bold" />
-                <Setter Property="TextColor"
-                        Value="#172B20" />
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="#172B20" />
             </Style>
 
             <Style x:Key="FieldLabelStyle"
                    TargetType="Label">
-                <Setter Property="FontSize"
-                        Value="13" />
-                <Setter Property="FontAttributes"
-                        Value="Bold" />
-                <Setter Property="TextColor"
-                        Value="#526459" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="#526459" />
             </Style>
 
             <Style x:Key="InputStyle"
                    TargetType="Entry">
-                <Setter Property="BackgroundColor"
-                        Value="#F3F6F4" />
-                <Setter Property="TextColor"
-                        Value="#172B20" />
-                <Setter Property="PlaceholderColor"
-                        Value="#829087" />
-                <Setter Property="FontSize"
-                        Value="15" />
-                <Setter Property="HeightRequest"
-                        Value="50" />
+                <Setter Property="BackgroundColor" Value="#F3F6F4" />
+                <Setter Property="TextColor" Value="#172B20" />
+                <Setter Property="PlaceholderColor" Value="#829087" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="HeightRequest" Value="50" />
             </Style>
 
             <Style x:Key="PrimaryButtonStyle"
                    TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#146B3A" />
-                <Setter Property="TextColor"
-                        Value="White" />
-                <Setter Property="FontSize"
-                        Value="15" />
-                <Setter Property="FontAttributes"
-                        Value="Bold" />
-                <Setter Property="CornerRadius"
-                        Value="10" />
-                <Setter Property="HeightRequest"
-                        Value="50" />
+                <Setter Property="BackgroundColor" Value="#146B3A" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="HeightRequest" Value="50" />
             </Style>
 
             <Style x:Key="SecondaryButtonStyle"
                    TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#E8F3EC" />
-                <Setter Property="TextColor"
-                        Value="#146B3A" />
-                <Setter Property="FontSize"
-                        Value="14" />
-                <Setter Property="FontAttributes"
-                        Value="Bold" />
-                <Setter Property="CornerRadius"
-                        Value="10" />
-                <Setter Property="HeightRequest"
-                        Value="48" />
+                <Setter Property="BackgroundColor" Value="#E8F3EC" />
+                <Setter Property="TextColor" Value="#146B3A" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="HeightRequest" Value="48" />
             </Style>
 
         </ResourceDictionary>
@@ -234,7 +206,7 @@
 
                         </VerticalStackLayout>
 
-                        <!-- RETAILER BUTTON -->
+                        <!-- MANUAL RETAILER SELECTION -->
                         <VerticalStackLayout Spacing="6">
 
                             <Label
@@ -253,7 +225,6 @@
                                 HorizontalOptions="Fill"
                                 Clicked="SelectRetailerButton_Clicked" />
 
-                            <!-- HIDDEN PICKER FOR EXISTING API LOGIC -->
                             <Picker
                                 x:Name="RetailerPicker"
                                 IsVisible="False">
@@ -354,7 +325,7 @@
 
                 </Border>
 
-                <!-- ERROR -->
+                <!-- ERROR MESSAGE -->
                 <Border
                     x:Name="MessageBorder"
                     IsVisible="False"
@@ -427,7 +398,7 @@
 
                 </Border>
 
-                <!-- SAVE / BUDGET -->
+                <!-- SAVE AND BUDGET -->
                 <Grid
                     ColumnDefinitions="*,*"
                     ColumnSpacing="12">
@@ -448,7 +419,7 @@
 
                 </Grid>
 
-                <!-- CHECKOUT -->
+                <!-- CHECKOUT PREVIEW -->
                 <Button
                     x:Name="CheckoutButton"
                     Text="Review Checkout"
@@ -461,39 +432,39 @@
                     TextColor="#68776E"
                     HorizontalTextAlignment="Center" />
 
-                <!-- EXISTING SAVED LIST CONTROLS -->
-                <Border
-                    IsVisible="False"
-                    Style="{StaticResource CardStyle}">
+                <!-- SAVED GROCERY LISTS -->
+                <Border Style="{StaticResource CardStyle}">
 
-                    <VerticalStackLayout Spacing="8">
+                    <VerticalStackLayout Spacing="10">
 
-                        <Button
-                            Text="Refresh Saved Lists"
-                            Clicked="LoadListsButton_Clicked" />
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                Text="Saved Grocery Lists"
+                                Style="{StaticResource HeadingStyle}"
+                                VerticalOptions="Center" />
+
+                            <Button
+                                Grid.Column="1"
+                                Text="Refresh"
+                                BackgroundColor="Transparent"
+                                TextColor="#146B3A"
+                                FontAttributes="Bold"
+                                Clicked="LoadListsButton_Clicked" />
+
+                        </Grid>
 
                         <ActivityIndicator
                             x:Name="ListsLoadingIndicator"
                             IsVisible="False"
-                            IsRunning="False" />
+                            IsRunning="False"
+                            Color="#146B3A" />
 
                         <VerticalStackLayout
                             x:Name="SavedListsLayout"
                             Spacing="8" />
 
                     </VerticalStackLayout>
-
-                </Border>
-
-                <!-- EXISTING PRICE COMPARISON CONTROL -->
-                <Border
-                    IsVisible="False"
-                    Style="{StaticResource CardStyle}">
-
-                    <Button
-                        x:Name="ComparePricesButton"
-                        Text="Compare Retailer Prices"
-                        Clicked="ComparePricesButton_Clicked" />
 
                 </Border>
 

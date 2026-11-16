@@ -1,0 +1,574 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.UserManagementIndexViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "User Management";
+}
+
+<style>
+    .admin-page-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 18px;
+        background: #286B48;
+        color: #FFFFFF;
+        border: 1px solid #286B48;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    .user-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin: 10px 0 25px;
+    }
+
+    .user-stat-card {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 23px;
+    }
+
+        .user-stat-card p {
+            color: #839087;
+            font-size: 13px;
+            margin: 0 0 12px;
+        }
+
+        .user-stat-card h2 {
+            margin: 0;
+            font-size: 29px;
+            color: #286B48;
+        }
+
+    .user-content-card {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 22px;
+        overflow: hidden;
+    }
+
+    .user-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+        .user-toolbar h2 {
+            margin: 0;
+            font-size: 19px;
+            color: #173F2B;
+        }
+
+    .user-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+        .user-filters input,
+        .user-filters select {
+            padding: 11px 13px;
+            border: 1px solid #D8E2DA;
+            border-radius: 7px;
+            font-size: 13px;
+            background: #FFFFFF;
+            color: #26352C;
+        }
+
+            .user-filters input:focus,
+            .user-filters select:focus {
+                outline: 2px solid #E8F4EC;
+                border-color: #286B48;
+            }
+
+    .user-search-button,
+    .user-clear-button {
+        display: inline-block;
+        padding: 11px 17px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .user-search-button {
+        background: #286B48;
+        color: #FFFFFF;
+        border: none;
+    }
+
+        .user-search-button:hover {
+            background: #173F2B;
+        }
+
+    .user-clear-button {
+        background: #F1F5F2;
+        color: #286B48;
+        border: 1px solid #D8E2DA;
+    }
+
+        .user-clear-button:hover {
+            background: #E8F4EC;
+        }
+
+    .user-results-info {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    .user-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+    }
+
+        .user-table th,
+        .user-table td {
+            text-align: left;
+            padding: 15px 12px;
+            border-bottom: 1px solid #EDF1ED;
+            font-size: 13px;
+        }
+
+        .user-table th {
+            color: #6B7B70;
+            background: #F8FAF8;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .user-table tbody tr:hover {
+            background: #FAFCFA;
+        }
+
+    .user-status {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .active-status {
+        background: #DCFCE7;
+        color: #166534;
+    }
+
+    .inactive-status {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .user-details-link {
+        display: inline-block;
+        color: #286B48;
+        text-decoration: none;
+        font-weight: 700;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+    }
+
+        .user-details-link:hover {
+            color: #173F2B;
+            text-decoration: underline;
+        }
+
+    .user-empty {
+        text-align: center !important;
+        padding: 35px !important;
+        color: #839087;
+    }
+
+    .user-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 23px;
+    }
+
+    .pagination-info {
+        color: #839087;
+        font-size: 12px;
+    }
+
+    .pagination-links {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .page-link {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        border: 1px solid #D8E2DA;
+        border-radius: 7px;
+        color: #286B48;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+        .page-link:hover {
+            background: #E8F4EC;
+        }
+
+        .page-link.current {
+            background: #286B48;
+            color: #FFFFFF;
+            border-color: #286B48;
+        }
+
+        .page-link.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+    .user-footer {
+        margin-top: 25px;
+        color: #839087;
+        font-size: 12px;
+    }
+
+    @@media (max-width: 850px) {
+        .user-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .user-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .user-content-card {
+            padding: 15px;
+        }
+
+        .user-toolbar {
+            align-items: stretch;
+        }
+
+        .user-filters {
+            width: 100%;
+        }
+
+            .user-filters input,
+            .user-filters select {
+                width: 100%;
+            }
+
+        .user-search-button,
+        .user-clear-button {
+            width: 100%;
+            text-align: center;
+        }
+
+        .user-pagination {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .admin-page-heading {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<!-- PAGE INTRODUCTION -->
+
+<div class="admin-page-heading">
+
+    <div>
+        <h2 style="font-size:20px; color:#173F2B; margin-bottom:7px;">
+            Customer Management
+        </h2>
+
+        <p style="font-size:13px; color:#839087; margin:0;">
+            View and monitor registered SpendWise customer accounts.
+        </p>
+    </div>
+
+    <a href="@Url.Action("Index", "AdminDashboard", new { area = "Admin" })"
+       class="admin-back-button">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+<!-- USER STATISTICS -->
+
+<section class="user-stats">
+
+    <div class="user-stat-card">
+        <p>Registered Users</p>
+        <h2>@Model.TotalUsers</h2>
+    </div>
+
+    <div class="user-stat-card">
+        <p>Active Accounts</p>
+        <h2>@Model.ActiveUsers</h2>
+    </div>
+
+    <div class="user-stat-card">
+        <p>Inactive Accounts</p>
+        <h2>@Model.InactiveUsers</h2>
+    </div>
+
+</section>
+
+<!-- CUSTOMER DIRECTORY -->
+
+<section class="user-content-card">
+
+    <div class="user-toolbar">
+
+        <h2>Customer Directory</h2>
+
+        <form method="get"
+              action="/Admin/UserManagement/Index"
+              class="user-filters">
+
+            <input type="search"
+                   name="search"
+                   value="@Model.Search"
+                   placeholder="Search name or email..."
+                   aria-label="Search customers" />
+
+            <select name="status" aria-label="Filter account status">
+
+                <option value="all"
+                        selected="@(Model.Status == "all")">
+                    All accounts
+                </option>
+
+                <option value="active"
+                        selected="@(Model.Status == "active")">
+                    Active
+                </option>
+
+                <option value="inactive"
+                        selected="@(Model.Status == "inactive")">
+                    Inactive
+                </option>
+
+            </select>
+
+            <button type="submit" class="user-search-button">
+                Search
+            </button>
+
+            <a href="/Admin/UserManagement/Index"
+               class="user-clear-button">
+                Clear
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- RESULTS INFORMATION -->
+
+    <div class="user-results-info">
+
+        <span>
+            Showing @Model.FirstItem–@Model.LastItem
+            of @Model.FilteredUsers matching customers
+        </span>
+
+        <span>
+            @Model.PageSize customers per page
+        </span>
+
+    </div>
+
+    <!-- CUSTOMER TABLE -->
+
+    <div class="user-table-wrapper">
+
+        <table class="user-table">
+
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Full Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Date Registered</th>
+                    <th>Account Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (Model.Users.Any())
+
+                {
+                    foreach (var user in Model.Users)
+                    {
+                        <tr>
+
+                            <td>#@user.Id</td>
+
+                            <td>@user.FullName</td>
+
+                            <td>@user.Email</td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(user.PhoneNumber)
+                                    ? "Not provided"
+                                    : user.PhoneNumber)
+                            </td>
+
+                            <td>
+                                @user.CreatedAt.ToString("dd MMM yyyy")
+                            </td>
+
+                            <td>
+
+                                @if (user.IsActive)
+
+                                {
+                                    <span class="user-status active-status">
+                                        Active
+                                    </span>
+                                }
+
+                                else
+
+                                {
+                                    <span class="user-status inactive-status">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </td>
+
+                            <td>
+
+                                <a href="/Admin/UserManagement/Details?id=@user.Id"
+                                   class="user-details-link">
+                                    View details
+                                </a>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="7" class="user-empty">
+                            No customer records found.
+                            Try changing your search or account filter.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- PAGINATION -->
+    @if (Model.TotalPages > 1)
+
+    {
+        <div class="user-pagination">
+
+            <div class="pagination-info">
+                Page @Model.CurrentPage of @Model.TotalPages
+            </div>
+
+            <div class="pagination-links">
+
+                <a href="/Admin/UserManagement/Index?search=@Uri.EscapeDataString(Model.Search)&status=@Model.Status&page=@(Model.CurrentPage - 1)"
+                   class="page-link @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    Previous
+                </a>
+
+                @{
+                    int startPage = Math.Max(1, Model.CurrentPage - 2);
+
+                    int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                }
+
+                @for (int pageNumber = startPage;
+               pageNumber <= endPage;
+               pageNumber++)
+
+                {
+                    <a href="/Admin/UserManagement/Index?search=@Uri.EscapeDataString(Model.Search)&status=@Model.Status&page=@pageNumber"
+                       class="page-link @(pageNumber == Model.CurrentPage ? "current" : "")">
+                        @pageNumber
+                    </a>
+                }
+
+                <a href="/Admin/UserManagement/Index?search=@Uri.EscapeDataString(Model.Search)&status=@Model.Status&page=@(Model.CurrentPage + 1)"
+                   class="page-link @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    Next
+                </a>
+
+            </div>
+
+        </div>
+    }
+
+</section>
+
+<!-- FOOTER -->
+
+<div class="user-footer">
+    © @DateTime.UtcNow.Year SpendWise Administration Portal.
+</div>

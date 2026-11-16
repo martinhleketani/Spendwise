@@ -1,0 +1,233 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Notification Settings";
+}
+
+<style>
+    .notification-content {
+        max-width: 950px;
+    }
+
+    .notification-heading {
+        margin-bottom: 25px;
+    }
+
+        .notification-heading h2 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+        .notification-heading p {
+            color: #777;
+        }
+
+    .notification-card {
+        background: #fff;
+        border: 1px solid #e9e5ed;
+        border-radius: 13px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+        .notification-card h5 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+    .notification-description {
+        color: #888;
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+
+    .notification-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 17px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+        .notification-option:last-child {
+            border-bottom: none;
+        }
+
+        .notification-option h6 {
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 5px;
+        }
+
+        .notification-option p {
+            font-size: 13px;
+            color: #888;
+            margin: 0;
+        }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #edf6ef;
+        color: #34844a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .notification-info {
+        background: #f5f2f8;
+        border: 1px solid #e8e0ee;
+        padding: 15px;
+        border-radius: 9px;
+        color: #62566b;
+        font-size: 13px;
+    }
+</style>
+
+<div class="notification-content">
+
+    <div class="notification-heading">
+
+        <a href="@Url.Action("Index", "Settings", new { area = "Admin" })"
+           class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Settings
+        </a>
+
+        <h2 class="mt-3">Notification Settings</h2>
+
+        <p>
+            Review the types of system activities that may require administrator attention.
+        </p>
+
+    </div>
+
+    <div class="notification-card">
+
+        <h5>User Notifications</h5>
+
+        <p class="notification-description">
+            Activities relating to registered SpendWise customers.
+        </p>
+
+        <div class="notification-option">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="notification-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+
+                <div>
+                    <h6>New User Registrations</h6>
+                    <p>Notifications when a new customer registers.</p>
+                </div>
+
+            </div>
+
+            <span class="badge bg-secondary">Not configured</span>
+
+        </div>
+
+        <div class="notification-option">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="notification-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+
+                <div>
+                    <h6>Wallet Activities</h6>
+                    <p>Notifications about important wallet activities.</p>
+                </div>
+
+            </div>
+
+            <span class="badge bg-secondary">Not configured</span>
+
+        </div>
+
+    </div>
+
+    <div class="notification-card">
+
+        <h5>Financial Activity Notifications</h5>
+
+        <p class="notification-description">
+            Important transaction and financial activities.
+        </p>
+
+        <div class="notification-option">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="notification-icon">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+
+                <div>
+                    <h6>Transaction Activities</h6>
+                    <p>Important transaction events and processing issues.</p>
+                </div>
+
+            </div>
+
+            <span class="badge bg-secondary">Not configured</span>
+
+        </div>
+
+        <div class="notification-option">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="notification-icon">
+                    <i class="bi bi-shop"></i>
+                </div>
+
+                <div>
+                    <h6>Merchant Registrations</h6>
+                    <p>Notifications when merchants submit registration requests.</p>
+                </div>
+
+            </div>
+
+            <span class="badge bg-secondary">Not configured</span>
+
+        </div>
+
+        <div class="notification-option">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="notification-icon">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+
+                <div>
+                    <h6>Ledger Activities</h6>
+                    <p>Important accounting and ledger events.</p>
+                </div>
+
+            </div>
+
+            <span class="badge bg-secondary">Not configured</span>
+
+        </div>
+
+    </div>
+
+    <div class="notification-info">
+        <i class="bi bi-info-circle"></i>
+        These notification categories are currently informational.
+        Notification preferences, delivery methods and actual alerts
+        will be implemented in a later stage.
+    </div>
+
+</div>

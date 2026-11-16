@@ -27,33 +27,28 @@ public partial class ReportsPage : ContentPage
         SetupDatePickers();
     }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-    }
-
     // =====================================================
-    // SETUP PICKERS
+    // PAGE SETUP
     // =====================================================
 
     private void SetupPickers()
     {
-        DateTime today = DateTime.Now;
+        DateTime today = DateTime.Today;
 
         MonthPicker.ItemsSource = _months;
         MonthPicker.SelectedIndex = today.Month - 1;
 
-        YearEntry.Text = today.Year.ToString();
+        YearEntry.Text = today.Year.ToString(
+            CultureInfo.InvariantCulture);
     }
 
     private void SetupDatePickers()
     {
         DateTime today = DateTime.Today;
 
-        DateTime firstDayOfMonth =
+        StartDatePicker.Date =
             new DateTime(today.Year, today.Month, 1);
 
-        StartDatePicker.Date = firstDayOfMonth;
         EndDatePicker.Date = today;
 
         StartDatePicker.MaximumDate = today;
@@ -63,7 +58,7 @@ public partial class ReportsPage : ContentPage
     private int GetSelectedMonth()
     {
         return MonthPicker.SelectedIndex < 0
-            ? DateTime.Now.Month
+            ? DateTime.Today.Month
             : MonthPicker.SelectedIndex + 1;
     }
 
@@ -72,9 +67,6 @@ public partial class ReportsPage : ContentPage
         year = 0;
 
         string enteredYear = YearEntry.Text?.Trim() ?? "";
-
-        if (string.IsNullOrWhiteSpace(enteredYear))
-            return false;
 
         if (!int.TryParse(
             enteredYear,
@@ -88,8 +80,32 @@ public partial class ReportsPage : ContentPage
         return year >= 2020 && year <= 2100;
     }
 
+    private bool ValidateMonthlySelection(out int year, out int month)
+    {
+        year = 0;
+        month = 0;
+
+        if (!TryGetSelectedYear(out year))
+        {
+            ShowError(
+                "Please enter a valid year between 2020 and 2100.");
+
+            return false;
+        }
+
+        if (MonthPicker.SelectedIndex < 0)
+        {
+            ShowError("Please select a month.");
+            return false;
+        }
+
+        month = GetSelectedMonth();
+
+        return true;
+    }
+
     // =====================================================
-    // LOAD MONTHLY REPORT
+    // MONTHLY REPORT
     // =====================================================
 
     private async Task LoadMonthlyReportAsync()
@@ -104,30 +120,11 @@ public partial class ReportsPage : ContentPage
 
             MonthlyReportSection.IsVisible = false;
 
-            if (!TryGetSelectedYear(out int year))
-            {
-                ShowError(
-                    "Please enter a valid year between 2020 and 2100.");
-
+            if (!ValidateMonthlySelection(out int year, out int month))
                 return;
-            }
-
-            if (MonthPicker.SelectedIndex < 0)
-            {
-                ShowError("Please select a month.");
-                return;
-            }
-
-            int month = GetSelectedMonth();
-
-            System.Diagnostics.Debug.WriteLine(
-                $"MONTHLY REPORT: Starting request for {year}/{month}");
 
             var result =
                 await _apiService.GetMonthlyReportAsync(year, month);
-
-            System.Diagnostics.Debug.WriteLine(
-                $"MONTHLY REPORT: Request completed. Success = {result.Success}");
 
             if (!result.Success || result.Data == null)
             {
@@ -140,9 +137,6 @@ public partial class ReportsPage : ContentPage
             }
 
             DisplayMonthlyReport(result.Data);
-
-            System.Diagnostics.Debug.WriteLine(
-                "MONTHLY REPORT: Report displayed successfully.");
         }
         catch (Exception ex)
         {
@@ -155,9 +149,6 @@ public partial class ReportsPage : ContentPage
         finally
         {
             SetLoading(false);
-
-            System.Diagnostics.Debug.WriteLine(
-                "MONTHLY REPORT: Loading stopped.");
         }
     }
 
@@ -215,14 +206,15 @@ public partial class ReportsPage : ContentPage
                 : $"Retailer: {transaction.Retailer}";
 
         BiggestTransactionDateLabel.Text =
-            transaction.CreatedAt.ToString("dd MMM yyyy • HH:mm");
+            transaction.CreatedAt.ToString(
+                "dd MMM yyyy • HH:mm");
 
         BiggestTransactionAmountLabel.Text =
             FormatMoney(transaction.Amount);
     }
 
     // =====================================================
-    // LOAD RETAILER REPORT
+    // RETAILER SPENDING REPORT
     // =====================================================
 
     private async Task LoadRetailerReportAsync()
@@ -235,29 +227,21 @@ public partial class ReportsPage : ContentPage
             SetLoading(true);
             HideError();
 
-            if (!TryGetSelectedYear(out int year))
-            {
-                ShowError(
-                    "Please enter a valid year between 2020 and 2100.");
+            RetailerReportSection.IsVisible = false;
 
+            if (!ValidateMonthlySelection(out int year, out int month))
                 return;
-            }
-
-            if (MonthPicker.SelectedIndex < 0)
-            {
-                ShowError("Please select a month.");
-                return;
-            }
-
-            int month = GetSelectedMonth();
 
             var result =
                 await _apiService.GetRetailerReportAsync(year, month);
 
             if (!result.Success || result.Data == null)
             {
-                RetailerReportSection.IsVisible = false;
-                ShowError(result.Message);
+                ShowError(
+                    string.IsNullOrWhiteSpace(result.Message)
+                        ? "Unable to retrieve the retailer report."
+                        : result.Message);
+
                 return;
             }
 
@@ -265,7 +249,8 @@ public partial class ReportsPage : ContentPage
         }
         catch (Exception ex)
         {
-            RetailerReportSection.IsVisible = false;
+            System.Diagnostics.Debug.WriteLine(
+                $"RETAILER REPORT ERROR: {ex}");
 
             ShowError(
                 $"Unable to load retailer report: {ex.Message}");
@@ -321,7 +306,7 @@ public partial class ReportsPage : ContentPage
     }
 
     // =====================================================
-    // LOAD DATE RANGE REPORT
+    // DATE RANGE REPORT
     // =====================================================
 
     private async Task LoadDateRangeReportAsync()
@@ -329,19 +314,21 @@ public partial class ReportsPage : ContentPage
         if (_isLoading)
             return;
 
-        DateTime startDate = StartDatePicker.Date;
-        DateTime endDate = EndDatePicker.Date;
-
-        if (startDate.Date > endDate.Date)
-        {
-            ShowError("Start date cannot be after end date.");
-            return;
-        }
-
         try
         {
             SetLoading(true);
             HideError();
+
+            DateRangeReportSection.IsVisible = false;
+
+            DateTime startDate = StartDatePicker.Date;
+            DateTime endDate = EndDatePicker.Date;
+
+            if (startDate.Date > endDate.Date)
+            {
+                ShowError("Start date cannot be after end date.");
+                return;
+            }
 
             var result =
                 await _apiService.GetDateRangeReportAsync(
@@ -350,8 +337,11 @@ public partial class ReportsPage : ContentPage
 
             if (!result.Success || result.Data == null)
             {
-                DateRangeReportSection.IsVisible = false;
-                ShowError(result.Message);
+                ShowError(
+                    string.IsNullOrWhiteSpace(result.Message)
+                        ? "Unable to retrieve the date range report."
+                        : result.Message);
+
                 return;
             }
 
@@ -359,7 +349,8 @@ public partial class ReportsPage : ContentPage
         }
         catch (Exception ex)
         {
-            DateRangeReportSection.IsVisible = false;
+            System.Diagnostics.Debug.WriteLine(
+                $"DATE RANGE REPORT ERROR: {ex}");
 
             ShowError(
                 $"Unable to load date range report: {ex.Message}");
@@ -404,7 +395,7 @@ public partial class ReportsPage : ContentPage
     }
 
     // =====================================================
-    // CATEGORY LIST
+    // CATEGORY DISPLAY
     // =====================================================
 
     private void DisplayCategories(
@@ -450,11 +441,13 @@ public partial class ReportsPage : ContentPage
 
         VerticalStackLayout leftLayout = new()
         {
-            Spacing = 2
+            Spacing = 2,
+            Children =
+            {
+                categoryNameLabel,
+                transactionLabel
+            }
         };
-
-        leftLayout.Children.Add(categoryNameLabel);
-        leftLayout.Children.Add(transactionLabel);
 
         Label amountLabel = new()
         {
@@ -476,11 +469,13 @@ public partial class ReportsPage : ContentPage
         VerticalStackLayout rightLayout = new()
         {
             Spacing = 2,
-            HorizontalOptions = LayoutOptions.End
+            HorizontalOptions = LayoutOptions.End,
+            Children =
+            {
+                amountLabel,
+                percentageLabel
+            }
         };
-
-        rightLayout.Children.Add(amountLabel);
-        rightLayout.Children.Add(percentageLabel);
 
         Grid contentGrid = new()
         {
@@ -504,23 +499,11 @@ public partial class ReportsPage : ContentPage
         contentGrid.Children.Add(leftLayout);
         contentGrid.Children.Add(rightLayout);
 
-        return new Border
-        {
-            BackgroundColor = Color.FromArgb("#F8FAF9"),
-            Stroke = Color.FromArgb("#E1E8E4"),
-            StrokeThickness = 1,
-            Padding = new Thickness(12),
-            Content = contentGrid,
-            StrokeShape =
-                new Microsoft.Maui.Controls.Shapes.RoundRectangle
-                {
-                    CornerRadius = new CornerRadius(12)
-                }
-        };
+        return CreateReportBorder(contentGrid);
     }
 
     // =====================================================
-    // RETAILER LIST
+    // RETAILER DISPLAY
     // =====================================================
 
     private void DisplayRetailers(
@@ -566,11 +549,13 @@ public partial class ReportsPage : ContentPage
 
         VerticalStackLayout leftLayout = new()
         {
-            Spacing = 2
+            Spacing = 2,
+            Children =
+            {
+                retailerNameLabel,
+                transactionLabel
+            }
         };
-
-        leftLayout.Children.Add(retailerNameLabel);
-        leftLayout.Children.Add(transactionLabel);
 
         Label amountLabel = new()
         {
@@ -592,11 +577,13 @@ public partial class ReportsPage : ContentPage
         VerticalStackLayout rightLayout = new()
         {
             Spacing = 2,
-            HorizontalOptions = LayoutOptions.End
+            HorizontalOptions = LayoutOptions.End,
+            Children =
+            {
+                amountLabel,
+                percentageLabel
+            }
         };
-
-        rightLayout.Children.Add(amountLabel);
-        rightLayout.Children.Add(percentageLabel);
 
         Grid contentGrid = new()
         {
@@ -620,23 +607,11 @@ public partial class ReportsPage : ContentPage
         contentGrid.Children.Add(leftLayout);
         contentGrid.Children.Add(rightLayout);
 
-        return new Border
-        {
-            BackgroundColor = Color.FromArgb("#F8FAF9"),
-            Stroke = Color.FromArgb("#E1E8E4"),
-            StrokeThickness = 1,
-            Padding = new Thickness(12),
-            Content = contentGrid,
-            StrokeShape =
-                new Microsoft.Maui.Controls.Shapes.RoundRectangle
-                {
-                    CornerRadius = new CornerRadius(12)
-                }
-        };
+        return CreateReportBorder(contentGrid);
     }
 
     // =====================================================
-    // DATE RANGE TRANSACTIONS
+    // TRANSACTION DISPLAY
     // =====================================================
 
     private void DisplayDateRangeTransactions(
@@ -696,19 +671,22 @@ public partial class ReportsPage : ContentPage
 
         Label dateLabel = new()
         {
-            Text = transaction.CreatedAt.ToString("dd MMM yyyy • HH:mm"),
+            Text = transaction.CreatedAt.ToString(
+                "dd MMM yyyy • HH:mm"),
             FontSize = 10,
             TextColor = Color.FromArgb("#8A968F")
         };
 
         VerticalStackLayout leftLayout = new()
         {
-            Spacing = 3
+            Spacing = 3,
+            Children =
+            {
+                descriptionLabel,
+                detailsLabel,
+                dateLabel
+            }
         };
-
-        leftLayout.Children.Add(descriptionLabel);
-        leftLayout.Children.Add(detailsLabel);
-        leftLayout.Children.Add(dateLabel);
 
         Label amountLabel = new()
         {
@@ -742,13 +720,22 @@ public partial class ReportsPage : ContentPage
         contentGrid.Children.Add(leftLayout);
         contentGrid.Children.Add(amountLabel);
 
+        return CreateReportBorder(contentGrid);
+    }
+
+    // =====================================================
+    // SHARED REPORT CARD
+    // =====================================================
+
+    private static Border CreateReportBorder(View content)
+    {
         return new Border
         {
             BackgroundColor = Color.FromArgb("#F8FAF9"),
             Stroke = Color.FromArgb("#E1E8E4"),
             StrokeThickness = 1,
             Padding = new Thickness(12),
-            Content = contentGrid,
+            Content = content,
             StrokeShape =
                 new Microsoft.Maui.Controls.Shapes.RoundRectangle
                 {
@@ -781,9 +768,10 @@ public partial class ReportsPage : ContentPage
 
     private void ShowError(string? message)
     {
-        ErrorLabel.Text = string.IsNullOrWhiteSpace(message)
-            ? "Something went wrong."
-            : message;
+        ErrorLabel.Text =
+            string.IsNullOrWhiteSpace(message)
+                ? "Something went wrong."
+                : message;
 
         ErrorCard.IsVisible = true;
     }
@@ -824,39 +812,123 @@ public partial class ReportsPage : ContentPage
     }
 
     // =====================================================
-    // BUTTONS
+    // BUTTON EVENTS
     // =====================================================
 
     private async void BackButton_Clicked(
-        object? sender, EventArgs e)
+        object? sender,
+        EventArgs e)
     {
-        await Navigation.PopAsync();
+        if (Navigation.NavigationStack.Count > 1)
+            await Navigation.PopAsync();
     }
 
     private async void RefreshButton_Clicked(
-        object? sender, EventArgs e)
+        object? sender,
+        EventArgs e)
     {
-        HideError();
+        if (_isLoading)
+            return;
 
-        await LoadMonthlyReportAsync();
+        try
+        {
+            SetLoading(true);
+            HideError();
 
-        await LoadRetailerReportAsync();
+            bool hasError = false;
+
+            // Monthly report
+            if (ValidateMonthlySelection(out int year, out int month))
+            {
+                var monthly =
+                    await _apiService.GetMonthlyReportAsync(year, month);
+
+                if (monthly.Success && monthly.Data != null)
+                    DisplayMonthlyReport(monthly.Data);
+                else
+                {
+                    MonthlyReportSection.IsVisible = false;
+                    hasError = true;
+                }
+
+                // Retailer report
+                var retailer =
+                    await _apiService.GetRetailerReportAsync(year, month);
+
+                if (retailer.Success && retailer.Data != null)
+                    DisplayRetailerReport(retailer.Data);
+                else
+                {
+                    RetailerReportSection.IsVisible = false;
+                    hasError = true;
+                }
+            }
+            else
+            {
+                MonthlyReportSection.IsVisible = false;
+                RetailerReportSection.IsVisible = false;
+                hasError = true;
+            }
+
+            // Date range report
+            if (StartDatePicker.Date.Date <= EndDatePicker.Date.Date)
+            {
+                var dateRange =
+                    await _apiService.GetDateRangeReportAsync(
+                        StartDatePicker.Date,
+                        EndDatePicker.Date);
+
+                if (dateRange.Success && dateRange.Data != null)
+                    DisplayDateRangeReport(dateRange.Data);
+                else
+                {
+                    DateRangeReportSection.IsVisible = false;
+                    hasError = true;
+                }
+            }
+            else
+            {
+                DateRangeReportSection.IsVisible = false;
+                hasError = true;
+            }
+
+            if (hasError)
+            {
+                ShowError(
+                    "Some reports could not be refreshed. Please check your selections and try again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"REPORT REFRESH ERROR: {ex}");
+
+            ShowError(
+                $"Unable to refresh reports: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
     }
 
     private async void LoadMonthlyReportButton_Clicked(
-        object? sender, EventArgs e)
+        object? sender,
+        EventArgs e)
     {
         await LoadMonthlyReportAsync();
     }
 
     private async void LoadRetailerReportButton_Clicked(
-        object? sender, EventArgs e)
+        object? sender,
+        EventArgs e)
     {
         await LoadRetailerReportAsync();
     }
 
     private async void LoadDateRangeReportButton_Clicked(
-        object? sender, EventArgs e)
+        object? sender,
+        EventArgs e)
     {
         await LoadDateRangeReportAsync();
     }

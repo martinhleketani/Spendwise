@@ -1,0 +1,257 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Administrator Profile";
+
+
+
+    var adminName = User.Identity?.Name;
+
+
+
+    if (string.IsNullOrWhiteSpace(adminName))
+
+    {
+
+        adminName = "System Administrator";
+
+    }
+
+
+
+    var adminInitial = adminName.Substring(0, 1).ToUpperInvariant();
+}
+
+<style>
+    .profile-content {
+        max-width: 900px;
+    }
+
+    .profile-heading {
+        margin-bottom: 25px;
+    }
+
+        .profile-heading h2 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+        .profile-heading p {
+            color: #777;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+    .profile-actions {
+        margin-bottom: 20px;
+    }
+
+    .profile-card {
+        background: #fff;
+        border: 1px solid #e9e5ed;
+        border-radius: 13px;
+        padding: 25px;
+        margin-bottom: 22px;
+    }
+
+    .profile-avatar {
+        width: 75px;
+        height: 75px;
+        border-radius: 50%;
+        background: #34844a;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 29px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .profile-name {
+        font-weight: 700;
+        color: #30333b;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-role {
+        color: #777;
+        font-size: 13px;
+    }
+
+    .profile-label {
+        font-size: 13px;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .profile-value {
+        font-weight: 600;
+        color: #333;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-info {
+        background: #f5f2f8;
+        border: 1px solid #e8e0ee;
+        padding: 14px;
+        border-radius: 9px;
+        font-size: 13px;
+        color: #62566b;
+        line-height: 1.7;
+    }
+
+        .profile-info i {
+            margin-right: 5px;
+        }
+
+    @@media(max-width: 576px) {
+        .profile-card {
+            padding: 19px;
+        }
+
+        .profile-avatar {
+            width: 62px;
+            height: 62px;
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="profile-content">
+
+    <!-- PAGE HEADER -->
+
+    <div class="profile-heading">
+
+        <div class="profile-actions">
+
+            <a href="@Url.Action("Index", "Settings", new { area = "Admin" })"
+               class="admin-btn admin-btn-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Settings
+
+            </a>
+
+        </div>
+
+        <h2>Administrator Profile</h2>
+
+        <p>
+            View your administrator account information.
+        </p>
+
+    </div>
+
+    <!-- ADMINISTRATOR PROFILE CARD -->
+
+    <div class="profile-card">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <div class="profile-avatar">
+                @adminInitial
+            </div>
+
+            <div>
+
+                <h4 class="profile-name">
+                    @adminName
+                </h4>
+
+                <span class="profile-role">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    System Administrator
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ACCOUNT INFORMATION -->
+
+    <div class="profile-card">
+
+        <h5 class="fw-bold mb-4">
+            Account Information
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-4">
+
+                <div class="profile-label">
+                    Administrator Name
+                </div>
+
+                <div class="profile-value">
+                    @adminName
+                </div>
+
+            </div>
+
+            <div class="col-md-6 mb-4">
+
+                <div class="profile-label">
+                    Account Role
+                </div>
+
+                <div class="profile-value">
+                    Administrator
+                </div>
+
+            </div>
+
+            <div class="col-md-6 mb-4">
+
+                <div class="profile-label">
+                    Authentication Scheme
+                </div>
+
+                <div class="profile-value">
+                    AdminCookie
+                </div>
+
+            </div>
+
+            <div class="col-md-6 mb-4">
+
+                <div class="profile-label">
+                    Account Access
+                </div>
+
+                <div class="profile-value">
+                    Administrator Portal
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- INFORMATION NOTICE -->
+
+    <div class="profile-info">
+
+        <i class="bi bi-info-circle"></i>
+
+        <strong>Profile information:</strong>
+
+        Your displayed name is obtained from your current login identity.
+        Email, contact details and profile editing will be connected to the
+        administrator account records in a later stage.
+
+    </div>
+
+</div>

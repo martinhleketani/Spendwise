@@ -1,0 +1,322 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.LedgerDashboardViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Ledger Dashboard";
+}
+
+<style>
+    .ledger-page {
+        padding: 20px 0 35px;
+        color: #26352C;
+    }
+
+    .ledger-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .ledger-heading h2 {
+            font-weight: 700;
+            color: #173F2B;
+            margin: 0;
+        }
+
+    .ledger-card {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 14px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    .ledger-stat {
+        color: #839087;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .ledger-number {
+        font-size: 25px;
+        font-weight: 700;
+        color: #286B48;
+        overflow-wrap: anywhere;
+    }
+
+    .ledger-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .ledger-button {
+        display: inline-block;
+        padding: 10px 15px;
+        border: 1px solid #286B48;
+        border-radius: 8px;
+        background: #E8F4EC;
+        color: #286B48;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+        .ledger-button:hover {
+            background: #D4EBDD;
+            color: #173F2B;
+        }
+
+    .ledger-primary {
+        background: #286B48;
+        color: #FFFFFF;
+    }
+
+        .ledger-primary:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    .ledger-warning {
+        background: #FFF7E6;
+        border-color: #9A6B20;
+        color: #805817;
+    }
+
+    .ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+        .ledger-table th,
+        .ledger-table td {
+            padding: 13px;
+            border-bottom: 1px solid #E5ECE7;
+            text-align: left;
+        }
+
+        .ledger-table th {
+            background: #E8F4EC;
+            color: #173F2B;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .ledger-alert {
+        padding: 13px 16px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+    }
+
+    .ledger-success {
+        background: #E8F4EC;
+        color: #286343;
+    }
+
+    .ledger-error {
+        background: #FBEAEA;
+        color: #963E3E;
+    }
+
+    .ledger-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .ledger-actions form {
+            margin: 0;
+        }
+
+    .ledger-note {
+        color: #839087;
+        font-size: 13px;
+    }
+</style>
+
+<div class="ledger-page">
+
+    <div class="ledger-heading">
+        <div>
+            <h2>Double-Entry Ledger</h2>
+            <p>Monitor SpendWise accounting records and transactions.</p>
+        </div>
+
+        <a href="/Admin/LedgerManagement/Accounts"
+           class="ledger-button">
+            View Ledger Accounts
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+
+    {
+        <div class="ledger-alert ledger-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+
+    {
+        <div class="ledger-alert ledger-error">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="ledger-grid">
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Total Ledger Accounts</div>
+            <div class="ledger-number">@Model.TotalAccounts</div>
+        </div>
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Total Journals</div>
+            <div class="ledger-number">@Model.TotalJournals</div>
+        </div>
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Total Entries</div>
+            <div class="ledger-number">@Model.TotalEntries</div>
+        </div>
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Total Debits</div>
+            <div class="ledger-number">R @Model.TotalDebits.ToString("N2")</div>
+        </div>
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Total Credits</div>
+            <div class="ledger-number">R @Model.TotalCredits.ToString("N2")</div>
+        </div>
+
+        <div class="ledger-card">
+            <div class="ledger-stat">Debit/Credit Status</div>
+            <div class="ledger-number">
+                @(Model.IsBalanced ? "Balanced" : "Unbalanced")
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ledger-card mb-4">
+
+        <h4>Ledger Administration</h4>
+
+        <p>Manage system accounts and wallet transaction records.</p>
+
+        <div class="ledger-actions">
+
+            <form action="/Admin/LedgerManagement/EnsureSystemAccounts"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit"
+                        class="ledger-button ledger-primary">
+                    Initialise System Accounts
+                </button>
+            </form>
+
+            <form action="/Admin/LedgerManagement/Backfill"
+                  method="post"
+                  onsubmit="return confirm('Have you reviewed and approved the accounting mappings? Backfill will create accounting journals for completed wallet transactions. Continue?');">
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit"
+                        class="ledger-button ledger-warning">
+                    Backfill Wallet Transactions
+                </button>
+            </form>
+
+            <a href="/Admin/LedgerManagement/Accounts"
+               class="ledger-button">
+                Manage Accounts
+            </a>
+
+        </div>
+
+        <p class="ledger-note mt-3 mb-0">
+            Review accounting mappings and settlement records before backfilling.
+        </p>
+
+    </div>
+
+    <div class="ledger-card">
+
+        <h4>Recent Ledger Journals</h4>
+        <p>Latest 100 ledger journal records.</p>
+
+        <div class="table-responsive">
+
+            <table class="ledger-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th>Currency</th>
+                        <th>Status</th>
+                        <th>Date Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model.Journals != null && Model.Journals.Any())
+
+                    {
+                        @foreach (var journal in Model.Journals)
+
+                        {
+                            <tr>
+                                <td>@journal.Id</td>
+                                <td>@journal.Reference</td>
+                                <td>@journal.Description</td>
+                                <td>@journal.Currency</td>
+                                <td>@journal.Status</td>
+                                <td>
+                                    @journal.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                                </td>
+                                <td>
+                                    <a href="/Admin/LedgerManagement/Details/@journal.Id"
+                                       class="ledger-button">
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                    else
+
+                    {
+                        <tr>
+                            <td colspan="7">
+                                No ledger journals have been created yet.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,168 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Reports Management";
+
+
+
+    int totalUsers = ViewBag.TotalUsers ?? 0;
+
+    int totalTransactions = ViewBag.TotalTransactions ?? 0;
+
+    int totalWalletTransactions = ViewBag.TotalWalletTransactions ?? 0;
+
+    int totalWallets = ViewBag.TotalWallets ?? 0;
+
+    int totalMerchants = ViewBag.TotalMerchants ?? 0;
+
+    int totalLedgerAccounts = ViewBag.TotalLedgerAccounts ?? 0;
+
+    int totalLedgerJournals = ViewBag.TotalLedgerJournals ?? 0;
+
+    int totalLedgerEntries = ViewBag.TotalLedgerEntries ?? 0;
+}
+
+<style>
+    .reports-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .reports-heading h1 {
+            font-size: 25px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .reports-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .report-section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 25px 0 15px;
+    }
+
+    .report-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit,minmax(190px,1fr));
+        gap: 16px;
+    }
+
+    .report-card {
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .report-card span {
+            color: #839087;
+            font-size: 13px;
+        }
+
+        .report-card h2 {
+            color: #26352C;
+            font-size: 27px;
+            margin-top: 12px;
+        }
+
+    .report-link {
+        display: block;
+        background: #fff;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+        text-decoration: none;
+        color: #26352C;
+        transition: .2s;
+    }
+
+        .report-link:hover {
+            border-color: #286B48;
+            transform: translateY(-2px);
+        }
+
+        .report-link h3 {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .report-link p {
+            font-size: 12px;
+            color: #839087;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .report-link strong {
+            color: #286B48;
+            font-size: 12px;
+        }
+
+    @@media(max-width:600px) {
+        .reports-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="reports-heading">
+    <div>
+        <h1>Reports & Analytics</h1>
+        <p>Monitor and analyse SpendWise system information.</p>
+    </div>
+</div>
+
+<h2 class="report-section-title">System Overview</h2>
+
+<div class="report-grid">
+    <div class="report-card"><span>Registered Users</span><h2>@totalUsers</h2></div>
+    <div class="report-card"><span>Transactions</span><h2>@totalTransactions</h2></div>
+    <div class="report-card"><span>Wallet Transactions</span><h2>@totalWalletTransactions</h2></div>
+    <div class="report-card"><span>Customer Wallets</span><h2>@totalWallets</h2></div>
+    <div class="report-card"><span>Merchants</span><h2>@totalMerchants</h2></div>
+    <div class="report-card"><span>Ledger Accounts</span><h2>@totalLedgerAccounts</h2></div>
+    <div class="report-card"><span>Ledger Journals</span><h2>@totalLedgerJournals</h2></div>
+    <div class="report-card"><span>Ledger Entries</span><h2>@totalLedgerEntries</h2></div>
+</div>
+
+<h2 class="report-section-title">Detailed Reports</h2>
+
+<div class="report-grid">
+    <a class="report-link" href="@Url.Action("UserReports")">
+        <h3>User Reports</h3>
+        <p>Review customer registrations, account activity and statuses.</p>
+        <strong>Open User Reports →</strong>
+    </a>
+
+    <a class="report-link" href="@Url.Action("TransactionReports")">
+        <h3>Transaction Reports</h3>
+        <p>Analyse transaction history, amounts, types and statuses.</p>
+        <strong>Open Transaction Reports →</strong>
+    </a>
+
+    <a class="report-link" href="@Url.Action("WalletReports")">
+        <h3>Wallet Reports</h3>
+        <p>Review wallet accounts, balances, deposits and withdrawals.</p>
+        <strong>Open Wallet Reports →</strong>
+    </a>
+
+    <a class="report-link" href="@Url.Action("MerchantReports")">
+        <h3>Merchant Reports</h3>
+        <p>Monitor merchant registrations and account statuses.</p>
+        <strong>Open Merchant Reports →</strong>
+    </a>
+
+    <a class="report-link" href="@Url.Action("LedgerReports")">
+        <h3>Ledger Reports</h3>
+        <p>Review financial journals, debit entries and credit entries.</p>
+        <strong>Open Ledger Reports →</strong>
+    </a>
+</div>

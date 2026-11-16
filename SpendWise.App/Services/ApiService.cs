@@ -401,19 +401,6 @@ public class ApiService
     }
 
     // =====================================================
-    // RETAILER PRICE COMPARISON
-    // =====================================================
-
-    public async Task<(bool Success, string Message, RetailerPriceComparisonResponse? Data)>
-        GetRetailerPriceComparisonAsync(int groceryListId)
-    {
-        return await GetAuthorizedAsync<RetailerPriceComparisonResponse>(
-            $"api/Grocery/{groceryListId}/price-comparison",
-            "Retailer prices loaded successfully.",
-            "Unable to load retailer price comparison");
-    }
-
-    // =====================================================
     // PURCHASE - CREATE
     // =====================================================
 
@@ -504,29 +491,14 @@ public class ApiService
     public async Task<(bool Success, string Message, MonthlyReportResponse? Data)>
         GetMonthlyReportAsync(int year, int month)
     {
-        if (month < 1 || month > 12)
-            return (false, "Month must be between 1 and 12.", null);
-
-        if (year < 2020 || year > 2100)
-            return (false, "Invalid year.", null);
-
-        Debug.WriteLine($"MONTHLY REPORT: Starting request for {year}/{month}");
-
-        var result = await GetAuthorizedAsync<MonthlyReportResponse>(
+        return await GetAuthorizedAsync<MonthlyReportResponse>(
             $"api/Reports/monthly/{year}/{month}",
             "Monthly report loaded successfully.",
             "Unable to load monthly report");
-
-        Debug.WriteLine(
-            $"MONTHLY REPORT: Request completed. Success = {result.Success}");
-
-        Debug.WriteLine($"MONTHLY REPORT: Message = {result.Message}");
-
-        return result;
     }
 
     // =====================================================
-    // REPORTS - RETAILERS
+    // REPORTS - RETAILER SPENDING
     // =====================================================
 
     public async Task<(bool Success, string Message, RetailerReportResponse? Data)>
@@ -534,6 +506,9 @@ public class ApiService
     {
         if (month < 1 || month > 12)
             return (false, "Month must be between 1 and 12.", null);
+
+        if (year < 2020 || year > 2100)
+            return (false, "Invalid year.", null);
 
         return await GetAuthorizedAsync<RetailerReportResponse>(
             $"api/Reports/retailers/{year}/{month}",
@@ -629,6 +604,19 @@ public class ApiService
             request,
             "Profile updated successfully.",
             "Unable to update profile");
+    }
+
+    // =====================================================
+    // PROFILE - DELETE MY ACCOUNT
+    // =====================================================
+
+    public async Task<(bool Success, string Message)>
+        DeleteMyAccountAsync()
+    {
+        return await DeleteAuthorizedAsync(
+            "api/Profile",
+            "Your account has been permanently deleted.",
+            "Unable to delete account");
     }
 
     // =====================================================

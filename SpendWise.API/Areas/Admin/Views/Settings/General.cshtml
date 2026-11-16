@@ -1,0 +1,267 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "General Settings";
+}
+
+<style>
+    .settings-content {
+        max-width: 950px;
+    }
+
+    .settings-heading {
+        margin-bottom: 25px;
+    }
+
+        .settings-heading h2 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+        .settings-heading p {
+            color: #777;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+    .settings-panel {
+        background: #fff;
+        border: 1px solid #e9e5ed;
+        border-radius: 13px;
+        padding: 25px;
+        margin-bottom: 22px;
+    }
+
+        .settings-panel h5 {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #30333b;
+        }
+
+    .panel-description {
+        color: #888;
+        font-size: 13px;
+        margin-bottom: 22px;
+        line-height: 1.6;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 43px;
+        border-radius: 8px;
+        border-color: #e2e2e2;
+    }
+
+        .form-control:disabled,
+        .form-select:disabled,
+        .form-control[readonly] {
+            background-color: #f5f7f5;
+            opacity: 1;
+            color: #555;
+        }
+
+    .settings-info {
+        background: #f5f2f8;
+        border: 1px solid #e8e0ee;
+        border-radius: 9px;
+        padding: 14px;
+        color: #62566b;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+        .settings-info i {
+            margin-right: 5px;
+        }
+
+    .settings-actions {
+        margin-bottom: 22px;
+    }
+
+    @@media(max-width: 576px) {
+        .settings-panel {
+            padding: 19px;
+        }
+    }
+</style>
+
+<div class="settings-content">
+
+    <!-- PAGE HEADER -->
+
+    <div class="settings-heading">
+
+        <div class="settings-actions">
+
+            <a href="@Url.Action("Index", "Settings", new { area = "Admin" })"
+               class="admin-btn admin-btn-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Settings
+
+            </a>
+
+        </div>
+
+        <h2>General Settings</h2>
+
+        <p>
+            Manage the general configuration of your SpendWise application.
+        </p>
+
+    </div>
+
+    <!-- APPLICATION INFORMATION -->
+
+    <div class="settings-panel">
+
+        <h5>Application Information</h5>
+
+        <p class="panel-description">
+            Basic information about the SpendWise platform.
+        </p>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                Application Name
+            </label>
+
+            <input type="text"
+                   class="form-control"
+                   value="SpendWise"
+                   readonly />
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                Application Description
+            </label>
+
+            <textarea class="form-control"
+                      rows="3"
+                      readonly>Personal financial management and digital wallet platform.</textarea>
+
+        </div>
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                Application Environment
+            </label>
+
+            <input type="text"
+                   class="form-control"
+                   value="Development"
+                   readonly />
+
+        </div>
+
+    </div>
+
+    <!-- REGIONAL PREFERENCES -->
+
+    <div class="settings-panel">
+
+        <h5>Regional Preferences</h5>
+
+        <p class="panel-description">
+            Configure the regional preferences used by the platform.
+        </p>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Default Currency
+                </label>
+
+                <select class="form-select" disabled>
+
+                    <option selected>
+                        ZAR - South African Rand
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Country
+                </label>
+
+                <select class="form-select" disabled>
+
+                    <option selected>
+                        South Africa
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Date Format
+                </label>
+
+                <select class="form-select" disabled>
+
+                    <option selected>
+                        DD/MM/YYYY
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Time Zone
+                </label>
+
+                <select class="form-select" disabled>
+
+                    <option selected>
+                        Africa/Johannesburg (SAST)
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- INFORMATION NOTICE -->
+
+    <div class="settings-info">
+
+        <i class="bi bi-info-circle"></i>
+
+        <strong>Configuration information:</strong>
+
+        These are currently display-only defaults. Editing and saving
+        general configuration will be implemented when the settings database
+        structure is added.
+
+    </div>
+
+</div>

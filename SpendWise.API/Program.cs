@@ -1,4 +1,7 @@
+
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,7 +9,6 @@ using Microsoft.OpenApi.Models;
 using SpendWise.API.Data;
 using SpendWise.API.Models;
 using SpendWise.API.Services;
-using SpendWise.API.Services.Retailers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -19,8 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 // =========================================================
 
 var connectionString =
-    builder.Configuration.GetConnectionString(
-        "DefaultConnection");
+    builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -28,135 +29,65 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Connection string 'DefaultConnection' was not found.");
 }
 
-builder.Services.AddDbContext<AppDbContext>(
-    options =>
-        options.UseMySql(
-            connectionString,
-            ServerVersion.AutoDetect(
-                connectionString)
-        ));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)));
+
+
+// =========================================================
+// ADMIN PASSWORD HASHER
+// =========================================================
+
+builder.Services.AddScoped<
+    IPasswordHasher<AdminUser>,
+    PasswordHasher<AdminUser>>();
 
 
 // =========================================================
 // PASSWORD RESET SERVICE
 // =========================================================
 
-builder.Services
-    .AddScoped<PasswordResetService>();
+builder.Services.AddScoped<PasswordResetService>();
+
+
+// =========================================================
+// WALLET SERVICES
+// =========================================================
+
+builder.Services.AddScoped<WalletService>();
+
+builder.Services.AddScoped<WalletPaymentService>();
+
+
+// =========================================================
+// DOUBLE-ENTRY LEDGER SERVICE
+// =========================================================
+
+builder.Services.AddScoped<LedgerService>();
 
 
 // =========================================================
 // EMAIL SERVICE
 // =========================================================
 
-builder.Services
-    .AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 // =========================================================
-// LOYALTYHUB GROCERY PRICE API CONFIGURATION
-// =========================================================
-//
-// Configuration is loaded from:
-//
-// LoyaltyHub:ApiKey
-// LoyaltyHub:BaseUrl
-//
-// During development these values are stored in
-// ASP.NET Core User Secrets.
-//
-// The API key must never be placed in the MAUI client.
+// AUDIT LOG SERVICE
 // =========================================================
 
-builder.Services
-    .Configure<GroceryPriceApiOptions>(
-        builder.Configuration.GetSection(
-            GroceryPriceApiOptions.SectionName));
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
 
 // =========================================================
-// GROCERY PRICE API SERVICE
-// =========================================================
-//
-// This service communicates with the external grocery-price
-// API and retrieves product information for:
-//
-// - Pick n Pay
-// - Checkers
-// - Shoprite
-//
-// SpendWise never generates a missing retailer price.
+// JWT SIGNING KEY VALIDATION
 // =========================================================
 
-builder.Services
-    .AddHttpClient<GroceryPriceApiService>(
-        client =>
-        {
-            client.Timeout =
-                TimeSpan.FromSeconds(30);
-
-            client.DefaultRequestHeaders
-                .UserAgent
-                .ParseAdd(
-                    "SpendWise/1.0");
-
-            client.DefaultRequestHeaders
-                .Accept
-                .ParseAdd(
-                    "application/json");
-        });
-
-
-// =========================================================
-// RETAILER PRICE COMPARISON SERVICES
-// =========================================================
-//
-// PriceComparisonService currently coordinates providers
-// implementing IRetailerPriceProvider.
-//
-// The existing Pick n Pay provider is kept temporarily so
-// the project remains compatible while the new grocery API
-// integration is tested.
-//
-// Once the new API has been verified successfully, we will
-// connect PriceComparisonService directly to the new source
-// for Pick n Pay, Checkers and Shoprite.
-// =========================================================
-
-builder.Services
-    .AddScoped<PriceComparisonService>();
-
-builder.Services
-    .AddHttpClient<
-        IRetailerPriceProvider,
-        PickNPayPriceProvider>(
-        client =>
-        {
-            client.BaseAddress =
-                new Uri(
-                    "https://www.pnp.co.za/");
-
-            client.Timeout =
-                TimeSpan.FromSeconds(20);
-
-            client.DefaultRequestHeaders
-                .UserAgent
-                .ParseAdd(
-                    "SpendWise/1.0");
-
-            client.DefaultRequestHeaders
-                .Accept
-                .ParseAdd(
-                    "text/html,application/xhtml+xml");
-        });
-
-
-// =========================================================
-// JWT AUTHENTICATION
-// =========================================================
-
-var jwtKey =
-    builder.Configuration["Jwt:Key"];
+var jwtKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
@@ -164,122 +95,130 @@ if (string.IsNullOrWhiteSpace(jwtKey))
         "JWT signing key was not found.");
 }
 
+
+// =========================================================
+// CUSTOMER JWT + ADMIN COOKIE AUTHENTICATION
+// =========================================================
+
 builder.Services
-    .AddAuthentication(
-        JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+
+    // -----------------------------------------------------
+    // CUSTOMER JWT AUTHENTICATION
+    // -----------------------------------------------------
+
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters =
             new TokenValidationParameters
             {
                 ValidateIssuer = true,
-
                 ValidateAudience = true,
-
                 ValidateLifetime = true,
-
                 ValidateIssuerSigningKey = true,
 
                 ValidIssuer =
-                    builder.Configuration[
-                        "Jwt:Issuer"],
+                    builder.Configuration["Jwt:Issuer"],
 
                 ValidAudience =
-                    builder.Configuration[
-                        "Jwt:Audience"],
+                    builder.Configuration["Jwt:Audience"],
 
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(
-                            jwtKey)
-                    ),
+                        Encoding.UTF8.GetBytes(jwtKey)),
 
-                ClockSkew =
-                    TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero
             };
 
-
-        // =================================================
         // TOKEN VERSION VALIDATION
-        // =================================================
 
-        options.Events =
-            new JwtBearerEvents
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
             {
-                OnTokenValidated =
-                    async context =>
-                    {
-                        string? userIdValue =
-                            context.Principal?
-                                .FindFirstValue(
-                                    ClaimTypes
-                                        .NameIdentifier);
+                string? userIdValue =
+                    context.Principal?
+                        .FindFirstValue(
+                            ClaimTypes.NameIdentifier);
 
-                        string? tokenVersionValue =
-                            context.Principal?
-                                .FindFirstValue(
-                                    "token_version");
+                string? tokenVersionValue =
+                    context.Principal?
+                        .FindFirstValue("token_version");
 
+                if (!int.TryParse(userIdValue, out int userId) ||
+                    !int.TryParse(
+                        tokenVersionValue,
+                        out int tokenVersion))
+                {
+                    context.Fail(
+                        "Invalid authentication token.");
 
-                        // Token must contain both values.
+                    return;
+                }
 
-                        if (!int.TryParse(
-                                userIdValue,
-                                out int userId) ||
-                            !int.TryParse(
-                                tokenVersionValue,
-                                out int tokenVersion))
-                        {
-                            context.Fail(
-                                "Invalid authentication token.");
+                var dbContext =
+                    context.HttpContext.RequestServices
+                        .GetRequiredService<AppDbContext>();
 
-                            return;
-                        }
+                var user =
+                    await dbContext.Users
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(
+                            u => u.Id == userId && u.IsActive);
 
+                if (user == null)
+                {
+                    context.Fail(
+                        "Invalid authentication token.");
 
-                        // Get database context.
+                    return;
+                }
 
-                        var dbContext =
-                            context.HttpContext
-                                .RequestServices
-                                .GetRequiredService<
-                                    AppDbContext>();
+                if (user.TokenVersion != tokenVersion)
+                {
+                    context.Fail(
+                        "Authentication token has been revoked.");
 
+                    return;
+                }
+            }
+        };
+    })
 
-                        // Get current user information.
+    // -----------------------------------------------------
+    // ADMIN COOKIE AUTHENTICATION
+    // -----------------------------------------------------
 
-                        var user =
-                            await dbContext.Users
-                                .AsNoTracking()
-                                .FirstOrDefaultAsync(
-                                    u =>
-                                        u.Id ==
-                                        userId &&
-                                        u.IsActive);
+    .AddCookie("AdminCookie", options =>
+    {
+        options.LoginPath =
+            "/Admin/AdminAccount/Login";
 
+        options.AccessDeniedPath =
+            "/Admin/AdminAccount/Login";
 
-                        if (user == null)
-                        {
-                            context.Fail(
-                                "Invalid authentication token.");
+        options.Cookie.Name =
+            "SpendWise.Admin";
 
-                            return;
-                        }
+        options.Cookie.HttpOnly = true;
 
+        options.Cookie.SecurePolicy =
+            CookieSecurePolicy.Always;
 
-                        // Compare the JWT version with
-                        // the current database version.
+        options.Cookie.SameSite =
+            SameSiteMode.Strict;
 
-                        if (user.TokenVersion !=
-                            tokenVersion)
-                        {
-                            context.Fail(
-                                "Authentication token has been revoked.");
+        options.ExpireTimeSpan =
+            TimeSpan.FromMinutes(30);
 
-                            return;
-                        }
-                    }
-            };
+        options.SlidingExpiration = true;
     });
 
 
@@ -299,187 +238,181 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode =
         StatusCodes.Status429TooManyRequests;
 
-
-    // Maximum 3 forgot-password requests
-    // within 10 minutes.
-
     options.AddFixedWindowLimiter(
         "ForgotPasswordPolicy",
         limiterOptions =>
         {
-            limiterOptions.PermitLimit =
-                3;
+            limiterOptions.PermitLimit = 3;
 
             limiterOptions.Window =
                 TimeSpan.FromMinutes(10);
 
-            limiterOptions.QueueLimit =
-                0;
+            limiterOptions.QueueLimit = 0;
 
             limiterOptions.QueueProcessingOrder =
-                QueueProcessingOrder
-                    .OldestFirst;
+                QueueProcessingOrder.OldestFirst;
         });
 });
 
 
 // =========================================================
-// CONTROLLERS
+// API CONTROLLERS AND ADMIN MVC VIEWS
 // =========================================================
 
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 
 // =========================================================
 // SWAGGER
 // =========================================================
 
-builder.Services
-    .AddEndpointsApiExplorer();
+builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(
-    options =>
-    {
-        options.AddSecurityDefinition(
-            "Bearer",
-            new OpenApiSecurityScheme
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter your JWT token."
+        });
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
             {
-                Name =
-                    "Authorization",
-
-                Type =
-                    SecuritySchemeType.Http,
-
-                Scheme =
-                    "bearer",
-
-                BearerFormat =
-                    "JWT",
-
-                In =
-                    ParameterLocation.Header,
-
-                Description =
-                    "Enter your JWT token."
-            });
-
-
-        options.AddSecurityRequirement(
-            new OpenApiSecurityRequirement
-            {
+                new OpenApiSecurityScheme
                 {
-                    new OpenApiSecurityScheme
+                    Reference = new OpenApiReference
                     {
-                        Reference =
-                            new OpenApiReference
-                            {
-                                Type =
-                                    ReferenceType
-                                        .SecurityScheme,
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+});
 
-                                Id =
-                                    "Bearer"
-                            }
-                    },
 
-                    Array.Empty<string>()
-                }
-            });
-    });
-
+// =========================================================
+// BUILD APPLICATION
+// =========================================================
 
 var app = builder.Build();
 
 
 // =========================================================
-// VALIDATE LOYALTYHUB DEVELOPMENT CONFIGURATION
-// =========================================================
-//
-// Do not print the API key.
-// We only check whether configuration exists.
+// SYSTEM OWNER ACCOUNT BOOTSTRAP
 // =========================================================
 
-if (app.Environment.IsDevelopment())
+if (builder.Configuration.GetValue<bool>(
+        "AdminBootstrap:Enabled"))
 {
-    string? loyaltyHubApiKey =
-        builder.Configuration[
-            "LoyaltyHub:ApiKey"];
+    app.Logger.LogWarning(
+        "ADMIN BOOTSTRAP IS RUNNING.");
 
-    if (string.IsNullOrWhiteSpace(
-            loyaltyHubApiKey))
+    string fullName =
+        builder.Configuration["AdminBootstrap:FullName"]?
+            .Trim() ?? "";
+
+    string email =
+        builder.Configuration["AdminBootstrap:Email"]?
+            .Trim()
+            .ToLowerInvariant() ?? "";
+
+    string password =
+        builder.Configuration["AdminBootstrap:Password"] ?? "";
+
+    if (string.IsNullOrWhiteSpace(fullName) ||
+        string.IsNullOrWhiteSpace(email) ||
+        string.IsNullOrWhiteSpace(password))
     {
-        app.Logger.LogWarning(
-            "LoyaltyHub API key is not configured. " +
-            "Add LoyaltyHub:ApiKey using ASP.NET Core User Secrets.");
+        throw new InvalidOperationException(
+            "Admin bootstrap is enabled, but FullName, Email or Password is missing.");
     }
-    else
-    {
-        app.Logger.LogInformation(
-            "LoyaltyHub grocery-price API configuration loaded successfully.");
-    }
-}
 
+    await using var scope =
+        app.Services.CreateAsyncScope();
 
-// =========================================================
-// SEED RETAILERS
-// =========================================================
-
-using (var scope =
-    app.Services.CreateScope())
-{
     var dbContext =
         scope.ServiceProvider
             .GetRequiredService<AppDbContext>();
 
+    var passwordHasher =
+        scope.ServiceProvider
+            .GetRequiredService<
+                IPasswordHasher<AdminUser>>();
 
-    string[] retailerNames =
+    var admin =
+        await dbContext.AdminUsers
+            .FirstOrDefaultAsync(a => a.Email == email);
+
+    bool accountCreated = false;
+
+    if (admin == null)
     {
-        "Pick n Pay",
-        "Shoprite",
-        "Checkers",
-        "SPAR",
-        "Woolworths Food"
-    };
+        var existingAdmins =
+            await dbContext.AdminUsers.ToListAsync();
 
-
-    foreach (string retailerName in retailerNames)
-    {
-        bool retailerExists =
-            await dbContext
-                .Retailers
-                .AnyAsync(
-                    r =>
-                        r.Name ==
-                        retailerName);
-
-
-        if (!retailerExists)
+        if (existingAdmins.Count == 1)
         {
-            dbContext
-                .Retailers
-                .Add(
-                    new Retailer
-                    {
-                        Name =
-                            retailerName,
+            admin = existingAdmins[0];
 
-                        IsActive =
-                            true,
+            app.Logger.LogInformation(
+                "One existing administrator found. Updating that account.");
+        }
+        else if (existingAdmins.Count > 1)
+        {
+            throw new InvalidOperationException(
+                "Multiple administrator accounts exist and the configured email does not match any of them. Identify the correct account before continuing.");
+        }
+        else
+        {
+            admin = new AdminUser
+            {
+                CreatedAt = DateTime.UtcNow
+            };
 
-                        CreatedAt =
-                            DateTime.UtcNow
-                    });
+            dbContext.AdminUsers.Add(admin);
+
+            accountCreated = true;
         }
     }
 
+    admin.FullName = fullName;
 
-    await dbContext
-        .SaveChangesAsync();
+    admin.Email = email;
+
+    admin.IsActive = true;
+
+    admin.PasswordHash =
+        passwordHasher.HashPassword(
+            admin,
+            password);
+
+    await dbContext.SaveChangesAsync();
+
+    if (accountCreated)
+    {
+        app.Logger.LogInformation(
+            "System Owner account created successfully.");
+    }
+    else
+    {
+        app.Logger.LogInformation(
+            "Existing System Owner account updated successfully.");
+    }
 }
 
 
 // =========================================================
-// HTTP PIPELINE
+// SWAGGER DEVELOPMENT CONFIGURATION
 // =========================================================
 
 if (app.Environment.IsDevelopment())
@@ -490,7 +423,18 @@ if (app.Environment.IsDevelopment())
 }
 
 
+// =========================================================
+// HTTPS REDIRECTION
+// =========================================================
+
 app.UseHttpsRedirection();
+
+
+// =========================================================
+// STATIC FILES
+// =========================================================
+
+app.UseStaticFiles();
 
 
 // =========================================================
@@ -515,10 +459,32 @@ app.UseAuthorization();
 
 
 // =========================================================
-// CONTROLLERS
+// ADMIN AREA ROUTING
+// =========================================================
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=AdminDashboard}/{action=Index}/{id?}");
+
+
+// =========================================================
+// DEFAULT MVC ROUTING
+// =========================================================
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+// =========================================================
+// API CONTROLLER ROUTING
 // =========================================================
 
 app.MapControllers();
 
+
+// =========================================================
+// RUN APPLICATION
+// =========================================================
 
 app.Run();

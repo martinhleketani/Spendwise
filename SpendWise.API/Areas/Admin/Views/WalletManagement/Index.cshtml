@@ -1,0 +1,640 @@
+﻿@model SpendWise.API.Areas.Admin.Controllers.WalletManagementIndexViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Wallet Management";
+}
+
+<style>
+    .wallet-page {
+        padding: 10px 0 30px;
+        color: #30283a;
+    }
+
+    .wallet-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .wallet-heading h2 {
+            font-size: 25px;
+            font-weight: 750;
+            margin: 0 0 6px;
+            color: #30283a;
+        }
+
+        .wallet-heading p {
+            color: #898292;
+            margin: 0;
+            font-size: 13px;
+        }
+
+    .admin-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: #286B48;
+        color: #fff;
+        padding: 11px 18px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background .2s ease;
+        white-space: nowrap;
+    }
+
+        .admin-back-button:hover {
+            background: #173F2B;
+            color: #fff;
+        }
+
+    .wallet-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .wallet-stat {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        padding: 20px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+    }
+
+    .wallet-stat-label {
+        font-size: 12px;
+        color: #898292;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .wallet-stat-value {
+        font-size: 25px;
+        font-weight: 750;
+        color: #30283a;
+        overflow-wrap: anywhere;
+    }
+
+    .wallet-stat-description {
+        font-size: 11px;
+        color: #9992a0;
+        margin-top: 7px;
+    }
+
+    .wallet-card {
+        background: #fff;
+        border: 1px solid #eee9f2;
+        border-radius: 13px;
+        box-shadow: 0 3px 12px rgba(45, 32, 58, .035);
+        overflow: hidden;
+    }
+
+    .wallet-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 21px;
+        border-bottom: 1px solid #f0edf3;
+    }
+
+        .wallet-card-header h4 {
+            font-size: 16px;
+            font-weight: 750;
+            margin: 0 0 5px;
+        }
+
+        .wallet-card-header p {
+            font-size: 12px;
+            color: #918a99;
+            margin: 0;
+        }
+
+    .wallet-search {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .wallet-search input {
+            min-width: 230px;
+            border: 1px solid #e5dfeb;
+            border-radius: 8px;
+            padding: 10px 12px;
+            outline: none;
+            font-size: 13px;
+        }
+
+            .wallet-search input:focus {
+                border-color: #198754;
+                box-shadow: 0 0 0 3px rgba(25, 135, 84, .10);
+            }
+
+        .wallet-search button {
+            background: #198754;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 17px;
+            font-size: 12px;
+            font-weight: 650;
+            cursor: pointer;
+            transition: background .2s ease;
+        }
+
+            .wallet-search button:hover {
+                background: #146c43;
+            }
+
+    .wallet-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .wallet-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+        .wallet-table th {
+            background: #faf9fb;
+            color: #817989;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 14px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .wallet-table td {
+            padding: 16px;
+            border-top: 1px solid #f1eef4;
+            font-size: 12px;
+            color: #514a59;
+            vertical-align: middle;
+        }
+
+        .wallet-table tbody tr:hover {
+            background: #fcfbfd;
+        }
+
+    .customer-name {
+        color: #30283a;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .customer-email {
+        color: #96909d;
+        font-size: 11px;
+    }
+
+    .wallet-number {
+        font-weight: 700;
+        color: #65477f;
+        letter-spacing: .3px;
+        white-space: nowrap;
+    }
+
+    .wallet-balance {
+        font-weight: 750;
+        color: #30283a;
+        white-space: nowrap;
+    }
+
+    .wallet-status {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 6px 11px;
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+    .status-suspended {
+        color: #9b6a20;
+        background: #fff4df;
+    }
+
+    .status-closed {
+        color: #a04444;
+        background: #fceaea;
+    }
+
+    .status-other {
+        color: #67577c;
+        background: #f0eaf7;
+    }
+
+    .wallet-actions {
+        display: flex;
+        gap: 7px;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+        .wallet-actions form {
+            margin: 0;
+        }
+
+    .wallet-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 8px 11px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 650;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background .2s ease;
+    }
+
+    .wallet-view {
+        color: #65477f;
+        background: #f0eaf7;
+    }
+
+        .wallet-view:hover {
+            color: #fff;
+            background: #65477f;
+        }
+
+    .wallet-suspend {
+        color: #a04444;
+        background: #fceaea;
+    }
+
+        .wallet-suspend:hover {
+            background: #f5dada;
+        }
+
+    .wallet-reactivate {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+        .wallet-reactivate:hover {
+            background: #d7eddf;
+        }
+
+    .wallet-empty {
+        text-align: center;
+        padding: 55px 20px;
+        color: #928b99;
+    }
+
+        .wallet-empty h5 {
+            color: #514a59;
+            font-weight: 700;
+            margin: 12px 0 7px;
+        }
+
+    .wallet-alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        font-size: 13px;
+    }
+
+    .wallet-alert-success {
+        color: #28784e;
+        background: #e9f6ee;
+    }
+
+    .wallet-alert-error {
+        color: #a04444;
+        background: #fceaea;
+    }
+
+    .wallet-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #f0edf3;
+        font-size: 11px;
+        color: #928b99;
+    }
+
+    @@media (max-width: 1100px) {
+        .wallet-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .wallet-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .wallet-search,
+        .wallet-search input {
+            width: 100%;
+        }
+
+            .wallet-search button {
+                width: 100%;
+            }
+    }
+</style>
+
+<div class="wallet-page">
+
+    <!-- PAGE HEADING -->
+    <div class="wallet-heading">
+        <div>
+            <h2>Wallet Management</h2>
+            <p>Monitor customer wallets, balances and account statuses.</p>
+        </div>
+
+        <a href="@Url.Action("Index", "AdminDashboard", new { area = "Admin" })"
+           class="admin-back-button">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["Success"] != null)
+
+    {
+        <div class="wallet-alert wallet-alert-success">
+            <i class="bi bi-check-circle"></i>
+            @TempData["Success"]
+        </div>
+    }
+
+    <!-- ERROR MESSAGE -->
+    @if (TempData["Error"] != null)
+
+    {
+        <div class="wallet-alert wallet-alert-error">
+            <i class="bi bi-exclamation-circle"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- WALLET STATISTICS -->
+    <div class="wallet-stats">
+
+        <div class="wallet-stat">
+            <div class="wallet-stat-label">Total Wallets</div>
+            <div class="wallet-stat-value">
+                @Model.TotalWallets.ToString("N0")
+            </div>
+            <div class="wallet-stat-description">
+                Customer wallet accounts
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="wallet-stat-label">Active Wallets</div>
+            <div class="wallet-stat-value">
+                @Model.ActiveWallets.ToString("N0")
+            </div>
+            <div class="wallet-stat-description">
+                Currently active accounts
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="wallet-stat-label">Suspended Wallets</div>
+            <div class="wallet-stat-value">
+                @Model.SuspendedWallets.ToString("N0")
+            </div>
+            <div class="wallet-stat-description">
+                Restricted accounts
+            </div>
+        </div>
+
+        <div class="wallet-stat">
+            <div class="wallet-stat-label">Active Wallet Balances</div>
+            <div class="wallet-stat-value">
+                R @Model.TotalCalculatedBalance.ToString("N2")
+            </div>
+            <div class="wallet-stat-description">
+                Calculated from completed wallet transactions
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CUSTOMER WALLETS -->
+    <div class="wallet-card">
+
+        <div class="wallet-card-header">
+            <div>
+                <h4>Customer Wallets</h4>
+                <p>View and manage registered customer wallets.</p>
+            </div>
+
+            <!-- SEARCH -->
+            <form asp-area="Admin"
+                  asp-controller="WalletManagement"
+                  asp-action="Index"
+                  method="get"
+                  class="wallet-search">
+
+                <input type="text"
+                       name="search"
+                       value="@Model.Search"
+                       placeholder="Search customer or wallet..." />
+
+                <button type="submit">
+                    <i class="bi bi-search"></i>
+                    Search
+                </button>
+
+            </form>
+        </div>
+
+        @if (Model.Wallets != null && Model.Wallets.Any())
+
+        {
+            <div class="wallet-table-wrapper">
+
+                <table class="wallet-table">
+
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Wallet Number</th>
+                            <th>Balance</th>
+                            <th>Transactions</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var wallet in Model.Wallets)
+
+                        {
+                            var statusClass = wallet.Status == "Active"
+                            ? "status-active"
+                            : wallet.Status == "Suspended"
+                            ? "status-suspended"
+                            : wallet.Status == "Closed"
+                            ? "status-closed"
+                            : "status-other";
+
+                            <tr>
+
+                                <td>
+                                    <div class="customer-name">
+                                        @wallet.CustomerName
+                                    </div>
+
+                                    <div class="customer-email">
+                                        @wallet.CustomerEmail
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="wallet-number">
+                                        @wallet.WalletNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="wallet-balance">
+                                        @wallet.Currency @wallet.Balance.ToString("N2")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @wallet.TransactionCount
+                                </td>
+
+                                <td>
+                                    <span class="wallet-status @statusClass">
+                                        @wallet.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @wallet.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    <div class="wallet-actions">
+
+                                        <!-- VIEW -->
+                                        <a href="@Url.Action("Details", "WalletManagement", new { area = "Admin", id = wallet.WalletId })"
+                                           class="wallet-action wallet-view">
+                                            <i class="bi bi-eye"></i>
+                                            View
+                                        </a>
+
+                                        <!-- ACTIVE WALLET -->
+                                        @if (wallet.Status == "Active")
+
+                                        {
+                                            <form action="@Url.Action("Suspend", "WalletManagement", new { area = "Admin", id = wallet.WalletId })"
+                                                  method="post"
+                                                  onsubmit="return confirm('Are you sure you want to suspend this wallet?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="wallet-action wallet-suspend">
+                                                    <i class="bi bi-pause-circle"></i>
+                                                    Suspend
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                        else if (wallet.Status == "Suspended")
+
+                                        {
+                                            <!-- SUSPENDED WALLET -->
+                                            <form action="@Url.Action("Reactivate", "WalletManagement", new { area = "Admin", id = wallet.WalletId })"
+                                                  method="post"
+                                                  onsubmit="return confirm('Are you sure you want to reactivate this wallet?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="wallet-action wallet-reactivate">
+                                                    <i class="bi bi-check-circle"></i>
+                                                    Reactivate
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+        else
+
+        {
+            <!-- EMPTY STATE -->
+            <div class="wallet-empty">
+
+                <i class="bi bi-wallet2"
+                   style="font-size:35px; color:#b7a7c8;"></i>
+
+                <h5>No wallets found</h5>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Search))
+
+                {
+                    <p>No wallets match your search.</p>
+
+                    <a href="@Url.Action("Index", "WalletManagement", new { area = "Admin" })"
+                       class="wallet-action wallet-view">
+                        Clear Search
+                    </a>
+                }
+
+                else
+
+                {
+                    <p>
+                        Customer wallets will appear here when they are created.
+                    </p>
+                }
+
+            </div>
+        }
+
+        <!-- FOOTER -->
+        <div class="wallet-footer">
+            Showing @(Model.Wallets?.Count ?? 0) wallet(s).
+        </div>
+
+    </div>
+
+</div>

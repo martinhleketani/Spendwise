@@ -1,0 +1,402 @@
+﻿@model SpendWise.API.Models.LedgerJournal
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Journal Details";
+
+
+
+    var totalDebits = Model.Entries
+
+        .Where(e => e.EntryType == "Debit")
+
+        .Sum(e => e.Amount);
+
+
+
+    var totalCredits = Model.Entries
+
+        .Where(e => e.EntryType == "Credit")
+
+        .Sum(e => e.Amount);
+
+
+
+    var isBalanced = totalDebits == totalCredits;
+}
+
+<style>
+    .ledger-details-page {
+        padding: 10px 0 35px;
+        color: #26352C;
+    }
+
+    .ledger-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .ledger-heading h2 {
+            font-size: 23px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .ledger-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .ledger-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        pointer-events: auto;
+        cursor: pointer;
+        text-decoration: none;
+        background: #286B48;
+        color: #FFFFFF;
+        padding: 11px 17px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        transition: 0.2s ease;
+    }
+
+        .ledger-button:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    .ledger-card {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 23px;
+        margin-bottom: 22px;
+    }
+
+        .ledger-card h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+    .journal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .journal-field label,
+    .journal-description label {
+        display: block;
+        font-size: 10px;
+        color: #839087;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-bottom: 7px;
+    }
+
+    .journal-field strong {
+        display: block;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+
+    .journal-description {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid #E5ECE7;
+    }
+
+        .journal-description p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        background: #E8F4EC;
+        color: #286B48;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .ledger-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+        .ledger-table th {
+            background: #F4F7F5;
+            color: #839087;
+            font-size: 10px;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 13px;
+        }
+
+        .ledger-table td {
+            padding: 15px 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+        }
+
+    .entry-debit {
+        color: #286B48;
+        font-weight: 800;
+    }
+
+    .entry-credit {
+        color: #6B55A0;
+        font-weight: 800;
+    }
+
+    .totals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .total-box {
+        background: #F4F7F5;
+        border: 1px solid #E5ECE7;
+        border-radius: 10px;
+        padding: 17px;
+    }
+
+        .total-box span {
+            display: block;
+            color: #839087;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .total-box strong {
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+    .balance-message {
+        margin-top: 17px;
+        padding: 13px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .balance-success {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .balance-warning {
+        background: #FCEBED;
+        color: #B83E50;
+    }
+
+    @@media (max-width: 800px) {
+        .journal-grid,
+        .totals-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 500px) {
+        .journal-grid,
+        .totals-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ledger-card {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="ledger-details-page">
+
+    <div class="ledger-heading">
+        <div>
+            <h2>Journal Details</h2>
+            <p>Review debit and credit entries for this journal.</p>
+        </div>
+
+        <a href="@Url.Action("Index", "LedgerManagement", new { area = "Admin" })"
+           class="ledger-button">
+            ← Back to Ledger
+        </a>
+    </div>
+
+    <div class="ledger-card">
+        <h3>Journal Information</h3>
+
+        <div class="journal-grid">
+
+            <div class="journal-field">
+                <label>Journal ID</label>
+                <strong>@Model.Id</strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Reference</label>
+                <strong>@Model.Reference</strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Currency</label>
+                <strong>@Model.Currency</strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Status</label>
+                <strong>
+                    <span class="status-badge">@Model.Status</span>
+                </strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Wallet Transaction ID</label>
+                <strong>@(Model.WalletTransactionId?.ToString() ?? "Not linked")</strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Created</label>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</strong>
+            </div>
+
+            <div class="journal-field">
+                <label>Posted</label>
+                <strong>
+                    @(Model.PostedAt.HasValue
+                        ? Model.PostedAt.Value.ToString("dd MMM yyyy HH:mm")
+                        : "Not posted")
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="journal-description">
+            <label>Description</label>
+            <p>@Model.Description</p>
+        </div>
+    </div>
+
+    <div class="ledger-card">
+        <h3>Journal Entries</h3>
+
+        <div class="ledger-table-wrapper">
+            <table class="ledger-table">
+                <thead>
+                    <tr>
+                        <th>Account Code</th>
+                        <th>Account Name</th>
+                        <th>Account Type</th>
+                        <th>Entry Type</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Entries != null && Model.Entries.Any())
+
+                    {
+
+                        foreach (var entry in Model.Entries.OrderBy(e => e.Id))
+
+                        {
+                            <tr>
+                                <td><strong>@entry.LedgerAccount?.Code</strong></td>
+                                <td>@entry.LedgerAccount?.Name</td>
+                                <td>@entry.LedgerAccount?.AccountType</td>
+                                <td>
+                                    @if (entry.EntryType == "Debit")
+
+                                    {
+                                        <span class="entry-debit">Debit</span>
+                                    }
+
+                                    else
+
+                                    {
+                                        <span class="entry-credit">Credit</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@Model.Currency @entry.Amount.ToString("N2")</strong>
+                                </td>
+                            </tr>
+                        }
+
+                    }
+
+                    else
+
+                    {
+                        <tr>
+                            <td colspan="5">No ledger entries were found for this journal.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ledger-card">
+        <h3>Journal Balance</h3>
+
+        <div class="totals-grid">
+            <div class="total-box">
+                <span>Total Debits</span>
+                <strong>@Model.Currency @totalDebits.ToString("N2")</strong>
+            </div>
+
+            <div class="total-box">
+                <span>Total Credits</span>
+                <strong>@Model.Currency @totalCredits.ToString("N2")</strong>
+            </div>
+
+            <div class="total-box">
+                <span>Difference</span>
+                <strong>@Model.Currency @Math.Abs(totalDebits - totalCredits).ToString("N2")</strong>
+            </div>
+        </div>
+
+        @if (isBalanced)
+
+        {
+            <div class="balance-message balance-success">
+                ✓ This journal is balanced. Total debits equal total credits.
+            </div>
+        }
+
+        else
+
+        {
+            <div class="balance-message balance-warning">
+                ⚠ This journal is not balanced. Please investigate the entries.
+            </div>
+        }
+    </div>
+
+</div>

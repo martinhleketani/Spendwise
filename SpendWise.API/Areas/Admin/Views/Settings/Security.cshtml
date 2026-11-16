@@ -1,0 +1,188 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "Security Settings";
+}
+
+<style>
+    .security-content {
+        max-width: 900px;
+    }
+
+    .security-heading {
+        margin-bottom: 25px;
+    }
+
+        .security-heading h2 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+        .security-heading p {
+            color: #777;
+        }
+
+    .security-card {
+        background: #fff;
+        border: 1px solid #e9e5ed;
+        border-radius: 13px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+        .security-card h5 {
+            font-weight: 700;
+            color: #30333b;
+        }
+
+    .security-description {
+        color: #888;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .security-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+        .security-item:last-child {
+            border-bottom: none;
+        }
+
+    .security-icon {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: #edf6ef;
+        color: #34844a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 19px;
+    }
+
+    .security-item h6 {
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .security-item p {
+        font-size: 13px;
+        color: #888;
+        margin: 0;
+    }
+
+    .security-notice {
+        background: #f5f2f8;
+        border: 1px solid #e8e0ee;
+        padding: 15px;
+        border-radius: 9px;
+        color: #62566b;
+        font-size: 13px;
+    }
+</style>
+
+<div class="security-content">
+
+    <div class="security-heading">
+
+        <a href="@Url.Action("Index", "Settings", new { area = "Admin" })"
+           class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Settings
+        </a>
+
+        <h2 class="mt-3">Security Settings</h2>
+
+        <p>Review the security features available for administrator accounts.</p>
+
+    </div>
+
+    <div class="security-card">
+
+        <h5>Account Security</h5>
+
+        <p class="security-description">
+            Security information relating to administrator access.
+        </p>
+
+        <div class="security-item">
+
+            <div class="security-icon">
+                <i class="bi bi-shield-lock"></i>
+            </div>
+
+            <div>
+                <h6>Administrator Authentication</h6>
+                <p>
+                    Administrator access uses the AdminCookie authentication scheme.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="security-item">
+
+            <div class="security-icon">
+                <i class="bi bi-key"></i>
+            </div>
+
+            <div>
+                <h6>Password Management</h6>
+                <p>
+                    Password changes should be handled through a secure
+                    account-management process.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="security-item">
+
+            <div class="security-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+
+            <div>
+                <h6>Session Management</h6>
+                <p>
+                    Administrator login sessions are managed by the
+                    application's authentication configuration.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="security-item">
+
+            <div class="security-icon">
+                <i class="bi bi-person-check"></i>
+            </div>
+
+            <div>
+                <h6>Role-Based Access</h6>
+                <p>
+                    This Settings area is restricted to authenticated
+                    users with the Administrator role.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="security-notice">
+        <i class="bi bi-info-circle"></i>
+        Password changes, session timeout configuration and login
+        security controls have not yet been connected to the authentication
+        system. We will implement these carefully to avoid weakening account security.
+    </div>
+
+</div>

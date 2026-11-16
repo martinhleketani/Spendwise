@@ -1,0 +1,250 @@
+﻿@model List<SpendWise.API.Models.LedgerAccount>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Ledger Accounts";
+}
+
+<style>
+    .ledger-accounts-page {
+        padding: 10px 0 35px;
+        color: #26352C;
+    }
+
+    .ledger-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+        .ledger-heading h2 {
+            font-size: 23px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .ledger-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .ledger-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        pointer-events: auto;
+        cursor: pointer;
+        text-decoration: none;
+        background: #286B48;
+        color: #FFFFFF;
+        padding: 11px 17px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        transition: 0.2s ease;
+    }
+
+        .ledger-button:hover {
+            background: #173F2B;
+            color: #FFFFFF;
+        }
+
+    .ledger-card {
+        background: #FFFFFF;
+        border: 1px solid #E5ECE7;
+        border-radius: 13px;
+        padding: 23px;
+        margin-bottom: 22px;
+    }
+
+        .ledger-card h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+    .accounts-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .accounts-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: collapse;
+    }
+
+        .accounts-table th {
+            background: #F4F7F5;
+            color: #839087;
+            font-size: 10px;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 14px 12px;
+        }
+
+        .accounts-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+    .account-code {
+        font-weight: 800;
+        color: #286B48;
+    }
+
+    .account-type {
+        display: inline-block;
+        padding: 5px 9px;
+        background: #E8F4EC;
+        color: #286B48;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .account-status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .status-active {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-inactive {
+        background: #FCEBED;
+        color: #B83E50;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 35px 15px;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    .account-count {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="ledger-accounts-page">
+
+    <div class="ledger-heading">
+        <div>
+            <h2>Ledger Accounts</h2>
+            <p>View and review all SpendWise ledger accounts.</p>
+        </div>
+
+        <a href="@Url.Action("Index", "LedgerManagement", new { area = "Admin" })"
+           class="ledger-button">
+            ← Back to Ledger Dashboard
+        </a>
+    </div>
+
+    <div class="ledger-card">
+
+        <h3>Account Register</h3>
+
+        <p class="account-count">
+            Total accounts: <strong>@(Model?.Count ?? 0)</strong>
+        </p>
+
+        <div class="accounts-table-wrapper">
+            <table class="accounts-table">
+                <thead>
+                    <tr>
+                        <th>Account Code</th>
+                        <th>Account Name</th>
+                        <th>Account Type</th>
+                        <th>Currency</th>
+                        <th>Wallet ID</th>
+                        <th>Account Category</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+
+                    {
+
+                        foreach (var account in Model.OrderBy(a => a.Code))
+
+                        {
+                            <tr>
+                                <td>
+                                    <span class="account-code">@account.Code</span>
+                                </td>
+
+                                <td><strong>@account.Name</strong></td>
+
+                                <td>
+                                    <span class="account-type">@account.AccountType</span>
+                                </td>
+
+                                <td>@account.Currency</td>
+
+                                <td>@(account.WalletId?.ToString() ?? "—")</td>
+
+                                <td>
+                                    @(account.IsSystemAccount
+                                        ? "System Account"
+                                        : "Customer Account")
+                                </td>
+
+                                <td>
+                                    @if (account.IsActive)
+
+                                    {
+                                        <span class="account-status status-active">Active</span>
+                                    }
+
+                                    else
+
+                                    {
+                                        <span class="account-status status-inactive">Inactive</span>
+                                    }
+                                </td>
+
+                                <td>@account.CreatedAt.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+
+                    }
+
+                    else
+
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    No ledger accounts have been created yet.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>

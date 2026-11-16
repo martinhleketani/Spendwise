@@ -22,6 +22,133 @@ namespace SpendWise.API.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("SpendWise.API.Models.AdminUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_AdminUsers_Email");
+
+                    b.ToTable("AdminUsers");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("ActorEmail")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<int?>("ActorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("ActorType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("AdminEmail")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("AdminName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<int?>("AdminUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action")
+                        .HasDatabaseName("IX_AuditLogs_Action");
+
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("IX_AuditLogs_AdminUserId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_AuditLogs_CreatedAt");
+
+                    b.HasIndex("Module")
+                        .HasDatabaseName("IX_AuditLogs_Module");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("SpendWise.API.Models.BudgetNotification", b =>
                 {
                     b.Property<int>("Id")
@@ -158,8 +285,8 @@ namespace SpendWise.API.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -172,6 +299,194 @@ namespace SpendWise.API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("GroceryLists");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemAccount")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int?>("WalletId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LedgerAccounts_Code");
+
+                    b.HasIndex("WalletId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LedgerAccounts_WalletId");
+
+                    b.ToTable("LedgerAccounts");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EntryType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<int>("LedgerAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LedgerJournalId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LedgerAccountId")
+                        .HasDatabaseName("IX_LedgerEntries_LedgerAccountId");
+
+                    b.HasIndex("LedgerJournalId")
+                        .HasDatabaseName("IX_LedgerEntries_LedgerJournalId");
+
+                    b.ToTable("LedgerEntries");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerJournal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int?>("WalletTransactionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LedgerJournals_Reference");
+
+                    b.HasIndex("WalletTransactionId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LedgerJournals_WalletTransactionId");
+
+                    b.ToTable("LedgerJournals");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.Merchant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BusinessAddress")
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<string>("BusinessName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Merchants_Status");
+
+                    b.ToTable("Merchants");
                 });
 
             modelBuilder.Entity("SpendWise.API.Models.MonthlyBudget", b =>
@@ -264,114 +579,6 @@ namespace SpendWise.API.Migrations
                         .HasDatabaseName("IX_PasswordResetCodes_UserId_IsUsed_ExpiresAt");
 
                     b.ToTable("PasswordResetCodes");
-                });
-
-            modelBuilder.Entity("SpendWise.API.Models.Retailer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("WebsiteUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Retailers_Name");
-
-                    b.ToTable("Retailers");
-                });
-
-            modelBuilder.Entity("SpendWise.API.Models.RetailerProductPrice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Brand")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsOnPromotion")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<DateTime>("PriceCheckedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("PriceSource")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("ProductUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
-
-                    b.Property<decimal?>("RegularPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("RetailerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Size")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PriceCheckedAt")
-                        .HasDatabaseName("IX_RetailerProductPrices_PriceCheckedAt");
-
-                    b.HasIndex("ProductName")
-                        .HasDatabaseName("IX_RetailerProductPrices_ProductName");
-
-                    b.HasIndex("RetailerId")
-                        .HasDatabaseName("IX_RetailerProductPrices_RetailerId");
-
-                    b.HasIndex("RetailerId", "ProductName")
-                        .HasDatabaseName("IX_RetailerProductPrices_RetailerId_ProductName");
-
-                    b.ToTable("RetailerProductPrices");
                 });
 
             modelBuilder.Entity("SpendWise.API.Models.Transaction", b =>
@@ -470,6 +677,129 @@ namespace SpendWise.API.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("SpendWise.API.Models.Wallet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WalletNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Wallets_UserId");
+
+                    b.HasIndex("WalletNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Wallets_WalletNumber");
+
+                    b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.WalletTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<string>("ExternalReference")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<int>("WalletId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalReference")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WalletTransactions_ExternalReference");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WalletTransactions_Reference");
+
+                    b.HasIndex("WalletId", "CreatedAt")
+                        .HasDatabaseName("IX_WalletTransactions_WalletId_CreatedAt");
+
+                    b.HasIndex("WalletId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WalletTransactions_WalletId_IdempotencyKey");
+
+                    b.ToTable("WalletTransactions");
+                });
+
             modelBuilder.Entity("SpendWise.API.Models.BudgetNotification", b =>
                 {
                     b.HasOne("SpendWise.API.Models.User", null)
@@ -512,6 +842,45 @@ namespace SpendWise.API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SpendWise.API.Models.LedgerAccount", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.Wallet", "Wallet")
+                        .WithMany()
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerEntry", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.LedgerAccount", "LedgerAccount")
+                        .WithMany("Entries")
+                        .HasForeignKey("LedgerAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SpendWise.API.Models.LedgerJournal", "LedgerJournal")
+                        .WithMany("Entries")
+                        .HasForeignKey("LedgerJournalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LedgerAccount");
+
+                    b.Navigation("LedgerJournal");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerJournal", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.WalletTransaction", "WalletTransaction")
+                        .WithOne()
+                        .HasForeignKey("SpendWise.API.Models.LedgerJournal", "WalletTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("WalletTransaction");
+                });
+
             modelBuilder.Entity("SpendWise.API.Models.MonthlyBudget", b =>
                 {
                     b.HasOne("SpendWise.API.Models.User", "User")
@@ -534,17 +903,6 @@ namespace SpendWise.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SpendWise.API.Models.RetailerProductPrice", b =>
-                {
-                    b.HasOne("SpendWise.API.Models.Retailer", "Retailer")
-                        .WithMany("ProductPrices")
-                        .HasForeignKey("RetailerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Retailer");
-                });
-
             modelBuilder.Entity("SpendWise.API.Models.Transaction", b =>
                 {
                     b.HasOne("SpendWise.API.Models.User", "User")
@@ -556,9 +914,41 @@ namespace SpendWise.API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SpendWise.API.Models.Wallet", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.WalletTransaction", b =>
+                {
+                    b.HasOne("SpendWise.API.Models.Wallet", "Wallet")
+                        .WithMany("Transactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("SpendWise.API.Models.GroceryList", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerAccount", b =>
+                {
+                    b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("SpendWise.API.Models.LedgerJournal", b =>
+                {
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("SpendWise.API.Models.MonthlyBudget", b =>
@@ -566,9 +956,9 @@ namespace SpendWise.API.Migrations
                     b.Navigation("CategoryBudgets");
                 });
 
-            modelBuilder.Entity("SpendWise.API.Models.Retailer", b =>
+            modelBuilder.Entity("SpendWise.API.Models.Wallet", b =>
                 {
-                    b.Navigation("ProductPrices");
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

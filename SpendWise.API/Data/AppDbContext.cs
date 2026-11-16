@@ -18,6 +18,8 @@ namespace SpendWise.API.Data
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<AdminUser> AdminUsers { get; set; }
+
         public DbSet<Transaction> Transactions { get; set; }
 
         public DbSet<MonthlyBudget> MonthlyBudgets { get; set; }
@@ -30,18 +32,65 @@ namespace SpendWise.API.Data
 
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
-        public DbSet<Retailer> Retailers { get; set; }
-
-        public DbSet<RetailerProductPrice> RetailerProductPrices { get; set; }
-
-        // NEW: BUDGET NOTIFICATIONS
-
         public DbSet<BudgetNotification> BudgetNotifications { get; set; }
 
-        protected override void OnModelCreating(
-            ModelBuilder modelBuilder)
+        // ==========================================
+        // WALLET TABLES
+        // ==========================================
+
+        public DbSet<Wallet> Wallets { get; set; }
+
+        public DbSet<WalletTransaction> WalletTransactions { get; set; }
+
+        // ==========================================
+        // MERCHANT TABLES
+        // ==========================================
+
+        public DbSet<Merchant> Merchants { get; set; }
+
+        // ==========================================
+        // DOUBLE-ENTRY LEDGER TABLES
+        // ==========================================
+
+        public DbSet<LedgerAccount> LedgerAccounts { get; set; }
+
+        public DbSet<LedgerJournal> LedgerJournals { get; set; }
+
+        public DbSet<LedgerEntry> LedgerEntries { get; set; }
+
+        // ==========================================
+        // AUDIT LOG TABLES
+        // ==========================================
+
+        public DbSet<AuditLog> AuditLogs { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // ==========================================
+            // ADMIN USERS
+            // ==========================================
+
+            modelBuilder.Entity<AdminUser>()
+                .Property(a => a.FullName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<AdminUser>()
+                .Property(a => a.Email)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            modelBuilder.Entity<AdminUser>()
+                .Property(a => a.PasswordHash)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            modelBuilder.Entity<AdminUser>()
+                .HasIndex(a => a.Email)
+                .IsUnique()
+                .HasDatabaseName("IX_AdminUsers_Email");
 
             // ==========================================
             // TRANSACTIONS
@@ -55,10 +104,7 @@ namespace SpendWise.API.Data
 
             modelBuilder.Entity<Transaction>()
                 .HasIndex(t => t.UserId)
-                .HasDatabaseName(
-                    "IX_Transactions_UserId");
-
-            // PURCHASE REQUEST IDEMPOTENCY
+                .HasDatabaseName("IX_Transactions_UserId");
 
             modelBuilder.Entity<Transaction>()
                 .HasIndex(t => new
@@ -66,8 +112,7 @@ namespace SpendWise.API.Data
                     t.UserId,
                     t.RequestId
                 })
-                .HasDatabaseName(
-                    "IX_Transactions_UserId_RequestId")
+                .HasDatabaseName("IX_Transactions_UserId_RequestId")
                 .IsUnique();
 
             // ==========================================
@@ -139,8 +184,7 @@ namespace SpendWise.API.Data
 
             modelBuilder.Entity<PasswordResetCode>()
                 .HasIndex(r => r.UserId)
-                .HasDatabaseName(
-                    "IX_PasswordResetCodes_UserId");
+                .HasDatabaseName("IX_PasswordResetCodes_UserId");
 
             modelBuilder.Entity<PasswordResetCode>()
                 .HasIndex(r => new
@@ -153,117 +197,7 @@ namespace SpendWise.API.Data
                     "IX_PasswordResetCodes_UserId_IsUsed_ExpiresAt");
 
             // ==========================================
-            // RETAILER
-            // ==========================================
-
-            modelBuilder.Entity<Retailer>()
-                .Property(r => r.Name)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Retailer>()
-                .Property(r => r.WebsiteUrl)
-                .HasMaxLength(500);
-
-            modelBuilder.Entity<Retailer>()
-                .HasIndex(r => r.Name)
-                .HasDatabaseName(
-                    "IX_Retailers_Name")
-                .IsUnique();
-
-            // ==========================================
-            // RETAILER PRODUCT PRICE
-            // ==========================================
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .HasOne(p => p.Retailer)
-                .WithMany(r => r.ProductPrices)
-                .HasForeignKey(p => p.RetailerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // PRODUCT NAME
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.ProductName)
-                .HasMaxLength(200)
-                .IsRequired();
-
-            // BRAND
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.Brand)
-                .HasMaxLength(100);
-
-            // CATEGORY
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.Category)
-                .HasMaxLength(100);
-
-            // SIZE
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.Size)
-                .HasMaxLength(100);
-
-            // PRODUCT URL
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.ProductUrl)
-                .HasMaxLength(1000);
-
-            // PRICE SOURCE
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.PriceSource)
-                .HasMaxLength(200);
-
-            // CURRENT PRICE
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.Price)
-                .HasPrecision(10, 2);
-
-            // REGULAR PRICE
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .Property(p => p.RegularPrice)
-                .HasPrecision(10, 2);
-
-            // RETAILER INDEX
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .HasIndex(p => p.RetailerId)
-                .HasDatabaseName(
-                    "IX_RetailerProductPrices_RetailerId");
-
-            // PRODUCT NAME INDEX
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .HasIndex(p => p.ProductName)
-                .HasDatabaseName(
-                    "IX_RetailerProductPrices_ProductName");
-
-            // RETAILER + PRODUCT INDEX
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .HasIndex(p => new
-                {
-                    p.RetailerId,
-                    p.ProductName
-                })
-                .HasDatabaseName(
-                    "IX_RetailerProductPrices_RetailerId_ProductName");
-
-            // PRICE CHECK DATE INDEX
-
-            modelBuilder.Entity<RetailerProductPrice>()
-                .HasIndex(p => p.PriceCheckedAt)
-                .HasDatabaseName(
-                    "IX_RetailerProductPrices_PriceCheckedAt");
-
-            // ==========================================
-            // NEW: BUDGET NOTIFICATIONS
+            // BUDGET NOTIFICATIONS
             // ==========================================
 
             modelBuilder.Entity<BudgetNotification>()
@@ -282,9 +216,6 @@ namespace SpendWise.API.Data
                 .HasMaxLength(500)
                 .IsRequired();
 
-            // Prevent duplicate alerts for the same
-            // user, category, month, year and threshold.
-
             modelBuilder.Entity<BudgetNotification>()
                 .HasIndex(n => new
                 {
@@ -294,11 +225,8 @@ namespace SpendWise.API.Data
                     n.Year,
                     n.Threshold
                 })
-                .HasDatabaseName(
-                    "IX_BudgetNotifications_UniqueAlert")
+                .HasDatabaseName("IX_BudgetNotifications_UniqueAlert")
                 .IsUnique();
-
-            // Speed up notification history queries.
 
             modelBuilder.Entity<BudgetNotification>()
                 .HasIndex(n => new
@@ -306,8 +234,308 @@ namespace SpendWise.API.Data
                     n.UserId,
                     n.CreatedAt
                 })
+                .HasDatabaseName("IX_BudgetNotifications_UserId_CreatedAt");
+
+            // ==========================================
+            // WALLETS
+            // ==========================================
+
+            modelBuilder.Entity<Wallet>()
+                .HasOne(w => w.User)
+                .WithMany()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Wallet>()
+                .HasIndex(w => w.UserId)
+                .IsUnique()
+                .HasDatabaseName("IX_Wallets_UserId");
+
+            modelBuilder.Entity<Wallet>()
+                .HasIndex(w => w.WalletNumber)
+                .IsUnique()
+                .HasDatabaseName("IX_Wallets_WalletNumber");
+
+            modelBuilder.Entity<Wallet>()
+                .Property(w => w.Currency)
+                .HasMaxLength(3)
+                .IsRequired();
+
+            modelBuilder.Entity<Wallet>()
+                .Property(w => w.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            // ==========================================
+            // WALLET TRANSACTIONS
+            // ==========================================
+
+            modelBuilder.Entity<WalletTransaction>()
+                .HasOne(t => t.Wallet)
+                .WithMany(w => w.Transactions)
+                .HasForeignKey(t => t.WalletId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WalletTransaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<WalletTransaction>()
+                .Property(t => t.Type)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            modelBuilder.Entity<WalletTransaction>()
+                .Property(t => t.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            modelBuilder.Entity<WalletTransaction>()
+                .Property(t => t.Currency)
+                .HasMaxLength(3)
+                .IsRequired();
+
+            modelBuilder.Entity<WalletTransaction>()
+                .HasIndex(t => t.Reference)
+                .IsUnique()
+                .HasDatabaseName("IX_WalletTransactions_Reference");
+
+            modelBuilder.Entity<WalletTransaction>()
+                .HasIndex(t => t.ExternalReference)
+                .IsUnique()
+                .HasDatabaseName("IX_WalletTransactions_ExternalReference");
+
+            modelBuilder.Entity<WalletTransaction>()
+                .Property(t => t.IdempotencyKey)
+                .HasMaxLength(100)
+                .IsRequired(false);
+
+            modelBuilder.Entity<WalletTransaction>()
+                .HasIndex(t => new
+                {
+                    t.WalletId,
+                    t.IdempotencyKey
+                })
+                .IsUnique()
                 .HasDatabaseName(
-                    "IX_BudgetNotifications_UserId_CreatedAt");
+                    "IX_WalletTransactions_WalletId_IdempotencyKey");
+
+            modelBuilder.Entity<WalletTransaction>()
+                .HasIndex(t => new
+                {
+                    t.WalletId,
+                    t.CreatedAt
+                })
+                .HasDatabaseName(
+                    "IX_WalletTransactions_WalletId_CreatedAt");
+
+            // ==========================================
+            // MERCHANTS
+            // ==========================================
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.BusinessName)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.ContactPerson)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.Email)
+                .HasMaxLength(150);
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.PhoneNumber)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.BusinessAddress)
+                .HasMaxLength(300);
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            modelBuilder.Entity<Merchant>()
+                .HasIndex(m => m.Status)
+                .HasDatabaseName("IX_Merchants_Status");
+
+            // ==========================================
+            // LEDGER ACCOUNTS
+            // ==========================================
+
+            modelBuilder.Entity<LedgerAccount>()
+                .HasOne(a => a.Wallet)
+                .WithMany()
+                .HasForeignKey(a => a.WalletId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LedgerAccount>()
+                .Property(a => a.Code)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerAccount>()
+                .Property(a => a.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerAccount>()
+                .Property(a => a.AccountType)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerAccount>()
+                .Property(a => a.Currency)
+                .HasMaxLength(3)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerAccount>()
+                .HasIndex(a => a.Code)
+                .IsUnique()
+                .HasDatabaseName("IX_LedgerAccounts_Code");
+
+            modelBuilder.Entity<LedgerAccount>()
+                .HasIndex(a => a.WalletId)
+                .IsUnique()
+                .HasDatabaseName("IX_LedgerAccounts_WalletId");
+
+            // ==========================================
+            // LEDGER JOURNALS
+            // ==========================================
+
+            modelBuilder.Entity<LedgerJournal>()
+                .HasOne(j => j.WalletTransaction)
+                .WithOne()
+                .HasForeignKey<LedgerJournal>(
+                    j => j.WalletTransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LedgerJournal>()
+                .Property(j => j.Reference)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerJournal>()
+                .Property(j => j.Description)
+                .HasMaxLength(250)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerJournal>()
+                .Property(j => j.Currency)
+                .HasMaxLength(3)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerJournal>()
+                .Property(j => j.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerJournal>()
+                .HasIndex(j => j.Reference)
+                .IsUnique()
+                .HasDatabaseName("IX_LedgerJournals_Reference");
+
+            modelBuilder.Entity<LedgerJournal>()
+                .HasIndex(j => j.WalletTransactionId)
+                .IsUnique()
+                .HasDatabaseName(
+                    "IX_LedgerJournals_WalletTransactionId");
+
+            // ==========================================
+            // LEDGER ENTRIES
+            // ==========================================
+
+            modelBuilder.Entity<LedgerEntry>()
+                .HasOne(e => e.LedgerJournal)
+                .WithMany(j => j.Entries)
+                .HasForeignKey(e => e.LedgerJournalId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LedgerEntry>()
+                .HasOne(e => e.LedgerAccount)
+                .WithMany(a => a.Entries)
+                .HasForeignKey(e => e.LedgerAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LedgerEntry>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<LedgerEntry>()
+                .Property(e => e.EntryType)
+                .HasMaxLength(10)
+                .IsRequired();
+
+            modelBuilder.Entity<LedgerEntry>()
+                .HasIndex(e => e.LedgerJournalId)
+                .HasDatabaseName(
+                    "IX_LedgerEntries_LedgerJournalId");
+
+            modelBuilder.Entity<LedgerEntry>()
+                .HasIndex(e => e.LedgerAccountId)
+                .HasDatabaseName(
+                    "IX_LedgerEntries_LedgerAccountId");
+
+            // ==========================================
+            // AUDIT LOGS
+            // ==========================================
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.AdminName)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.AdminEmail)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Action)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Module)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Description)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.EntityType)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.EntityId)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.IpAddress)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.CreatedAt)
+                .HasDatabaseName("IX_AuditLogs_CreatedAt");
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.AdminUserId)
+                .HasDatabaseName("IX_AuditLogs_AdminUserId");
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.Module)
+                .HasDatabaseName("IX_AuditLogs_Module");
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.Action)
+                .HasDatabaseName("IX_AuditLogs_Action");
         }
     }
 }

@@ -1,0 +1,447 @@
+﻿@model SpendWise.API.Models.AuditLog
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "Audit Log Details";
+
+
+
+    string actionClass = Model.Action?.ToLowerInvariant() switch
+
+    {
+
+        "created" or "approved" or "activated" or
+
+        "initialized" or "reactivated"
+
+            => "detail-status-success",
+
+
+
+        "updated" or "modified" or "backfilled"
+
+            => "detail-status-info",
+
+
+
+        "deleted" or "suspended" or "rejected"
+
+            => "detail-status-danger",
+
+
+
+        _ => "detail-status-neutral"
+
+    };
+
+
+
+    string moduleIcon = Model.Module?.ToLowerInvariant() switch
+
+    {
+
+        "users" => "bi-people",
+
+        "transactions" => "bi-arrow-left-right",
+
+        "wallets" => "bi-wallet2",
+
+        "merchants" => "bi-shop",
+
+        "ledger" => "bi-journal-text",
+
+        "authentication" => "bi-shield-lock",
+
+        "settings" => "bi-gear",
+
+        _ => "bi-folder2"
+
+    };
+
+
+
+    string formattedDate = DateTime.SpecifyKind(
+
+        Model.CreatedAt,
+
+        DateTimeKind.Utc
+
+    ).ToString("dddd, dd MMMM yyyy");
+
+
+
+    string formattedTime = DateTime.SpecifyKind(
+
+        Model.CreatedAt,
+
+        DateTimeKind.Utc
+
+    ).ToString("HH:mm:ss");
+
+
+
+    string backUrl = Url.Action(
+
+        "Index",
+
+        "AuditLogs",
+
+        new { area = "Admin" }) ?? "/Admin/AuditLogs";
+}
+
+<style>
+    .audit-detail-page {
+        max-width: 1100px;
+        width: 100%;
+    }
+
+    .audit-detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+        .audit-detail-header h2 {
+            color: #30263b;
+            font-size: 25px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .audit-detail-header p {
+            color: #827a89;
+            font-size: 14px;
+            margin: 0;
+        }
+
+    .audit-detail-card {
+        background: #fff;
+        border: 1px solid #ece7f0;
+        border-radius: 13px;
+        margin-bottom: 22px;
+        overflow: hidden;
+    }
+
+    .audit-detail-card-header {
+        padding: 19px 22px;
+        border-bottom: 1px solid #eeeaf1;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+        .audit-detail-card-header h5 {
+            color: #30263b;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .audit-detail-card-header i {
+            color: #79569b;
+            font-size: 18px;
+        }
+
+    .audit-detail-card-body {
+        padding: 23px;
+    }
+
+    .audit-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 23px 35px;
+    }
+
+    .audit-detail-field label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #89818f;
+        margin-bottom: 8px;
+    }
+
+    .audit-detail-field p {
+        color: #393141;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+        .audit-detail-field p.subtle {
+            font-weight: 400;
+            color: #655d6b;
+        }
+
+    .audit-detail-full {
+        grid-column: 1 / -1;
+    }
+
+    .audit-description-box {
+        background: #faf8fc;
+        border: 1px solid #eee8f3;
+        border-radius: 9px;
+        padding: 17px;
+        color: #4e4556;
+        font-size: 14px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+    .detail-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .detail-status-success {
+        color: #28734d;
+        background: #e9f6ef;
+    }
+
+    .detail-status-info {
+        color: #526a9c;
+        background: #edf1fa;
+    }
+
+    .detail-status-danger {
+        color: #a64d58;
+        background: #faecee;
+    }
+
+    .detail-status-neutral {
+        color: #766b80;
+        background: #f0edf3;
+    }
+
+    .audit-detail-module {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f4eff8;
+        color: #69527f;
+        padding: 7px 11px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .audit-detail-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .audit-record-reference {
+        font-size: 12px;
+        color: #89818f;
+    }
+
+    @@media (max-width: 650px) {
+        .audit-detail-grid {
+            grid-template-columns: 1fr;
+            gap: 19px;
+        }
+
+        .audit-detail-full {
+            grid-column: auto;
+        }
+
+        .audit-detail-card-body {
+            padding: 17px;
+        }
+
+        .audit-detail-header h2 {
+            font-size: 21px;
+        }
+    }
+</style>
+
+<div class="audit-detail-page">
+
+    <!-- HEADER -->
+
+    <div class="audit-detail-header">
+        <div>
+            <h2>Audit Log Details</h2>
+            <p>Complete information about this administrator activity.</p>
+        </div>
+
+        <a href="@backUrl"
+           class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Audit Logs
+        </a>
+    </div>
+
+    <!-- ACTIVITY INFORMATION -->
+
+    <div class="audit-detail-card">
+
+        <div class="audit-detail-card-header">
+            <i class="bi bi-activity"></i>
+            <h5>Activity Information</h5>
+        </div>
+
+        <div class="audit-detail-card-body">
+
+            <div class="audit-detail-grid">
+
+                <div class="audit-detail-field">
+                    <label>Audit Log ID</label>
+                    <p>#@Model.Id</p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Action Performed</label>
+                    <p>
+                        <span class="detail-status @actionClass">
+                            @Model.Action
+                        </span>
+                    </p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Module</label>
+                    <p>
+                        <span class="audit-detail-module">
+                            <i class="bi @moduleIcon"></i>
+                            @Model.Module
+                        </span>
+                    </p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Entity Type</label>
+                    <p class="subtle">
+                        @(string.IsNullOrWhiteSpace(Model.EntityType)
+                            ? "Not specified" : Model.EntityType)
+                    </p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Entity ID</label>
+                    <p class="subtle">
+                        @(string.IsNullOrWhiteSpace(Model.EntityId)
+                            ? "Not specified" : Model.EntityId)
+                    </p>
+                </div>
+
+                <div class="audit-detail-field audit-detail-full">
+                    <label>Description</label>
+                    <div class="audit-description-box">
+                        @Model.Description
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMINISTRATOR INFORMATION -->
+
+    <div class="audit-detail-card">
+
+        <div class="audit-detail-card-header">
+            <i class="bi bi-person-badge"></i>
+            <h5>Administrator Information</h5>
+        </div>
+
+        <div class="audit-detail-card-body">
+
+            <div class="audit-detail-grid">
+
+                <div class="audit-detail-field">
+                    <label>Administrator Name</label>
+                    <p>@Model.AdminName</p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Administrator ID</label>
+                    <p>
+                        @(Model.AdminUserId.HasValue
+                            ? Model.AdminUserId.Value.ToString()
+                            : "Not available")
+                    </p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Email Address</label>
+                    <p class="subtle">@Model.AdminEmail</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURITY AND TIMESTAMP -->
+
+    <div class="audit-detail-card">
+
+        <div class="audit-detail-card-header">
+            <i class="bi bi-shield-lock"></i>
+            <h5>Security and Timestamp Information</h5>
+        </div>
+
+        <div class="audit-detail-card-body">
+
+            <div class="audit-detail-grid">
+
+                <div class="audit-detail-field">
+                    <label>IP Address</label>
+                    <p class="subtle">
+                        @(string.IsNullOrWhiteSpace(Model.IpAddress)
+                            ? "Not available" : Model.IpAddress)
+                    </p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Recorded Date</label>
+                    <p class="subtle">@formattedDate</p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Recorded Time (UTC)</label>
+                    <p class="subtle">@formattedTime</p>
+                </div>
+
+                <div class="audit-detail-field">
+                    <label>Time Zone</label>
+                    <p class="subtle">
+                        Coordinated Universal Time (UTC)
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+
+    <div class="audit-detail-footer">
+
+        <span class="audit-record-reference">
+            Audit record reference: #@Model.Id
+        </span>
+
+        <a href="@backUrl"
+           class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Return to Audit Logs
+        </a>
+
+    </div>
+
+</div>

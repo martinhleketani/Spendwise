@@ -1,4 +1,5 @@
-﻿using SpendWise.App.Models;
+﻿
+using SpendWise.App.Models;
 using SpendWise.App.Services;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -12,9 +13,7 @@ public partial class ProfilePage : ContentPage
 
     private bool _isLoading;
     private ProfileResponse? _currentProfile;
-
     private string? _profilePhotoPath;
-
 
     // =====================================================
     // CONSTRUCTOR
@@ -24,13 +23,9 @@ public partial class ProfilePage : ContentPage
     {
         InitializeComponent();
 
-        _apiService =
-            new ApiService();
-
-        _authStorageService =
-            new AuthStorageService();
+        _apiService = new ApiService();
+        _authStorageService = new AuthStorageService();
     }
-
 
     // =====================================================
     // PAGE APPEARING
@@ -41,10 +36,8 @@ public partial class ProfilePage : ContentPage
         base.OnAppearing();
 
         await LoadProfileAsync();
-
         LoadProfilePhoto();
     }
-
 
     // =====================================================
     // LOAD PROFILE
@@ -53,9 +46,7 @@ public partial class ProfilePage : ContentPage
     private async Task LoadProfileAsync()
     {
         if (_isLoading)
-        {
             return;
-        }
 
         try
         {
@@ -64,31 +55,22 @@ public partial class ProfilePage : ContentPage
             HideError();
             HideSuccess();
 
-            var result =
-                await _apiService
-                    .GetProfileAsync();
+            var result = await _apiService.GetProfileAsync();
 
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
                 ClearProfile();
-
-                ShowError(
-                    result.Message);
-
+                ShowError(result.Message);
                 return;
             }
 
-            _currentProfile =
-                result.Data;
+            _currentProfile = result.Data;
 
-            DisplayProfile(
-                result.Data);
+            DisplayProfile(result.Data);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"LOAD PROFILE ERROR: {ex}");
+            Debug.WriteLine($"LOAD PROFILE ERROR: {ex}");
 
             ClearProfile();
 
@@ -101,90 +83,58 @@ public partial class ProfilePage : ContentPage
         }
     }
 
-
     // =====================================================
     // DISPLAY PROFILE
     // =====================================================
 
-    private void DisplayProfile(
-        ProfileResponse profile)
+    private void DisplayProfile(ProfileResponse profile)
     {
-        FullNameEntry.Text =
-            profile.FullName ?? string.Empty;
-
-        EmailEntry.Text =
-            profile.Email ?? string.Empty;
-
-        PhoneNumberEntry.Text =
-            profile.PhoneNumber ?? string.Empty;
-
+        FullNameEntry.Text = profile.FullName ?? string.Empty;
+        EmailEntry.Text = profile.Email ?? string.Empty;
+        PhoneNumberEntry.Text = profile.PhoneNumber ?? string.Empty;
 
         ProfileNameLabel.Text =
-            string.IsNullOrWhiteSpace(
-                profile.FullName)
+            string.IsNullOrWhiteSpace(profile.FullName)
                 ? "SpendWise User"
                 : profile.FullName;
 
-
         ProfileEmailLabel.Text =
-            string.IsNullOrWhiteSpace(
-                profile.Email)
+            string.IsNullOrWhiteSpace(profile.Email)
                 ? "No email address"
                 : profile.Email;
 
-
         ProfileInitialLabel.Text =
-            GetInitial(
-                profile.FullName);
+            GetInitial(profile.FullName);
 
-
-        AccountIdLabel.Text =
-            profile.Id.ToString();
-
+        AccountIdLabel.Text = profile.Id.ToString();
 
         MemberSinceLabel.Text =
             profile.CreatedAt
                 .ToLocalTime()
-                .ToString(
-                    "dd MMM yyyy");
+                .ToString("dd MMM yyyy");
 
+        string status = profile.IsActive ? "Active" : "Inactive";
 
-        string status =
-            profile.IsActive
-                ? "Active"
-                : "Inactive";
-
-
-        AccountStatusLabel.Text =
-            $"● {status}";
-
-
-        StatusValueLabel.Text =
-            status;
-
+        AccountStatusLabel.Text = $"● {status}";
+        StatusValueLabel.Text = status;
 
         if (profile.IsActive)
         {
             AccountStatusLabel.TextColor =
-                Color.FromArgb(
-                    "#D9F2E3");
+                Color.FromArgb("#D9F2E3");
 
             StatusValueLabel.TextColor =
-                Color.FromArgb(
-                    "#146B3A");
+                Color.FromArgb("#146B3A");
         }
         else
         {
             AccountStatusLabel.TextColor =
-                Color.FromArgb(
-                    "#FFD6D6");
+                Color.FromArgb("#FFD6D6");
 
             StatusValueLabel.TextColor =
-                Color.FromArgb(
-                    "#B42318");
+                Color.FromArgb("#B42318");
         }
     }
-
 
     // =====================================================
     // SAVE PROFILE
@@ -193,161 +143,86 @@ public partial class ProfilePage : ContentPage
     private async Task SaveProfileAsync()
     {
         if (_isLoading)
-        {
             return;
-        }
-
 
         HideError();
         HideSuccess();
 
+        string fullName = FullNameEntry.Text?.Trim() ?? string.Empty;
+        string email = EmailEntry.Text?.Trim() ?? string.Empty;
+        string phoneNumber = PhoneNumberEntry.Text?.Trim() ?? string.Empty;
 
-        string fullName =
-            FullNameEntry.Text?.Trim()
-            ?? string.Empty;
-
-
-        string email =
-            EmailEntry.Text?.Trim()
-            ?? string.Empty;
-
-
-        string phoneNumber =
-            PhoneNumberEntry.Text?.Trim()
-            ?? string.Empty;
-
-
-        // =================================================
-        // FULL NAME VALIDATION
-        // =================================================
-
-        if (string.IsNullOrWhiteSpace(
-            fullName))
+        if (string.IsNullOrWhiteSpace(fullName))
         {
-            ShowError(
-                "Please enter your full name.");
-
+            ShowError("Please enter your full name.");
             FullNameEntry.Focus();
-
             return;
         }
-
 
         if (fullName.Length < 2)
         {
-            ShowError(
-                "Full name must contain at least 2 characters.");
-
+            ShowError("Full name must contain at least 2 characters.");
             FullNameEntry.Focus();
-
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            ShowError("Please enter your email address.");
+            EmailEntry.Focus();
+            return;
+        }
 
-        // =================================================
-        // EMAIL VALIDATION
-        // =================================================
+        if (!IsValidEmail(email))
+        {
+            ShowError("Please enter a valid email address.");
+            EmailEntry.Focus();
+            return;
+        }
 
-        if (string.IsNullOrWhiteSpace(
-            email))
+        if (!string.IsNullOrWhiteSpace(phoneNumber) &&
+            !IsValidSouthAfricanPhoneNumber(phoneNumber))
         {
             ShowError(
-                "Please enter your email address.");
+                "Phone number must contain 10 digits and start with 0.");
 
-            EmailEntry.Focus();
-
+            PhoneNumberEntry.Focus();
             return;
         }
-
-
-        if (!IsValidEmail(
-            email))
-        {
-            ShowError(
-                "Please enter a valid email address.");
-
-            EmailEntry.Focus();
-
-            return;
-        }
-
-
-        // =================================================
-        // PHONE VALIDATION
-        // =================================================
-
-        if (!string.IsNullOrWhiteSpace(
-            phoneNumber))
-        {
-            if (!IsValidSouthAfricanPhoneNumber(
-                phoneNumber))
-            {
-                ShowError(
-                    "Phone number must contain 10 digits and start with 0.");
-
-                PhoneNumberEntry.Focus();
-
-                return;
-            }
-        }
-
 
         try
         {
             SetLoading(true);
 
-
-            UpdateProfileRequest request =
-                new UpdateProfileRequest
-                {
-                    FullName =
-                        fullName,
-
-                    Email =
-                        email.ToLowerInvariant(),
-
-                    PhoneNumber =
-                        string.IsNullOrWhiteSpace(
-                            phoneNumber)
-                            ? null
-                            : phoneNumber
-                };
-
-
-            var result =
-                await _apiService
-                    .UpdateProfileAsync(
-                        request);
-
-
-            if (!result.Success ||
-                result.Data == null)
+            UpdateProfileRequest request = new()
             {
-                ShowError(
-                    result.Message);
+                FullName = fullName,
+                Email = email.ToLowerInvariant(),
+                PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber)
+                    ? null
+                    : phoneNumber
+            };
 
+            var result = await _apiService.UpdateProfileAsync(request);
+
+            if (!result.Success || result.Data == null)
+            {
+                ShowError(result.Message);
                 return;
             }
 
+            _currentProfile = result.Data.User;
 
-            _currentProfile =
-                result.Data.User;
-
-
-            DisplayProfile(
-                result.Data.User);
-
+            DisplayProfile(result.Data.User);
 
             ShowSuccess(
-                string.IsNullOrWhiteSpace(
-                    result.Message)
+                string.IsNullOrWhiteSpace(result.Message)
                     ? "Profile updated successfully."
                     : result.Message);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"UPDATE PROFILE ERROR: {ex}");
+            Debug.WriteLine($"UPDATE PROFILE ERROR: {ex}");
 
             ShowError(
                 $"Unable to update profile: {ex.Message}");
@@ -358,7 +233,6 @@ public partial class ProfilePage : ContentPage
         }
     }
 
-
     // =====================================================
     // CHANGE PROFILE PHOTO
     // =====================================================
@@ -368,9 +242,7 @@ public partial class ProfilePage : ContentPage
         EventArgs e)
     {
         if (_isLoading)
-        {
             return;
-        }
 
         try
         {
@@ -378,24 +250,13 @@ public partial class ProfilePage : ContentPage
             HideSuccess();
 
             FileResult? photo =
-                await MediaPicker.Default
-                    .PickPhotoAsync();
+                await MediaPicker.Default.PickPhotoAsync();
 
             if (photo == null)
-            {
                 return;
-            }
-
-
-            // =============================================
-            // VALIDATE FILE EXTENSION
-            // =============================================
 
             string extension =
-                Path.GetExtension(
-                    photo.FileName)
-                .ToLowerInvariant();
-
+                Path.GetExtension(photo.FileName).ToLowerInvariant();
 
             string[] allowedExtensions =
             {
@@ -404,89 +265,43 @@ public partial class ProfilePage : ContentPage
                 ".png"
             };
 
-
-            if (!allowedExtensions.Contains(
-                extension))
+            if (!allowedExtensions.Contains(extension))
             {
-                ShowError(
-                    "Please select a JPG, JPEG or PNG image.");
-
+                ShowError("Please select a JPG, JPEG or PNG image.");
                 return;
             }
-
-
-            // =============================================
-            // CREATE LOCAL PROFILE PHOTO DIRECTORY
-            // =============================================
 
             string profileDirectory =
                 Path.Combine(
                     FileSystem.AppDataDirectory,
                     "Profile");
 
-
-            Directory.CreateDirectory(
-                profileDirectory);
-
-
-            // =============================================
-            // CREATE LOCAL FILE PATH
-            // =============================================
+            Directory.CreateDirectory(profileDirectory);
 
             string localFilePath =
                 Path.Combine(
                     profileDirectory,
                     "profile_photo" + extension);
 
-
-            // =============================================
-            // REMOVE PREVIOUS PROFILE PHOTO
-            // =============================================
-
-            DeleteExistingProfilePhotoFiles(
-                profileDirectory);
-
-
-            // =============================================
-            // COPY SELECTED PHOTO
-            // =============================================
+            DeleteExistingProfilePhotoFiles(profileDirectory);
 
             await using Stream sourceStream =
                 await photo.OpenReadAsync();
 
-
             await using FileStream destinationStream =
-                File.Create(
-                    localFilePath);
+                File.Create(localFilePath);
 
+            await sourceStream.CopyToAsync(destinationStream);
 
-            await sourceStream.CopyToAsync(
-                destinationStream);
-
-
-            _profilePhotoPath =
-                localFilePath;
-
-
-            // =============================================
-            // SAVE PATH
-            // =============================================
+            _profilePhotoPath = localFilePath;
 
             Preferences.Default.Set(
                 "ProfilePhotoPath",
                 localFilePath);
 
+            DisplayProfilePhoto(localFilePath);
 
-            // =============================================
-            // DISPLAY PHOTO
-            // =============================================
-
-            DisplayProfilePhoto(
-                localFilePath);
-
-
-            ShowSuccess(
-                "Profile photo updated successfully.");
+            ShowSuccess("Profile photo updated successfully.");
         }
         catch (FeatureNotSupportedException)
         {
@@ -500,14 +315,12 @@ public partial class ProfilePage : ContentPage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"PROFILE PHOTO ERROR: {ex}");
+            Debug.WriteLine($"PROFILE PHOTO ERROR: {ex}");
 
             ShowError(
                 $"Unable to update profile photo: {ex.Message}");
         }
     }
-
 
     // =====================================================
     // LOAD SAVED PROFILE PHOTO
@@ -522,91 +335,49 @@ public partial class ProfilePage : ContentPage
                     "ProfilePhotoPath",
                     string.Empty);
 
-
-            if (string.IsNullOrWhiteSpace(
-                savedPath))
+            if (string.IsNullOrWhiteSpace(savedPath))
             {
                 ShowProfileInitial();
-
                 return;
             }
 
-
-            if (!File.Exists(
-                savedPath))
+            if (!File.Exists(savedPath))
             {
-                Preferences.Default.Remove(
-                    "ProfilePhotoPath");
-
+                Preferences.Default.Remove("ProfilePhotoPath");
                 ShowProfileInitial();
-
                 return;
             }
 
+            _profilePhotoPath = savedPath;
 
-            _profilePhotoPath =
-                savedPath;
-
-
-            DisplayProfilePhoto(
-                savedPath);
+            DisplayProfilePhoto(savedPath);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"LOAD PROFILE PHOTO ERROR: {ex}");
-
+            Debug.WriteLine($"LOAD PROFILE PHOTO ERROR: {ex}");
             ShowProfileInitial();
         }
     }
-
 
     // =====================================================
     // DISPLAY PROFILE PHOTO
     // =====================================================
 
-    private void DisplayProfilePhoto(
-        string filePath)
+    private void DisplayProfilePhoto(string filePath)
     {
-        if (string.IsNullOrWhiteSpace(
-            filePath))
+        if (string.IsNullOrWhiteSpace(filePath) ||
+            !File.Exists(filePath))
         {
             ShowProfileInitial();
-
             return;
         }
 
-
-        if (!File.Exists(
-            filePath))
-        {
-            ShowProfileInitial();
-
-            return;
-        }
-
-
-        ProfileImage.Source =
-            ImageSource.FromFile(
-                filePath);
-
-
-        ProfileImage.IsVisible =
-            true;
-
-
-        ProfileInitialLabel.IsVisible =
-            false;
-
-
-        RemovePhotoButton.IsVisible =
-            true;
-
-
-        ChangePhotoButton.Text =
-            "Change Photo";
+        ProfileImage.Source = ImageSource.FromFile(filePath);
+        ProfileImage.IsVisible = true;
+        ProfileInitialLabel.IsVisible = false;
+        RemovePhotoButton.IsVisible = true;
+        ChangePhotoButton.Text = "Change Photo";
     }
-
 
     // =====================================================
     // SHOW PROFILE INITIAL
@@ -614,30 +385,14 @@ public partial class ProfilePage : ContentPage
 
     private void ShowProfileInitial()
     {
-        ProfileImage.Source =
-            null;
+        ProfileImage.Source = null;
+        ProfileImage.IsVisible = false;
+        ProfileInitialLabel.IsVisible = true;
+        RemovePhotoButton.IsVisible = false;
+        ChangePhotoButton.Text = "Add Photo";
 
-
-        ProfileImage.IsVisible =
-            false;
-
-
-        ProfileInitialLabel.IsVisible =
-            true;
-
-
-        RemovePhotoButton.IsVisible =
-            false;
-
-
-        ChangePhotoButton.Text =
-            "Add Photo";
-
-
-        _profilePhotoPath =
-            null;
+        _profilePhotoPath = null;
     }
-
 
     // =====================================================
     // REMOVE PROFILE PHOTO
@@ -648,61 +403,43 @@ public partial class ProfilePage : ContentPage
         EventArgs e)
     {
         if (_isLoading)
-        {
             return;
-        }
 
-
-        bool confirm =
-            await DisplayAlert(
-                "Remove Photo",
-                "Are you sure you want to remove your profile photo?",
-                "Remove",
-                "Cancel");
-
+        bool confirm = await DisplayAlert(
+            "Remove Photo",
+            "Are you sure you want to remove your profile photo?",
+            "Remove",
+            "Cancel");
 
         if (!confirm)
-        {
             return;
-        }
-
 
         try
         {
             HideError();
             HideSuccess();
 
-
             string profileDirectory =
                 Path.Combine(
                     FileSystem.AppDataDirectory,
                     "Profile");
 
+            DeleteExistingProfilePhotoFiles(profileDirectory);
 
-            DeleteExistingProfilePhotoFiles(
-                profileDirectory);
-
-
-            Preferences.Default.Remove(
-                "ProfilePhotoPath");
-
+            Preferences.Default.Remove("ProfilePhotoPath");
 
             ShowProfileInitial();
 
-
-            ShowSuccess(
-                "Profile photo removed.");
+            ShowSuccess("Profile photo removed.");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"REMOVE PROFILE PHOTO ERROR: {ex}");
+            Debug.WriteLine($"REMOVE PROFILE PHOTO ERROR: {ex}");
 
             ShowError(
                 $"Unable to remove profile photo: {ex.Message}");
         }
     }
-
 
     // =====================================================
     // DELETE OLD PROFILE PHOTO FILES
@@ -711,12 +448,8 @@ public partial class ProfilePage : ContentPage
     private static void DeleteExistingProfilePhotoFiles(
         string profileDirectory)
     {
-        if (!Directory.Exists(
-            profileDirectory))
-        {
+        if (!Directory.Exists(profileDirectory))
             return;
-        }
-
 
         string[] extensions =
         {
@@ -725,7 +458,6 @@ public partial class ProfilePage : ContentPage
             ".png"
         };
 
-
         foreach (string extension in extensions)
         {
             string path =
@@ -733,30 +465,108 @@ public partial class ProfilePage : ContentPage
                     profileDirectory,
                     "profile_photo" + extension);
 
-
-            if (File.Exists(
-                path))
-            {
-                File.Delete(
-                    path);
-            }
+            if (File.Exists(path))
+                File.Delete(path);
         }
     }
 
+    // =====================================================
+    // DELETE MY ACCOUNT
+    // =====================================================
+
+    private async void DeleteAccountButton_Clicked(
+        object sender,
+        EventArgs e)
+    {
+        if (_isLoading)
+            return;
+
+        HideError();
+        HideSuccess();
+
+        bool firstConfirmation = await DisplayAlert(
+            "Permanently Delete Account",
+            "Are you sure you want to permanently delete your SpendWise account?\n\n" +
+            "Your account and associated data may be permanently deleted. " +
+            "This action cannot be undone.",
+            "Continue",
+            "Cancel");
+
+        if (!firstConfirmation)
+            return;
+
+        bool finalConfirmation = await DisplayAlert(
+            "Final Confirmation",
+            "This is your final warning. Do you really want to delete your account?",
+            "Delete Permanently",
+            "Keep My Account");
+
+        if (!finalConfirmation)
+            return;
+
+        try
+        {
+            SetLoading(true);
+
+            HideError();
+            HideSuccess();
+
+            var result =
+                await _apiService.DeleteMyAccountAsync();
+
+            if (!result.Success)
+            {
+                ShowError(
+                    string.IsNullOrWhiteSpace(result.Message)
+                        ? "Unable to delete your account."
+                        : result.Message);
+
+                return;
+            }
+
+            // Clear saved authentication details.
+            // ApiService also clears these after successful deletion.
+            _authStorageService.Logout();
+
+            // Remove the local profile photo.
+            string profileDirectory =
+                Path.Combine(
+                    FileSystem.AppDataDirectory,
+                    "Profile");
+
+            DeleteExistingProfilePhotoFiles(profileDirectory);
+
+            Preferences.Default.Remove("ProfilePhotoPath");
+
+            // Clear the current profile from memory.
+            _currentProfile = null;
+            _profilePhotoPath = null;
+
+            // Return the user to the welcome page.
+            Application.Current!.MainPage =
+                new NavigationPage(new WelcomePage());
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"DELETE ACCOUNT ERROR: {ex}");
+
+            ShowError(
+                $"Unable to delete your account: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
 
     // =====================================================
     // VALIDATE EMAIL
     // =====================================================
 
-    private static bool IsValidEmail(
-        string email)
+    private static bool IsValidEmail(string email)
     {
-        if (string.IsNullOrWhiteSpace(
-            email))
-        {
+        if (string.IsNullOrWhiteSpace(email))
             return false;
-        }
-
 
         try
         {
@@ -771,7 +581,6 @@ public partial class ProfilePage : ContentPage
         }
     }
 
-
     // =====================================================
     // VALIDATE SOUTH AFRICAN PHONE NUMBER
     // =====================================================
@@ -779,50 +588,32 @@ public partial class ProfilePage : ContentPage
     private static bool IsValidSouthAfricanPhoneNumber(
         string phoneNumber)
     {
-        if (string.IsNullOrWhiteSpace(
-            phoneNumber))
-        {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
             return true;
-        }
-
 
         return Regex.IsMatch(
             phoneNumber,
             @"^0\d{9}$");
     }
 
-
     // =====================================================
     // GET PROFILE INITIAL
     // =====================================================
 
-    private static string GetInitial(
-        string? fullName)
+    private static string GetInitial(string? fullName)
     {
-        if (string.IsNullOrWhiteSpace(
-            fullName))
-        {
+        if (string.IsNullOrWhiteSpace(fullName))
             return "?";
-        }
 
-
-        string trimmed =
-            fullName.Trim();
-
+        string trimmed = fullName.Trim();
 
         if (trimmed.Length == 0)
-        {
             return "?";
-        }
-
 
         return trimmed
-            .Substring(
-                0,
-                1)
+            .Substring(0, 1)
             .ToUpperInvariant();
     }
-
 
     // =====================================================
     // CLEAR PROFILE
@@ -830,120 +621,60 @@ public partial class ProfilePage : ContentPage
 
     private void ClearProfile()
     {
-        _currentProfile =
-            null;
+        _currentProfile = null;
 
+        FullNameEntry.Text = string.Empty;
+        EmailEntry.Text = string.Empty;
+        PhoneNumberEntry.Text = string.Empty;
 
-        FullNameEntry.Text =
-            string.Empty;
+        ProfileInitialLabel.Text = "?";
+        ProfileNameLabel.Text = "SpendWise User";
+        ProfileEmailLabel.Text = "-";
 
-
-        EmailEntry.Text =
-            string.Empty;
-
-
-        PhoneNumberEntry.Text =
-            string.Empty;
-
-
-        ProfileInitialLabel.Text =
-            "?";
-
-
-        ProfileNameLabel.Text =
-            "SpendWise User";
-
-
-        ProfileEmailLabel.Text =
-            "-";
-
-
-        AccountStatusLabel.Text =
-            "Account status";
-
-
-        AccountIdLabel.Text =
-            "-";
-
-
-        MemberSinceLabel.Text =
-            "-";
-
-
-        StatusValueLabel.Text =
-            "-";
+        AccountStatusLabel.Text = "Account status";
+        AccountIdLabel.Text = "-";
+        MemberSinceLabel.Text = "-";
+        StatusValueLabel.Text = "-";
     }
-
 
     // =====================================================
     // SET LOADING
     // =====================================================
 
-    private void SetLoading(
-        bool isLoading)
+    private void SetLoading(bool isLoading)
     {
-        _isLoading =
-            isLoading;
+        _isLoading = isLoading;
 
+        LoadingIndicator.IsVisible = isLoading;
+        LoadingIndicator.IsRunning = isLoading;
 
-        LoadingIndicator.IsVisible =
-            isLoading;
+        SaveProfileButton.IsEnabled = !isLoading;
+        LogoutButton.IsEnabled = !isLoading;
+        DeleteAccountButton.IsEnabled = !isLoading;
 
+        ChangePhotoButton.IsEnabled = !isLoading;
+        RemovePhotoButton.IsEnabled = !isLoading;
 
-        LoadingIndicator.IsRunning =
-            isLoading;
-
-
-        SaveProfileButton.IsEnabled =
-            !isLoading;
-
-
-        LogoutButton.IsEnabled =
-            !isLoading;
-
-
-        ChangePhotoButton.IsEnabled =
-            !isLoading;
-
-
-        RemovePhotoButton.IsEnabled =
-            !isLoading;
-
-
-        FullNameEntry.IsEnabled =
-            !isLoading;
-
-
-        EmailEntry.IsEnabled =
-            !isLoading;
-
-
-        PhoneNumberEntry.IsEnabled =
-            !isLoading;
+        FullNameEntry.IsEnabled = !isLoading;
+        EmailEntry.IsEnabled = !isLoading;
+        PhoneNumberEntry.IsEnabled = !isLoading;
     }
-
 
     // =====================================================
     // SHOW ERROR
     // =====================================================
 
-    private void ShowError(
-        string? message)
+    private void ShowError(string? message)
     {
         HideSuccess();
 
-
         ErrorLabel.Text =
-            string.IsNullOrWhiteSpace(
-                message)
+            string.IsNullOrWhiteSpace(message)
                 ? "Something went wrong."
                 : message;
 
-
-        ErrorCard.IsVisible =
-            true;
+        ErrorCard.IsVisible = true;
     }
-
 
     // =====================================================
     // HIDE ERROR
@@ -951,36 +682,25 @@ public partial class ProfilePage : ContentPage
 
     private void HideError()
     {
-        ErrorCard.IsVisible =
-            false;
-
-
-        ErrorLabel.Text =
-            string.Empty;
+        ErrorCard.IsVisible = false;
+        ErrorLabel.Text = string.Empty;
     }
-
 
     // =====================================================
     // SHOW SUCCESS
     // =====================================================
 
-    private void ShowSuccess(
-        string? message)
+    private void ShowSuccess(string? message)
     {
         HideError();
 
-
         SuccessLabel.Text =
-            string.IsNullOrWhiteSpace(
-                message)
+            string.IsNullOrWhiteSpace(message)
                 ? "Profile updated successfully."
                 : message;
 
-
-        SuccessCard.IsVisible =
-            true;
+        SuccessCard.IsVisible = true;
     }
-
 
     // =====================================================
     // HIDE SUCCESS
@@ -988,14 +708,9 @@ public partial class ProfilePage : ContentPage
 
     private void HideSuccess()
     {
-        SuccessCard.IsVisible =
-            false;
-
-
-        SuccessLabel.Text =
-            string.Empty;
+        SuccessCard.IsVisible = false;
+        SuccessLabel.Text = string.Empty;
     }
-
 
     // =====================================================
     // BACK BUTTON
@@ -1008,16 +723,12 @@ public partial class ProfilePage : ContentPage
         if (Navigation.NavigationStack.Count > 1)
         {
             await Navigation.PopAsync();
-
             return;
         }
 
-
         Application.Current!.MainPage =
-            new NavigationPage(
-                new DashboardPage());
+            new NavigationPage(new DashboardPage());
     }
-
 
     // =====================================================
     // REFRESH BUTTON
@@ -1028,10 +739,8 @@ public partial class ProfilePage : ContentPage
         EventArgs e)
     {
         await LoadProfileAsync();
-
         LoadProfilePhoto();
     }
-
 
     // =====================================================
     // SAVE PROFILE BUTTON
@@ -1044,7 +753,6 @@ public partial class ProfilePage : ContentPage
         await SaveProfileAsync();
     }
 
-
     // =====================================================
     // LOGOUT BUTTON
     // =====================================================
@@ -1053,19 +761,14 @@ public partial class ProfilePage : ContentPage
         object sender,
         EventArgs e)
     {
-        bool confirm =
-            await DisplayAlert(
-                "Log Out",
-                "Are you sure you want to log out of Martin SpendWise?",
-                "Log Out",
-                "Cancel");
-
+        bool confirm = await DisplayAlert(
+            "Log Out",
+            "Are you sure you want to log out of Martin SpendWise?",
+            "Log Out",
+            "Cancel");
 
         if (!confirm)
-        {
             return;
-        }
-
 
         try
         {
@@ -1074,18 +777,14 @@ public partial class ProfilePage : ContentPage
             HideError();
             HideSuccess();
 
-
             _authStorageService.Logout();
 
-
             Application.Current!.MainPage =
-                new NavigationPage(
-                    new WelcomePage());
+                new NavigationPage(new WelcomePage());
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"LOGOUT ERROR: {ex}");
+            Debug.WriteLine($"LOGOUT ERROR: {ex}");
 
             ShowError(
                 $"Unable to log out: {ex.Message}");

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ namespace SpendWise.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly PasswordResetService _passwordResetService;
         private readonly IEmailService _emailService;
+        private readonly WalletService _walletService;
+        private readonly IAuditLogService _auditLogService;
 
         private readonly PasswordHasher<User> _passwordHasher;
 
@@ -28,19 +31,22 @@ namespace SpendWise.API.Controllers
             AppDbContext context,
             IConfiguration configuration,
             PasswordResetService passwordResetService,
-            IEmailService emailService)
+            IEmailService emailService,
+            WalletService walletService,
+            IAuditLogService auditLogService)
         {
             _context = context;
             _configuration = configuration;
             _passwordResetService = passwordResetService;
             _emailService = emailService;
+            _walletService = walletService;
+            _auditLogService = auditLogService;
 
             _passwordHasher = new PasswordHasher<User>();
         }
 
-
         // =========================================================
-        // REGISTER
+        // REGISTER CUSTOMER AND AUTOMATICALLY CREATE WALLET
         // =========================================================
 
         [HttpPost("register")]
@@ -52,15 +58,12 @@ namespace SpendWise.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            string fullName =
-                dto.FullName.Trim();
+            string fullName = dto.FullName.Trim();
 
-            string email =
-                dto.Email.Trim().ToLowerInvariant();
+            string email = dto.Email.Trim().ToLowerInvariant();
 
-            bool emailExists =
-                await _context.Users.AnyAsync(
-                    u => u.Email.ToLower() == email);
+            bool emailExists = await _context.Users
+                .AnyAsync(u => u.Email.ToLower() == email);
 
             if (emailExists)
             {
@@ -71,38 +74,76 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            var user = new User
+            await using var dbTransaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                FullName = fullName,
-                Email = email,
-                TokenVersion = 1,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
-
-            user.PasswordHash =
-                _passwordHasher.HashPassword(
-                    user,
-                    dto.Password);
-
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message =
-                    "Account created successfully.",
-
-                user = new
+                var user = new User
                 {
-                    user.Id,
-                    user.FullName,
-                    user.Email
-                }
-            });
-        }
+                    FullName = fullName,
+                    Email = email,
+                    TokenVersion = 1,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
 
+                user.PasswordHash =
+                    _passwordHasher.HashPassword(
+                        user,
+                        dto.Password);
+
+                _context.Users.Add(user);
+
+                await _context.SaveChangesAsync();
+
+                // Automatically create one wallet for this customer.
+                var wallet =
+                    await _walletService.GetOrCreateWalletAsync(
+                        user.Id);
+
+                // Record customer registration.
+                // This uses the existing database transaction.
+                await _auditLogService.LogAsyncForActorAsync(
+                    actorType: "Customer",
+                    actorId: user.Id,
+                    actorName: user.FullName,
+                    actorEmail: user.Email,
+                    action: "Registered",
+                    module: "Authentication",
+                    description: "A new customer account was registered.",
+                    entityType: "User",
+                    entityId: user.Id.ToString());
+
+                await dbTransaction.CommitAsync();
+
+                return Ok(new
+                {
+                    message =
+                        "Account and wallet created successfully.",
+
+                    user = new
+                    {
+                        user.Id,
+                        user.FullName,
+                        user.Email
+                    },
+
+                    wallet = new
+                    {
+                        wallet.Id,
+                        wallet.WalletNumber,
+                        wallet.Currency,
+                        wallet.Status
+                    }
+                });
+            }
+            catch
+            {
+                await dbTransaction.RollbackAsync();
+                throw;
+            }
+        }
 
         // =========================================================
         // LOGIN
@@ -125,8 +166,7 @@ namespace SpendWise.API.Controllers
                     .FirstOrDefaultAsync(
                         u => u.Email.ToLower() == email);
 
-            if (user == null ||
-                !user.IsActive)
+            if (user == null || !user.IsActive)
             {
                 return Unauthorized(new
                 {
@@ -151,19 +191,29 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            var tokenResult =
-                GenerateJwtToken(user);
+            // Record successful customer login.
+            // Explicit actor details are used because the JWT
+            // has not yet authenticated the request.
+            await _auditLogService.LogAsyncForActorAsync(
+                actorType: "Customer",
+                actorId: user.Id,
+                actorName: user.FullName,
+                actorEmail: user.Email,
+                action: "Logged In",
+                module: "Authentication",
+                description: "Customer successfully logged into SpendWise.",
+                entityType: "User",
+                entityId: user.Id.ToString());
+
+            var tokenResult = GenerateJwtToken(user);
 
             return Ok(new
             {
-                message =
-                    "Login successful.",
+                message = "Login successful.",
 
-                token =
-                    tokenResult.Token,
+                token = tokenResult.Token,
 
-                expiresAt =
-                    tokenResult.ExpiresAt,
+                expiresAt = tokenResult.ExpiresAt,
 
                 user = new
                 {
@@ -174,7 +224,6 @@ namespace SpendWise.API.Controllers
                 }
             });
         }
-
 
         // =========================================================
         // FORGOT PASSWORD - EMAIL ONLY
@@ -191,13 +240,7 @@ namespace SpendWise.API.Controllers
             }
 
             string email =
-                dto.Email
-                    .Trim()
-                    .ToLowerInvariant();
-
-            // =====================================================
-            // FIND ACTIVE USER
-            // =====================================================
+                dto.Email.Trim().ToLowerInvariant();
 
             var user =
                 await _context.Users
@@ -206,11 +249,7 @@ namespace SpendWise.API.Controllers
                             u.Email.ToLower() == email &&
                             u.IsActive);
 
-            // =====================================================
-            // GENERIC RESPONSE
-            //
-            // Never reveal whether an email is registered.
-            // =====================================================
+            // Generic response: do not reveal whether an account exists.
 
             if (user == null)
             {
@@ -221,9 +260,7 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // INVALIDATE PREVIOUS OTPs AND RESET TOKENS
-            // =====================================================
+            // Invalidate previous OTPs and reset tokens.
 
             var previousCodes =
                 await _context.PasswordResetCodes
@@ -239,94 +276,66 @@ namespace SpendWise.API.Controllers
             {
                 previousCode.IsUsed = true;
 
-                previousCode.UsedAt ??=
-                    DateTime.UtcNow;
+                previousCode.UsedAt ??= DateTime.UtcNow;
 
-                previousCode.ResetTokenUsed =
-                    true;
+                previousCode.ResetTokenUsed = true;
             }
 
-            // =====================================================
-            // GENERATE NEW 6-DIGIT OTP
-            // =====================================================
+            // Generate a new six-digit OTP.
 
             string code =
-                _passwordResetService
-                    .GenerateCode();
+                _passwordResetService.GenerateCode();
 
-            var resetCode =
-                new PasswordResetCode
-                {
-                    UserId =
-                        user.Id,
+            var resetCode = new PasswordResetCode
+            {
+                UserId = user.Id,
 
-                    DeliveryMethod =
-                        "Email",
+                DeliveryMethod = "Email",
 
-                    ExpiresAt =
-                        DateTime.UtcNow
-                            .AddSeconds(60),
+                ExpiresAt = DateTime.UtcNow.AddSeconds(60),
 
-                    IsUsed =
-                        false,
+                IsUsed = false,
 
-                    AttemptCount =
-                        0,
+                AttemptCount = 0,
 
-                    MaxAttempts =
-                        5,
+                MaxAttempts = 5,
 
-                    CreatedAt =
-                        DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
 
-                    ResetTokenUsed =
-                        false
-                };
+                ResetTokenUsed = false
+            };
 
-            // Store only the hash of the OTP.
+            // Store only the OTP hash.
 
             resetCode.CodeHash =
-                _passwordResetService
-                    .HashCode(
-                        resetCode,
-                        code);
+                _passwordResetService.HashCode(
+                    resetCode,
+                    code);
 
-            _context.PasswordResetCodes
-                .Add(resetCode);
+            _context.PasswordResetCodes.Add(resetCode);
 
-            await _context
-                .SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-            // =====================================================
-            // SEND OTP TO REGISTERED EMAIL
-            // =====================================================
+            // Send OTP to registered email.
 
             try
             {
-                await _emailService
-                    .SendPasswordResetCodeAsync(
-                        user.Email,
-                        code);
+                await _emailService.SendPasswordResetCodeAsync(
+                    user.Email,
+                    code);
             }
             catch
             {
-                // If sending fails, invalidate the OTP.
+                resetCode.IsUsed = true;
 
-                resetCode.IsUsed =
-                    true;
+                resetCode.UsedAt = DateTime.UtcNow;
 
-                resetCode.UsedAt =
-                    DateTime.UtcNow;
+                resetCode.ResetTokenUsed = true;
 
-                resetCode.ResetTokenUsed =
-                    true;
-
-                await _context
-                    .SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return StatusCode(
-                    StatusCodes
-                        .Status503ServiceUnavailable,
+                    StatusCodes.Status503ServiceUnavailable,
                     new
                     {
                         message =
@@ -343,7 +352,6 @@ namespace SpendWise.API.Controllers
             });
         }
 
-
         // =========================================================
         // VERIFY RESET CODE - EMAIL ONLY
         // =========================================================
@@ -358,13 +366,7 @@ namespace SpendWise.API.Controllers
             }
 
             string email =
-                dto.Email
-                    .Trim()
-                    .ToLowerInvariant();
-
-            // =====================================================
-            // FIND ACTIVE USER
-            // =====================================================
+                dto.Email.Trim().ToLowerInvariant();
 
             var user =
                 await _context.Users
@@ -382,9 +384,7 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // GET LATEST UNUSED EMAIL OTP
-            // =====================================================
+            // Get latest unused email OTP.
 
             var resetCode =
                 await _context.PasswordResetCodes
@@ -392,8 +392,7 @@ namespace SpendWise.API.Controllers
                         r.UserId == user.Id &&
                         r.DeliveryMethod == "Email" &&
                         !r.IsUsed)
-                    .OrderByDescending(
-                        r => r.CreatedAt)
+                    .OrderByDescending(r => r.CreatedAt)
                     .FirstOrDefaultAsync();
 
             if (resetCode == null)
@@ -405,24 +404,17 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // CHECK 60-SECOND EXPIRY
-            // =====================================================
+            // Check 60-second expiry.
 
-            if (_passwordResetService
-                .IsExpired(resetCode))
+            if (_passwordResetService.IsExpired(resetCode))
             {
-                resetCode.IsUsed =
-                    true;
+                resetCode.IsUsed = true;
 
-                resetCode.UsedAt =
-                    DateTime.UtcNow;
+                resetCode.UsedAt = DateTime.UtcNow;
 
-                resetCode.ResetTokenUsed =
-                    true;
+                resetCode.ResetTokenUsed = true;
 
-                await _context
-                    .SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return BadRequest(new
                 {
@@ -431,24 +423,17 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // CHECK MAXIMUM ATTEMPTS
-            // =====================================================
+            // Check maximum attempts.
 
-            if (resetCode.AttemptCount >=
-                resetCode.MaxAttempts)
+            if (resetCode.AttemptCount >= resetCode.MaxAttempts)
             {
-                resetCode.IsUsed =
-                    true;
+                resetCode.IsUsed = true;
 
-                resetCode.UsedAt ??=
-                    DateTime.UtcNow;
+                resetCode.UsedAt ??= DateTime.UtcNow;
 
-                resetCode.ResetTokenUsed =
-                    true;
+                resetCode.ResetTokenUsed = true;
 
-                await _context
-                    .SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return BadRequest(new
                 {
@@ -457,15 +442,12 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // VERIFY OTP
-            // =====================================================
+            // Verify OTP.
 
             bool validCode =
-                _passwordResetService
-                    .VerifyCode(
-                        resetCode,
-                        dto.Code);
+                _passwordResetService.VerifyCode(
+                    resetCode,
+                    dto.Code);
 
             if (!validCode)
             {
@@ -477,21 +459,16 @@ namespace SpendWise.API.Controllers
 
                 if (attemptsRemaining <= 0)
                 {
-                    resetCode.IsUsed =
-                        true;
+                    resetCode.IsUsed = true;
 
-                    resetCode.UsedAt =
-                        DateTime.UtcNow;
+                    resetCode.UsedAt = DateTime.UtcNow;
 
-                    resetCode.ResetTokenUsed =
-                        true;
+                    resetCode.ResetTokenUsed = true;
 
-                    attemptsRemaining =
-                        0;
+                    attemptsRemaining = 0;
                 }
 
-                await _context
-                    .SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return BadRequest(new
                 {
@@ -504,39 +481,28 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // OTP CORRECT
-            // =====================================================
+            // OTP correct.
 
-            resetCode.IsUsed =
-                true;
+            resetCode.IsUsed = true;
 
-            resetCode.UsedAt =
-                DateTime.UtcNow;
+            resetCode.UsedAt = DateTime.UtcNow;
 
-            // =====================================================
-            // GENERATE PASSWORD RESET TOKEN
-            // =====================================================
+            // Generate password reset token.
 
             string resetToken =
-                _passwordResetService
-                    .GenerateResetToken();
+                _passwordResetService.GenerateResetToken();
 
             resetCode.ResetTokenHash =
-                _passwordResetService
-                    .HashResetToken(
-                        resetCode,
-                        resetToken);
+                _passwordResetService.HashResetToken(
+                    resetCode,
+                    resetToken);
 
             resetCode.ResetTokenExpiresAt =
-                DateTime.UtcNow
-                    .AddMinutes(10);
+                DateTime.UtcNow.AddMinutes(10);
 
-            resetCode.ResetTokenUsed =
-                false;
+            resetCode.ResetTokenUsed = false;
 
-            await _context
-                .SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
@@ -545,11 +511,9 @@ namespace SpendWise.API.Controllers
 
                 resetToken,
 
-                resetTokenExpiresInMinutes =
-                    10
+                resetTokenExpiresInMinutes = 10
             });
         }
-
 
         // =========================================================
         // RESET PASSWORD
@@ -564,45 +528,36 @@ namespace SpendWise.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (string.IsNullOrWhiteSpace(
-                dto.ResetToken))
+            if (string.IsNullOrWhiteSpace(dto.ResetToken))
             {
                 return BadRequest(new
                 {
-                    message =
-                        "Reset token is required."
+                    message = "Reset token is required."
                 });
             }
 
-            // =====================================================
-            // GET ACTIVE RESET TOKENS
-            // =====================================================
+            // Get active reset tokens.
 
             var possibleResetCodes =
                 await _context.PasswordResetCodes
                     .Where(r =>
                         r.ResetTokenHash != null &&
                         !r.ResetTokenUsed)
-                    .OrderByDescending(
-                        r => r.CreatedAt)
+                    .OrderByDescending(r => r.CreatedAt)
                     .ToListAsync();
 
-            PasswordResetCode?
-                matchingResetCode = null;
+            PasswordResetCode? matchingResetCode = null;
 
             foreach (var resetCode in possibleResetCodes)
             {
                 bool tokenMatches =
-                    _passwordResetService
-                        .VerifyResetToken(
-                            resetCode,
-                            dto.ResetToken);
+                    _passwordResetService.VerifyResetToken(
+                        resetCode,
+                        dto.ResetToken);
 
                 if (tokenMatches)
                 {
-                    matchingResetCode =
-                        resetCode;
-
+                    matchingResetCode = resetCode;
                     break;
                 }
             }
@@ -616,21 +571,14 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // CHECK RESET TOKEN EXPIRY
-            // =====================================================
+            // Check reset token expiry.
 
-            if (matchingResetCode
-                    .ResetTokenExpiresAt == null ||
-                DateTime.UtcNow >=
-                    matchingResetCode
-                        .ResetTokenExpiresAt)
+            if (matchingResetCode.ResetTokenExpiresAt == null ||
+                DateTime.UtcNow >= matchingResetCode.ResetTokenExpiresAt)
             {
-                matchingResetCode
-                    .ResetTokenUsed = true;
+                matchingResetCode.ResetTokenUsed = true;
 
-                await _context
-                    .SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return BadRequest(new
                 {
@@ -639,16 +587,13 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // GET USER
-            // =====================================================
+            // Get user.
 
             var user =
                 await _context.Users
                     .FirstOrDefaultAsync(
                         u =>
-                            u.Id ==
-                            matchingResetCode.UserId &&
+                            u.Id == matchingResetCode.UserId &&
                             u.IsActive);
 
             if (user == null)
@@ -660,53 +605,53 @@ namespace SpendWise.API.Controllers
                 });
             }
 
-            // =====================================================
-            // HASH AND SAVE NEW PASSWORD
-            // =====================================================
+            // Hash and save new password.
 
             user.PasswordHash =
-                _passwordHasher
-                    .HashPassword(
-                        user,
-                        dto.NewPassword);
+                _passwordHasher.HashPassword(
+                    user,
+                    dto.NewPassword);
 
-            // =====================================================
-            // INVALIDATE ALL EXISTING JWTs
-            // =====================================================
+            // Invalidate all existing JWTs.
 
             user.TokenVersion++;
 
-            // Prevent this reset token being used again.
+            // Prevent reset token reuse.
 
-            matchingResetCode
-                .ResetTokenUsed = true;
+            matchingResetCode.ResetTokenUsed = true;
 
-            // =====================================================
-            // INVALIDATE ALL OTHER RESET REQUESTS
-            // =====================================================
+            // Invalidate all other reset requests.
 
             var otherResetCodes =
                 await _context.PasswordResetCodes
                     .Where(r =>
                         r.UserId == user.Id &&
-                        r.Id !=
-                        matchingResetCode.Id)
+                        r.Id != matchingResetCode.Id)
                     .ToListAsync();
 
             foreach (var resetCode in otherResetCodes)
             {
-                resetCode.IsUsed =
-                    true;
+                resetCode.IsUsed = true;
 
-                resetCode.ResetTokenUsed =
-                    true;
+                resetCode.ResetTokenUsed = true;
 
-                resetCode.UsedAt ??=
-                    DateTime.UtcNow;
+                resetCode.UsedAt ??= DateTime.UtcNow;
             }
 
-            await _context
-                .SaveChangesAsync();
+            await _context.SaveChangesAsync();
+
+            // Record successful password reset.
+            // Never include the password or reset token in the audit log.
+            await _auditLogService.LogAsyncForActorAsync(
+                actorType: "Customer",
+                actorId: user.Id,
+                actorName: user.FullName,
+                actorEmail: user.Email,
+                action: "Password Reset",
+                module: "Authentication",
+                description: "Customer successfully reset their account password.",
+                entityType: "User",
+                entityId: user.Id.ToString());
 
             return Ok(new
             {
@@ -714,7 +659,6 @@ namespace SpendWise.API.Controllers
                     "Password reset successfully. You can now log in with your new password."
             });
         }
-
 
         // =========================================================
         // JWT TOKEN
@@ -727,9 +671,8 @@ namespace SpendWise.API.Controllers
         {
             string jwtKey =
                 _configuration["Jwt:Key"]
-                ?? throw new
-                    InvalidOperationException(
-                        "JWT signing key is missing.");
+                ?? throw new InvalidOperationException(
+                    "JWT signing key is missing.");
 
             string issuer =
                 _configuration["Jwt:Issuer"]
@@ -740,74 +683,57 @@ namespace SpendWise.API.Controllers
                 ?? "SpendWise.App";
 
             int expiryMinutes =
-                _configuration
-                    .GetValue<int?>(
-                        "Jwt:ExpiryMinutes")
+                _configuration.GetValue<int?>(
+                    "Jwt:ExpiryMinutes")
                 ?? 60;
 
             DateTime expiresAt =
-                DateTime.UtcNow
-                    .AddMinutes(
-                        expiryMinutes);
+                DateTime.UtcNow.AddMinutes(expiryMinutes);
 
-            var claims =
-                new List<Claim>
-                {
-                    new Claim(
-                        ClaimTypes.NameIdentifier,
-                        user.Id.ToString()),
+            var claims = new List<Claim>
+            {
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    user.Id.ToString()),
 
-                    new Claim(
-                        ClaimTypes.Name,
-                        user.FullName),
+                new Claim(
+                    ClaimTypes.Name,
+                    user.FullName),
 
-                    new Claim(
-                        ClaimTypes.Email,
-                        user.Email),
+                new Claim(
+                    ClaimTypes.Email,
+                    user.Email),
 
-                    new Claim(
-                        "token_version",
-                        user.TokenVersion.ToString()),
+                new Claim(
+                    "token_version",
+                    user.TokenVersion.ToString()),
 
-                    new Claim(
-                        JwtRegisteredClaimNames.Jti,
-                        Guid.NewGuid().ToString())
-                };
+                new Claim(
+                    JwtRegisteredClaimNames.Jti,
+                    Guid.NewGuid().ToString())
+            };
 
             var key =
                 new SymmetricSecurityKey(
-                    Encoding.UTF8
-                        .GetBytes(jwtKey));
+                    Encoding.UTF8.GetBytes(jwtKey));
 
             var credentials =
                 new SigningCredentials(
                     key,
                     SecurityAlgorithms.HmacSha256);
 
-            var token =
-                new JwtSecurityToken(
-                    issuer:
-                        issuer,
-
-                    audience:
-                        audience,
-
-                    claims:
-                        claims,
-
-                    expires:
-                        expiresAt,
-
-                    signingCredentials:
-                        credentials);
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: expiresAt,
+                signingCredentials: credentials);
 
             string tokenString =
                 new JwtSecurityTokenHandler()
                     .WriteToken(token);
 
-            return (
-                tokenString,
-                expiresAt);
+            return (tokenString, expiresAt);
         }
     }
 }

@@ -1,0 +1,639 @@
+﻿@using System.Text.Json
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+
+
+    ViewData["Title"] = "User Reports";
+
+
+
+    var totalUsers = (int)(ViewBag.TotalUsers ?? 0);
+
+    var activeUsers = (int)(ViewBag.ActiveUsers ?? 0);
+
+    var inactiveUsers = (int)(ViewBag.InactiveUsers ?? 0);
+
+
+
+    var recentUsers = ViewBag.RecentUsers;
+
+
+
+    var registrationChart =
+
+        ViewBag.RegistrationChart?.ToString() ?? "{\"labels\":[],\"values\":[]}";
+
+
+
+    var activePercentage = totalUsers > 0
+
+        ? (double)activeUsers / totalUsers * 100
+
+        : 0;
+
+
+
+    var inactivePercentage = totalUsers > 0
+
+        ? (double)inactiveUsers / totalUsers * 100
+
+        : 0;
+}
+
+<style>
+    .report-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+
+        .report-heading h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .report-heading p {
+            color: #839087;
+            font-size: 13px;
+        }
+
+    .back-link {
+        background: #286B48;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .back-link:hover {
+            background: #173F2B;
+            color: white;
+        }
+
+    .report-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h2 {
+            font-size: 27px;
+            margin: 0;
+            color: #26352C;
+        }
+
+        .summary-card small {
+            display: block;
+            margin-top: 8px;
+            color: #839087;
+            font-size: 11px;
+        }
+
+    .report-panel {
+        background: white;
+        border: 1px solid #E5ECE7;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+        .report-panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+    .report-description {
+        color: #839087;
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .status-overview {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .status-item {
+        background: #F4F7F5;
+        padding: 18px;
+        border-radius: 9px;
+    }
+
+        .status-item span {
+            display: block;
+            color: #839087;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .status-item strong {
+            font-size: 23px;
+        }
+
+    .progress-track {
+        height: 8px;
+        background: #E5ECE7;
+        border-radius: 20px;
+        margin-top: 12px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: #26966B;
+        border-radius: 20px;
+    }
+
+        .progress-fill.inactive {
+            background: #D65C68;
+        }
+
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 320px;
+        padding: 10px 12px;
+        border: 1px solid #E5ECE7;
+        border-radius: 7px;
+        font-size: 13px;
+        outline: none;
+    }
+
+        .search-input:focus {
+            border-color: #286B48;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 750px;
+    }
+
+        .report-table th {
+            background: #F4F7F5;
+            color: #65736A;
+            font-size: 11px;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .report-table td {
+            padding: 14px 13px;
+            border-bottom: 1px solid #E5ECE7;
+            font-size: 12px;
+            color: #26352C;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #E8F4EC;
+        color: #286B48;
+    }
+
+    .status-inactive {
+        background: #FCEBED;
+        color: #B54752;
+    }
+
+    .empty-state {
+        padding: 25px;
+        text-align: center;
+        color: #839087;
+        font-size: 13px;
+    }
+
+    .record-count {
+        color: #839087;
+        font-size: 11px;
+    }
+
+    @@media(max-width: 800px) {
+        .report-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media(max-width: 600px) {
+        .report-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .report-summary,
+        .status-overview {
+            grid-template-columns: 1fr;
+        }
+
+        .table-toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .search-input {
+            max-width: none;
+        }
+    }
+</style>
+
+<div class="report-heading">
+    <div>
+        <h1>User Reports</h1>
+        <p>Customer registration and account activity reports.</p>
+    </div>
+
+    <a class="back-link" href="@Url.Action("Index")">
+        ← Reports Dashboard
+    </a>
+</div>
+
+<!-- SUMMARY CARDS -->
+
+<div class="report-summary">
+
+    <div class="summary-card">
+        <span>Total Registered Users</span>
+        <h2>@totalUsers</h2>
+        <small>All registered customer accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Active Users</span>
+        <h2>@activeUsers</h2>
+        <small>Currently active accounts</small>
+    </div>
+
+    <div class="summary-card">
+        <span>Inactive Users</span>
+        <h2>@inactiveUsers</h2>
+        <small>Currently inactive accounts</small>
+    </div>
+
+</div>
+
+<!-- REGISTRATION CHART -->
+
+<div class="report-panel">
+
+    <h2>User Registration Analytics</h2>
+
+    <p class="report-description">
+        Number of users registered during the last six months.
+    </p>
+
+    <div class="chart-container">
+        <canvas id="registrationChart"></canvas>
+    </div>
+
+</div>
+
+<!-- ACCOUNT STATUS -->
+
+<div class="report-panel">
+
+    <h2>User Account Status</h2>
+
+    <p class="report-description">
+        Distribution of active and inactive customer accounts.
+    </p>
+
+    <div class="status-overview">
+
+        <div class="status-item">
+
+            <span>Active Accounts</span>
+
+            <strong>@activeUsers</strong>
+
+            <div class="progress-track">
+                <div class="progress-fill"
+                     style="width:@activePercentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                </div>
+            </div>
+
+            <small>
+                @activePercentage.ToString("0.0")% of registered users
+            </small>
+
+        </div>
+
+        <div class="status-item">
+
+            <span>Inactive Accounts</span>
+
+            <strong>@inactiveUsers</strong>
+
+            <div class="progress-track">
+                <div class="progress-fill inactive"
+                     style="width:@inactivePercentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                </div>
+            </div>
+
+            <small>
+                @inactivePercentage.ToString("0.0")% of registered users
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="chart-container" style="max-width:400px; margin:25px auto 0;">
+        <canvas id="userStatusChart"></canvas>
+    </div>
+
+</div>
+
+<!-- USER RECORDS -->
+
+<div class="report-panel">
+
+    <h2>User Records</h2>
+
+    <p class="report-description">
+        View registered customer accounts and their current account status.
+        The latest 100 registered users are displayed.
+    </p>
+
+    <div class="table-toolbar">
+
+        <input type="text"
+               id="userSearch"
+               class="search-input"
+               placeholder="Search name, email or phone number..." />
+
+        <span class="record-count" id="recordCount">
+            Showing up to 100 records
+        </span>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="report-table" id="usersTable">
+
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Registration Date</th>
+                    <th>Account Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (recentUsers != null && recentUsers.Count > 0)
+
+                {
+                    foreach (var user in recentUsers)
+                    {
+                        <tr>
+                            <td>#@user.Id</td>
+
+                            <td>@user.FullName</td>
+
+                            <td>@user.Email</td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(user.PhoneNumber)
+                                    ? "Not provided"
+                                    : user.PhoneNumber)
+                            </td>
+
+                            <td>
+                                @user.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </td>
+
+                            <td>
+                                @if (user.IsActive)
+
+                                {
+                                    <span class="status-badge status-active">
+                                        Active
+                                    </span>
+                                }
+
+                                else
+
+                                {
+                                    <span class="status-badge status-inactive">
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+
+                }
+
+                else
+
+                {
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            No user records found.
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // REGISTRATION CHART
+
+            const registrationData =
+        @Html.Raw(registrationChart);
+
+            const registrationCanvas =
+                document.getElementById("registrationChart");
+
+            if (registrationCanvas) {
+
+                new Chart(registrationCanvas, {
+                    type: "bar",
+
+                    data: {
+                        labels: registrationData.labels,
+
+                        datasets: [{
+                            label: "Registered Users",
+                            data: registrationData.values,
+                            backgroundColor: "#286B48",
+                            borderRadius: 6,
+                            maxBarThickness: 45
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            // ACCOUNT STATUS CHART
+
+            const statusCanvas =
+                document.getElementById("userStatusChart");
+
+            if (statusCanvas) {
+
+                new Chart(statusCanvas, {
+                    type: "doughnut",
+
+                    data: {
+                        labels: ["Active", "Inactive"],
+
+                        datasets: [{
+                            data: [
+        @activeUsers,
+        @inactiveUsers
+                            ],
+
+                            backgroundColor: [
+                                "#26966B",
+                                "#D65C68"
+                            ],
+
+                            borderWidth: 0
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+        // USER TABLE SEARCH
+
+        const userSearch =
+            document.getElementById("userSearch");
+
+        const userRows =
+            document.querySelectorAll("#usersTable tbody tr");
+
+        const recordCount =
+            document.getElementById("recordCount");
+
+        if (userSearch) {
+
+            userSearch.addEventListener("input", function () {
+
+                const searchValue =
+                    this.value.toLowerCase().trim();
+
+                let visibleCount = 0;
+
+                userRows.forEach(row => {
+
+                    const rowText =
+                        row.textContent.toLowerCase();
+
+                    const matches =
+                        rowText.includes(searchValue);
+
+                    row.style.display =
+                        matches ? "" : "none";
+
+                    if (matches) {
+                        visibleCount++;
+                    }
+
+                });
+
+                recordCount.textContent =
+                    "Showing " + visibleCount + " records";
+
+            });
+
+        }
+    </script>
+}

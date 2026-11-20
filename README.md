@@ -14,13 +14,13 @@ Martin SpendWise combines financial tracking and grocery planning in one applica
 
 The solution consists of:
 
-- A **.NET MAUI application** for the customer interface.
-- An **ASP.NET Core Web API** for backend services and business logic.
-- An **ASP.NET Core MVC Admin Portal** hosted within the API project.
-- A **MySQL database** for persistent data storage.
-- **Entity Framework Core** for database operations.
-- **JWT authentication** for customer accounts and API requests.
-- Separate **cookie-based authentication** for administrators.
+- **.NET MAUI application** – Customer-facing application.
+- **ASP.NET Core Web API** – Backend services and business logic.
+- **ASP.NET Core MVC Admin Portal** – Administrator interface hosted within the API project.
+- **MySQL** – Persistent data storage.
+- **Entity Framework Core** – Database operations and migrations.
+- **JWT authentication** – Customer authentication and protected API requests.
+- **Cookie-based authentication** – Separate administrator authentication.
 
 The application follows a client-server architecture, with the frontend communicating with the backend through REST API endpoints.
 
@@ -33,7 +33,7 @@ The Windows desktop application is the current development and testing target.
 ### 🔐 Customer Authentication and Account Management
 
 - Customer registration.
-- Secure login.
+- Secure login through the authentication API.
 - JWT-based authentication.
 - Password hashing.
 - Email-based password recovery.
@@ -41,6 +41,19 @@ The Windows desktop application is the current development and testing target.
 - Password reset token validation.
 - Token versioning for invalidating existing sessions after password changes.
 - Authenticated access to protected API endpoints.
+- Authentication information stored by the application.
+
+**Latest frontend improvements:**
+
+- Redesigned login interface.
+- SpendWise branded S emblem.
+- Email and password input fields.
+- Show and hide password functionality.
+- Forgot Password navigation.
+- Create Account navigation.
+- Login validation and error messages.
+- Personalised welcome modal following successful authentication.
+- Continue button to enter the customer dashboard.
 
 ### 💵 Budget Management
 
@@ -94,6 +107,82 @@ The Windows desktop application is the current development and testing target.
 
 ---
 
+## 🖥️ Customer Application – Frontend Development
+
+The customer-facing application is developed using .NET MAUI and XAML.
+
+The frontend is currently undergoing improvements to its visual design, navigation, maintainability and integration with the backend.
+
+### Login Interface
+
+The latest LoginPage design includes:
+
+- Dark green SpendWise branding.
+- Overlapping circular S emblem.
+- Email and password fields.
+- Show/Hide password functionality.
+- Forgot Password navigation.
+- Create Account navigation.
+- Login button with loading state.
+- Login error messages.
+- Personalised welcome modal.
+- Emerald checkmark badge.
+- Continue button for dashboard navigation.
+
+The login process continues to use the existing authentication API rather than a simulated login.
+
+### Dashboard Interface
+
+The DashboardPage is being aligned with the SpendWise visual identity.
+
+Current interface elements include:
+
+- Dark green dashboard header.
+- Personalised welcome area.
+- Notification bell and unread notification badge.
+- Profile navigation.
+- Bank Account information card.
+- Monthly Budget card.
+- Quick Actions section.
+- My Grocery Lists shortcut.
+- Recent Spending section.
+- Secure Banking information.
+
+**Dashboard integration work includes:**
+
+- Retrieving monthly budget information through the existing API.
+- Displaying total spending.
+- Displaying remaining budget.
+- Showing budget utilisation.
+- Displaying recent purchase transactions dynamically.
+- Retrieving unread notification counts.
+- Navigating to the relevant application pages.
+
+**Bank integration status:** Not connected. The dashboard does not claim to display a real bank balance or provide live banking services.
+
+### Frontend Maintainability
+
+The customer-facing application is also undergoing a frontend review to improve maintainability and reduce unnecessary duplication.
+
+Current work includes:
+
+- Identifying repeated interface elements across pages.
+- Reviewing duplicated XAML layouts and styling.
+- Identifying repeated frontend logic.
+- Reviewing navigation consistency.
+- Reducing unnecessary or redundant code.
+- Improving reusable UI components.
+- Consolidating repeated interface patterns where appropriate.
+- Improving consistency in buttons, forms, cards and page layouts.
+- Improving loading indicators and error messages.
+- Reviewing page structure to make future maintenance easier.
+
+**Current status: In progress.**
+
+The objective is to make the frontend easier to maintain and extend without unnecessarily changing existing application functionality.
+
+---
+
 ## 🚧 Current Development Progress
 
 ### 1. SpendWise Administration Portal
@@ -141,21 +230,16 @@ The portal shares the existing backend and database infrastructure while maintai
 
 #### Current development status
 
-**Admin authentication:** Implemented.
-
-**Admin dashboard:** Initial functionality implemented.
-
-**User Management:** Implemented.
-
-**Ledger Management:** Implemented.
-
-**Audit Logs:** Initial functionality implemented, with customer audit integration undergoing testing.
-
-**Administrator profile:** Implemented.
-
-**Security Settings:** Informational interface created; functional security controls still being implemented.
-
-**Notification Settings:** Informational interface created; actual notification preferences and delivery still being implemented.
+| Component | Status |
+|---|---|
+| Administrator authentication | Implemented |
+| Administrator dashboard | Initial functionality implemented |
+| User Management | Implemented |
+| Ledger Management | Implemented |
+| Audit Logs | Initial functionality implemented; testing ongoing |
+| Administrator profile | Implemented |
+| Security Settings | Informational interface created; functional controls in progress |
+| Notification Settings | Informational interface created; functional preferences and delivery in progress |
 
 #### In progress
 
@@ -185,32 +269,7 @@ The portal shares the existing backend and database infrastructure while maintai
 
 ---
 
-### 2. Frontend Improvements and Redundancy Reduction
-
-The customer-facing .NET MAUI application is undergoing a frontend review to improve maintainability, consistency and user experience.
-
-The objective is to reduce unnecessary duplication across pages, layouts and interface components.
-
-#### Current work in progress
-
-- Identifying repeated interface elements across pages.
-- Reviewing duplicated XAML layouts and styling.
-- Identifying repeated frontend logic.
-- Reviewing navigation consistency.
-- Reducing unnecessary or redundant code.
-- Improving reusable UI components.
-- Consolidating repeated interface patterns where appropriate.
-- Improving consistency in buttons, forms, cards and page layouts.
-- Improving loading indicators and error messages.
-- Reviewing page structure to make future maintenance easier.
-
-**Current status: In progress.**
-
-The aim is to make the frontend easier to maintain and extend without changing existing application functionality unnecessarily.
-
----
-
-### 3. Purchase Deletion
+### 2. Purchase Deletion
 
 A Delete Purchase feature is being developed.
 
@@ -230,7 +289,7 @@ Deletion functionality still requires integration testing and verification of bu
 
 ---
 
-### 4. Transaction Management Improvements
+### 3. Transaction Management Improvements
 
 Ongoing improvements include:
 
@@ -246,7 +305,7 @@ Ongoing improvements include:
 
 ---
 
-### 5. Testing and Debugging
+### 4. Testing and Debugging
 
 Development testing focuses on:
 
@@ -267,7 +326,7 @@ Development testing focuses on:
 
 ---
 
-### 6. Development Environment – November 2026
+### 5. Development Environment – November 2026
 
 #### Visual Studio startup configuration
 
@@ -301,7 +360,7 @@ These are valid British English spellings. The messages are spelling-checker war
 
 ---
 
-## 7. SpendWise Pay – Future Expansion
+## 6. SpendWise Pay – Future Expansion
 
 SpendWise is being considered for expansion into a financial platform supporting:
 
@@ -394,34 +453,31 @@ Martin SpendWise follows a client-server architecture.
 ### Current Architecture
 
 ```text
-                  MARTIN SPENDWISE
-                         |
-             +-----------+-----------+
-             |                       |
-             v                       v
-       .NET MAUI App            SpendWise.API
-       Customer Interface       ASP.NET Core
-                                Web API + MVC
-                                     |
-                              +------+------+
-                              |             |
-                              v             v
-                           Swagger     Admin Portal
-                                       (MVC Area)
-                              |             |
-                              +------+------+
-                                     |
-                                     v
-                             ASP.NET Core API
-                                     |
-                                     v
-                            Entity Framework Core
-                                     |
-                                     v
-                                   MySQL
-                                     |
-                                     v
-                             Persistent Storage
+                    MARTIN SPENDWISE
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
+       .NET MAUI App                SpendWise.API
+       Customer Interface          ASP.NET Core
+                                   Web API + MVC
+                                        |
+                              +---------+---------+
+                              |                   |
+                              v                   v
+                         REST API           Admin Portal
+                              |              (MVC Area)
+                              |                   |
+                              +---------+---------+
+                                        |
+                                        v
+                              Entity Framework Core
+                                        |
+                                        v
+                                      MySQL
+                                        |
+                                        v
+                                Persistent Storage
 ```
 
 ### Frontend Layer
@@ -642,6 +698,8 @@ The actual port may differ depending on the launch profile.
 - Run the Windows application.
 - Ensure the client API base URL matches the running backend address.
 
+For Android emulators and physical devices, the API address and HTTPS configuration may need to be adjusted. `localhost` on a device does not automatically refer to the development computer.
+
 ---
 
 ## 📁 Current Project Structure
@@ -784,6 +842,9 @@ GitHub: [martinhleketani](https://github.com/martinhleketani)
 - Audit Logs administration.
 - Expanded audit logging model and database migration.
 - Customer registration, login and password-reset audit integration in code.
+- Redesigned customer login interface.
+- Personalised login welcome modal.
+- Updated dashboard interface and API integration work.
 
 ### What We Are Currently Working On
 
@@ -800,6 +861,7 @@ GitHub: [martinhleketani](https://github.com/martinhleketani)
 - Notification preferences and actual alert delivery.
 - Error handling and validation.
 - Frontend and backend integration testing.
+- Completing and testing the updated login and dashboard interfaces.
 
 ### What We Plan to Build Next
 

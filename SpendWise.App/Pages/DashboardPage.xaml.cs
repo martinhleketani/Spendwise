@@ -30,7 +30,6 @@ public partial class DashboardPage : ContentPage
         _apiService = new ApiService();
         _authStorageService = new AuthStorageService();
 
-        LoadUser();
         SetBankNotConnected();
     }
 
@@ -42,45 +41,27 @@ public partial class DashboardPage : ContentPage
     {
         base.OnAppearing();
 
-        LoadUser();
-        SetBankNotConnected();
-
         await LoadDashboardAsync();
         await LoadUnreadNotificationsAsync();
     }
 
     // ==========================================
-    // USER
-    // ==========================================
-
-    private void LoadUser()
-    {
-        string fullName =
-            _authStorageService.GetUserName();
-
-        WelcomeLabel.Text =
-            string.IsNullOrWhiteSpace(fullName)
-                ? "Welcome back"
-                : $"Welcome back, {fullName}";
-    }
-
-    // ==========================================
-    // BANK CONNECTION
+    // BANK ACCOUNT
     // ==========================================
 
     private void SetBankNotConnected()
     {
-        WalletBalanceLabel.Text = "—";
-
         BankStatusLabel.Text = "Not Connected";
+    }
 
-        BankAccountInfoLabel.Text =
-            "Connect your bank securely to view your account balance.";
-
-        ConnectBankButton.Text =
-            "Connect Bank Account";
-
-        ConnectBankButton.IsEnabled = true;
+    private async void OnConnectBankClicked(
+        object sender,
+        EventArgs e)
+    {
+        await DisplayAlert(
+            "Bank Connection",
+            "Secure bank account connection will be added when the banking provider integration is configured. Your bank balance is not currently available through SpendWise.",
+            "OK");
     }
 
     // ==========================================
@@ -98,19 +79,17 @@ public partial class DashboardPage : ContentPage
         {
             DateTime today = DateTime.Now;
 
-            var result =
-                await _apiService.GetDashboardAsync(
-                    today.Year,
-                    today.Month);
+            var result = await _apiService.GetDashboardAsync(
+                today.Year,
+                today.Month);
 
-            if (!result.Success ||
-                result.Data == null)
+            if (!result.Success || result.Data == null)
             {
                 ClearDashboard();
 
                 await DisplayAlert(
                     "Dashboard",
-                    result.Message,
+                    result.Message ?? "Unable to load dashboard information.",
                     "OK");
 
                 return;
@@ -120,8 +99,7 @@ public partial class DashboardPage : ContentPage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(
-                $"LOAD DASHBOARD ERROR: {ex}");
+            Debug.WriteLine($"LOAD DASHBOARD ERROR: {ex}");
 
             ClearDashboard();
 
@@ -140,31 +118,24 @@ public partial class DashboardPage : ContentPage
     // DISPLAY DASHBOARD
     // ==========================================
 
-    private void DisplayDashboard(
-        DashboardResponse dashboard)
+    private void DisplayDashboard(DashboardResponse dashboard)
     {
         SetBankNotConnected();
 
-        decimal budgetLimit =
-            dashboard.MonthlyBudget.Limit;
+        decimal budgetLimit = dashboard.MonthlyBudget.Limit;
+        decimal spent = dashboard.MonthlyBudget.Spent;
+        decimal remaining = dashboard.MonthlyBudget.Remaining;
+        decimal percentageUsed = dashboard.MonthlyBudget.PercentageUsed;
 
-        decimal spent =
-            dashboard.MonthlyBudget.Spent;
+        TotalSpentLabel.Text = $"R {spent:N2}";
 
-        decimal remaining =
-            dashboard.MonthlyBudget.Remaining;
+        BudgetRemainingLabel.Text = $"R {remaining:N2}";
 
-        decimal percentageUsed =
-            dashboard.MonthlyBudget.PercentageUsed;
-
-        BudgetSpentLabel.Text =
-            $"R {spent:N2} spent of R {budgetLimit:N2}";
-
-        BudgetRemainingLabel.Text =
+        RemainingSummaryLabel.Text =
             $"R {remaining:N2} remaining";
 
-        BudgetPercentageLabel.Text =
-            $"{percentageUsed:N0}%";
+        BudgetPercentLabel.Text =
+            $"{percentageUsed:N0}% used";
 
         double progress = 0;
 
@@ -176,18 +147,12 @@ public partial class DashboardPage : ContentPage
         BudgetProgressBar.Progress =
             Math.Clamp(progress, 0, 1);
 
-        MonthlySpentLabel.Text =
-            $"R {spent:N2}";
-
-        MonthlyRemainingLabel.Text =
-            $"R {remaining:N2}";
-
         DisplayRecentTransactions(
             dashboard.RecentTransactions);
     }
 
     // ==========================================
-    // RECENT TRANSACTIONS
+    // RECENT SPENDING
     // ==========================================
 
     private void DisplayRecentTransactions(
@@ -195,17 +160,15 @@ public partial class DashboardPage : ContentPage
     {
         RecentTransactionsLayout.Children.Clear();
 
-        if (transactions == null ||
-            transactions.Count == 0)
+        if (transactions == null || transactions.Count == 0)
         {
             ShowNoRecentSpending();
             return;
         }
 
-        var spendingTransactions =
-            transactions
-                .Where(IsSpendingTransaction)
-                .ToList();
+        var spendingTransactions = transactions
+            .Where(IsSpendingTransaction)
+            .ToList();
 
         if (spendingTransactions.Count == 0)
         {
@@ -213,12 +176,9 @@ public partial class DashboardPage : ContentPage
             return;
         }
 
-        for (int i = 0;
-             i < spendingTransactions.Count;
-             i++)
+        for (int i = 0; i < spendingTransactions.Count; i++)
         {
-            DashboardTransaction transaction =
-                spendingTransactions[i];
+            var transaction = spendingTransactions[i];
 
             RecentTransactionsLayout.Children.Add(
                 CreateTransactionView(transaction));
@@ -229,8 +189,7 @@ public partial class DashboardPage : ContentPage
                     new BoxView
                     {
                         HeightRequest = 1,
-                        BackgroundColor =
-                            Color.FromArgb("#EEEEEE")
+                        BackgroundColor = Color.FromArgb("#EEEEEE")
                     });
             }
         }
@@ -279,16 +238,16 @@ public partial class DashboardPage : ContentPage
         };
 
         string description =
-            string.IsNullOrWhiteSpace(
-                transaction.Description)
+            string.IsNullOrWhiteSpace(transaction.Description)
                 ? "Recorded Purchase"
                 : transaction.Description;
 
         var descriptionLabel = new Label
         {
             Text = description,
+            FontSize = 14,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#1E1E1E")
+            TextColor = Color.FromArgb("#0F172A")
         };
 
         var dateLabel = new Label
@@ -296,16 +255,17 @@ public partial class DashboardPage : ContentPage
             Text = transaction.CreatedAt
                 .ToLocalTime()
                 .ToString("dd MMM yyyy"),
+
             FontSize = 12,
-            TextColor = Color.FromArgb("#777777")
+            TextColor = Color.FromArgb("#64748B")
         };
 
         var amountLabel = new Label
         {
-            Text =
-                $"-R {Math.Abs(transaction.Amount):N2}",
+            Text = $"-R {Math.Abs(transaction.Amount):N2}",
+            FontSize = 14,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#C0392B"),
+            TextColor = Color.FromArgb("#DC2626"),
             VerticalOptions = LayoutOptions.Center
         };
 
@@ -333,7 +293,7 @@ public partial class DashboardPage : ContentPage
             new Label
             {
                 Text = "No recent spending recorded yet.",
-                TextColor = Color.FromArgb("#777777"),
+                TextColor = Color.FromArgb("#64748B"),
                 HorizontalOptions = LayoutOptions.Center,
                 HorizontalTextAlignment = TextAlignment.Center,
                 Margin = new Thickness(0, 15)
@@ -348,24 +308,22 @@ public partial class DashboardPage : ContentPage
     {
         SetBankNotConnected();
 
-        BudgetSpentLabel.Text =
-            "R 0.00 spent of R 0.00";
+        TotalSpentLabel.Text = "R 0.00";
 
-        BudgetRemainingLabel.Text =
+        BudgetRemainingLabel.Text = "R 0.00";
+
+        RemainingSummaryLabel.Text =
             "R 0.00 remaining";
 
-        BudgetPercentageLabel.Text = "0%";
+        BudgetPercentLabel.Text = "0% used";
 
         BudgetProgressBar.Progress = 0;
-
-        MonthlySpentLabel.Text = "R 0.00";
-        MonthlyRemainingLabel.Text = "R 0.00";
 
         ShowNoRecentSpending();
     }
 
     // ==========================================
-    // LOAD UNREAD NOTIFICATIONS
+    // UNREAD NOTIFICATIONS
     // ==========================================
 
     private async Task LoadUnreadNotificationsAsync()
@@ -377,22 +335,23 @@ public partial class DashboardPage : ContentPage
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                UnreadNotificationsLabel.IsVisible = false;
+                SetUnreadNotificationCount(0);
                 return;
             }
 
-            _notificationsClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue(
-                    "Bearer",
-                    token);
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "api/BudgetNotifications/unread-count");
+
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
 
             using var response =
-                await _notificationsClient.GetAsync(
-                    "api/BudgetNotifications/unread-count");
+                await _notificationsClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
-                UnreadNotificationsLabel.IsVisible = false;
+                SetUnreadNotificationCount(0);
 
                 Debug.WriteLine(
                     $"Notification count failed: {response.StatusCode}");
@@ -403,162 +362,113 @@ public partial class DashboardPage : ContentPage
             var result = await response.Content
                 .ReadFromJsonAsync<UnreadNotificationCountResponse>();
 
-            int unreadCount = result?.UnreadCount ?? 0;
-
-            UnreadNotificationsLabel.Text =
-                unreadCount > 99
-                    ? "99+"
-                    : unreadCount.ToString();
-
-            UnreadNotificationsLabel.IsVisible =
-                unreadCount > 0;
+            SetUnreadNotificationCount(
+                result?.UnreadCount ?? 0);
         }
         catch (Exception ex)
         {
-            UnreadNotificationsLabel.IsVisible = false;
+            SetUnreadNotificationCount(0);
 
             Debug.WriteLine(
                 $"NOTIFICATION ERROR: {ex.Message}");
         }
     }
 
-    // ==========================================
-    // CONNECT BANK
-    // ==========================================
-
-    private async void ConnectBankButton_Clicked(
-        object sender,
-        EventArgs e)
+    private void SetUnreadNotificationCount(int count)
     {
-        await DisplayAlert(
-            "Bank Connection",
-            "Secure bank account connection will be added when the banking provider integration is configured.",
-            "OK");
+        NotificationBadge.IsVisible = count > 0;
+
+        NotificationCountLabel.Text =
+            count > 99 ? "99+" : count.ToString();
     }
 
     // ==========================================
     // NAVIGATION
     // ==========================================
 
-    private async void WalletButton_Clicked(
+    private async void OnNotificationsTapped(
         object sender,
-        EventArgs e)
+        TappedEventArgs e)
     {
         await Navigation.PushAsync(
-            new SpendingActivityPage());
+            new SpendWise.App.NotificationsPage());
     }
 
-    private async void BudgetButton_Clicked(
+    private async void OnProfileTapped(
         object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new BudgetPage());
-    }
-
-    private async void GroceryButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new GroceryPage());
-    }
-
-    private async void MyGroceryListsButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new MyGroceryListsPage());
-    }
-
-    private async void PurchaseButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new PurchasePage());
-    }
-
-    private async void ReportsButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new ReportsPage());
-    }
-
-    private async void InsightsButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new InsightsPage());
-    }
-
-    private async void ViewTransactionsButton_Clicked(
-        object sender,
-        EventArgs e)
-    {
-        await Navigation.PushAsync(
-            new TransactionsPage());
-    }
-
-    private async void ProfileButton_Clicked(
-        object sender,
-        EventArgs e)
+        TappedEventArgs e)
     {
         await Navigation.PushAsync(
             new ProfilePage());
     }
 
-    // ==========================================
-    // OPEN NOTIFICATIONS
-    // ==========================================
-
-    private async void NotificationsButton_Clicked(
+    private async void OnViewBudgetTapped(
         object sender,
-        EventArgs e)
+        TappedEventArgs e)
     {
-        try
-        {
-            await Navigation.PushAsync(
-                new SpendWise.App.NotificationsPage());
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert(
-                "Navigation Error",
-                ex.Message,
-                "OK");
-        }
+        await Navigation.PushAsync(
+            new BudgetPage());
     }
 
-    // ==========================================
-    // OPEN HELP & SUPPORT
-    // ==========================================
-
-    private async void HelpButton_Clicked(
+    private async void OnGroceryListsTapped(
         object sender,
-        EventArgs e)
+        TappedEventArgs e)
     {
-        try
-        {
-            await Navigation.PushAsync(
-                new HelpPage());
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert(
-                "Navigation Error",
-                ex.Message,
-                "OK");
-        }
+        await Navigation.PushAsync(
+            new MyGroceryListsPage());
+    }
+
+    private async void OnGroceryTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new GroceryPage());
+    }
+
+    private async void OnActivityTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new SpendingActivityPage());
+    }
+
+    private async void OnViewTransactionsTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new TransactionsPage());
+    }
+
+    private async void OnPurchaseTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new PurchasePage());
+    }
+
+    private async void OnReportsTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new ReportsPage());
+    }
+
+    private async void OnInsightsTapped(
+        object sender,
+        TappedEventArgs e)
+    {
+        await Navigation.PushAsync(
+            new InsightsPage());
     }
 }
 
 // ==========================================
-// NOTIFICATION COUNT RESPONSE
+// NOTIFICATION RESPONSE
 // ==========================================
 
 public class UnreadNotificationCountResponse

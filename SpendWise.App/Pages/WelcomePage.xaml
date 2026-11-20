@@ -5,226 +5,537 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Shell.NavBarIsVisible="False"
-    BackgroundColor="{StaticResource PrimaryDark}">
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="#003D2F">
 
-    <Grid RowDefinitions="*,Auto">
+    <ScrollView x:Name="MainScroll">
+        <VerticalStackLayout Spacing="0">
 
-        <!-- Decorative background -->
-        <Grid Grid.RowSpan="2"
-              InputTransparent="True">
+            <!-- Header -->
+            <Grid
+                Padding="35,20"
+                ColumnDefinitions="Auto,*,Auto"
+                ColumnSpacing="25">
 
-            <Border
-                WidthRequest="350"
-                HeightRequest="350"
-                TranslationX="-180"
-                TranslationY="-160"
-                HorizontalOptions="Start"
-                VerticalOptions="Start"
-                BackgroundColor="#105C48"
-                Opacity="0.5"
-                StrokeThickness="0">
+                <!-- Logo -->
+                <HorizontalStackLayout
+                    Grid.Column="0"
+                    Spacing="10"
+                    VerticalOptions="Center">
 
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="175" />
-                </Border.StrokeShape>
-            </Border>
-
-            <Border
-                WidthRequest="300"
-                HeightRequest="300"
-                TranslationX="150"
-                TranslationY="120"
-                HorizontalOptions="End"
-                VerticalOptions="End"
-                BackgroundColor="#12644D"
-                Opacity="0.35"
-                StrokeThickness="0">
-
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="150" />
-                </Border.StrokeShape>
-            </Border>
-
-        </Grid>
-
-        <!-- Main welcome content -->
-        <ScrollView Grid.Row="0">
-
-            <VerticalStackLayout
-                Padding="24,30,24,15"
-                Spacing="22"
-                VerticalOptions="Center">
-
-                <!-- Grocery trolley -->
-                <Image
-                    Source="grocery_trolley.png"
-                    HeightRequest="260"
-                    Aspect="AspectFit"
-                    HorizontalOptions="Center" />
-
-                <!-- Feature cards -->
-                <Grid ColumnDefinitions="*,*,*"
-                      ColumnSpacing="10">
-
-                    <Border Grid.Column="0"
-                            BackgroundColor="#176A53"
-                            Stroke="#32846C"
-                            StrokeThickness="1"
-                            Padding="12,15">
+                    <Border
+                        WidthRequest="42"
+                        HeightRequest="42"
+                        BackgroundColor="#00B982"
+                        Stroke="#42E6B0"
+                        StrokeThickness="1">
 
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="16"/>
+                            <RoundRectangle CornerRadius="11"/>
                         </Border.StrokeShape>
 
-                        <VerticalStackLayout Spacing="6">
-
-                            <Label Text="▥"
-                                   FontSize="26"
-                                   TextColor="#42F0A4"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Plan"
-                                   FontAttributes="Bold"
-                                   FontSize="15"
-                                   TextColor="White"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Set your budget"
-                                   FontSize="11"
-                                   TextColor="#D8EEE7"
-                                   HorizontalTextAlignment="Center"/>
-
-                        </VerticalStackLayout>
+                        <Label
+                            Text="S"
+                            FontSize="30"
+                            FontAttributes="Bold"
+                            TextColor="White"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"/>
                     </Border>
-
-                    <Border Grid.Column="1"
-                            BackgroundColor="#176A53"
-                            Stroke="#32846C"
-                            StrokeThickness="1"
-                            Padding="12,15">
-
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="16"/>
-                        </Border.StrokeShape>
-
-                        <VerticalStackLayout Spacing="6">
-
-                            <Label Text="☷"
-                                   FontSize="26"
-                                   TextColor="#42F0A4"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Track"
-                                   FontAttributes="Bold"
-                                   FontSize="15"
-                                   TextColor="White"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Monitor spending"
-                                   FontSize="11"
-                                   TextColor="#D8EEE7"
-                                   HorizontalTextAlignment="Center"/>
-
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border Grid.Column="2"
-                            BackgroundColor="#176A53"
-                            Stroke="#32846C"
-                            StrokeThickness="1"
-                            Padding="12,15">
-
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="16"/>
-                        </Border.StrokeShape>
-
-                        <VerticalStackLayout Spacing="6">
-
-                            <Label Text="✦"
-                                   FontSize="26"
-                                   TextColor="#42F0A4"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Spend Smarter"
-                                   FontAttributes="Bold"
-                                   FontSize="14"
-                                   TextColor="White"
-                                   HorizontalTextAlignment="Center"/>
-
-                            <Label Text="Better choices"
-                                   FontSize="11"
-                                   TextColor="#D8EEE7"
-                                   HorizontalTextAlignment="Center"/>
-
-                        </VerticalStackLayout>
-                    </Border>
-
-                </Grid>
-
-                <!-- Branding -->
-                <VerticalStackLayout Spacing="10">
 
                     <Label
-                        Text="Martin SpendWise"
-                        FontSize="36"
+                        Text="SpendWise"
+                        FontSize="25"
                         FontAttributes="Bold"
                         TextColor="White"
-                        HorizontalTextAlignment="Center"/>
+                        VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <!-- Navigation -->
+                <HorizontalStackLayout
+                    Grid.Column="1"
+                    Spacing="28"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center">
+
+                    <Button
+                        Text="Features"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontSize="14"
+                        Clicked="FeaturesButton_Clicked"/>
+
+                    <Button
+                        Text="Support"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontSize="14"
+                        Clicked="SupportButton_Clicked"/>
+                </HorizontalStackLayout>
+
+                <!-- Account buttons -->
+                <HorizontalStackLayout
+                    Grid.Column="2"
+                    Spacing="10"
+                    VerticalOptions="Center">
+
+                    <Button
+                        Text="Login"
+                        WidthRequest="105"
+                        HeightRequest="43"
+                        BackgroundColor="Transparent"
+                        BorderColor="#55A88E"
+                        BorderWidth="1"
+                        CornerRadius="12"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="LoginButton_Clicked"/>
+
+                    <Button
+                        Text="Get Started  →"
+                        HeightRequest="43"
+                        Padding="18,0"
+                        BackgroundColor="#00B982"
+                        TextColor="White"
+                        CornerRadius="12"
+                        FontAttributes="Bold"
+                        Clicked="CreateAccountButton_Clicked"/>
+                </HorizontalStackLayout>
+            </Grid>
+
+            <!-- Hero section -->
+            <Grid
+                Padding="55,35,55,30"
+                ColumnDefinitions="1.05*,1.1*"
+                ColumnSpacing="35"
+                MinimumHeightRequest="390">
+
+                <!-- Left side -->
+                <VerticalStackLayout
+                    Grid.Column="0"
+                    Spacing="20"
+                    VerticalOptions="Center">
+
+                    <Border
+                        BackgroundColor="#104E40"
+                        Stroke="#00B982"
+                        StrokeThickness="1"
+                        HorizontalOptions="Start"
+                        Padding="15,8">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+
+                        <Label
+                            Text="✦  Budget Smarter, Shop Better"
+                            TextColor="#55E6B4"
+                            FontAttributes="Bold"
+                            FontSize="14"/>
+                    </Border>
 
                     <Label
-                        Text="Plan. Track. Spend Smarter."
-                        FontSize="17"
-                        TextColor="#D8EEE7"
-                        HorizontalTextAlignment="Center"/>
+                        Text="Your Money &amp; Groceries.&#10;Unified."
+                        FontSize="42"
+                        FontAttributes="Bold"
+                        TextColor="White"
+                        LineHeight="1.1"/>
 
-                    <BoxView
-                        WidthRequest="70"
-                        HeightRequest="4"
-                        Color="#00C989"
-                        CornerRadius="2"
-                        HorizontalOptions="Center"
-                        Margin="0,8,0,0"/>
+                    <Label
+                        Text="Master your household spending and grocery lists in one powerful app. Plan smarter, track instantly, save more."
+                        FontSize="17"
+                        TextColor="#C6DED5"
+                        LineHeight="1.4"/>
 
                 </VerticalStackLayout>
 
-            </VerticalStackLayout>
-        </ScrollView>
+                <!-- Dashboard preview -->
+                <Border
+                    Grid.Column="1"
+                    BackgroundColor="#145C49"
+                    Stroke="#267F65"
+                    StrokeThickness="2"
+                    Padding="12"
+                    VerticalOptions="Center">
 
-        <!-- Action buttons -->
-        <VerticalStackLayout
-            Grid.Row="1"
-            Padding="24,12,24,28"
-            Spacing="14">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
 
-            <Button
-                Text="Login  →"
-                HeightRequest="58"
-                FontSize="17"
-                FontAttributes="Bold"
-                TextColor="White"
-                BackgroundColor="{StaticResource AccentGreen}"
-                CornerRadius="15"
-                Clicked="LoginButton_Clicked"/>
+                    <Border
+                        BackgroundColor="#F7FAF9"
+                        Padding="12">
 
-            <Button
-                Text="Create Account  →"
-                HeightRequest="58"
-                FontSize="17"
-                FontAttributes="Bold"
-                TextColor="#00684B"
-                BackgroundColor="White"
-                CornerRadius="15"
-                Clicked="CreateAccountButton_Clicked"/>
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="13"/>
+                        </Border.StrokeShape>
 
-            <Label
-                Text="Your Money. A Smarter Tomorrow."
-                FontSize="12"
-                TextColor="#D8EEE7"
-                HorizontalTextAlignment="Center"
-                Margin="0,8,0,0"/>
+                        <Grid
+                            RowDefinitions="Auto,*"
+                            RowSpacing="12">
+
+                            <!-- Dashboard top bar -->
+                            <Grid
+                                Grid.Row="0"
+                                ColumnDefinitions="Auto,*,Auto"
+                                Padding="4,2">
+
+                                <HorizontalStackLayout
+                                    Spacing="7">
+
+                                    <Border
+                                        BackgroundColor="#009F70"
+                                        WidthRequest="25"
+                                        HeightRequest="25">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="6"/>
+                                        </Border.StrokeShape>
+
+                                        <Label
+                                            Text="S"
+                                            TextColor="White"
+                                            FontAttributes="Bold"
+                                            HorizontalTextAlignment="Center"
+                                            VerticalTextAlignment="Center"/>
+                                    </Border>
+
+                                    <Label
+                                        Text="SpendWise"
+                                        TextColor="#123C32"
+                                        FontAttributes="Bold"
+                                        VerticalOptions="Center"
+                                        FontSize="13"/>
+                                </HorizontalStackLayout>
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="Dashboard"
+                                    TextColor="#123C32"
+                                    FontAttributes="Bold"
+                                    VerticalOptions="Center"
+                                    Margin="15,0"/>
+
+                                <Label
+                                    Grid.Column="2"
+                                    Text="●  ●  ●"
+                                    TextColor="#009F70"
+                                    VerticalOptions="Center"/>
+                            </Grid>
+
+                            <!-- Dashboard body -->
+                            <Grid
+                                Grid.Row="1"
+                                ColumnDefinitions="0.8*,1.2*"
+                                ColumnSpacing="10">
+
+                                <!-- Sidebar -->
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    BackgroundColor="#F0F6F3"
+                                    Padding="8"
+                                    Spacing="14">
+
+                                    <Label
+                                        Text="▣  Dashboard"
+                                        TextColor="#009F70"
+                                        FontAttributes="Bold"
+                                        FontSize="11"/>
+
+                                    <Label
+                                        Text="▤  Plan"
+                                        TextColor="#657B74"
+                                        FontSize="11"/>
+
+                                    <Label
+                                        Text="◉  Budget"
+                                        TextColor="#657B74"
+                                        FontSize="11"/>
+
+                                    <Label
+                                        Text="▧  Lists"
+                                        TextColor="#657B74"
+                                        FontSize="11"/>
+
+                                    <Label
+                                        Text="▥  Activity"
+                                        TextColor="#657B74"
+                                        FontSize="11"/>
+                                </VerticalStackLayout>
+
+                                <!-- Dashboard content -->
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="9">
+
+                                    <!-- Budget progress -->
+                                    <Border
+                                        BackgroundColor="White"
+                                        Stroke="#E4ECE8"
+                                        Padding="10">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+
+                                        <Grid
+                                            ColumnDefinitions="*,*"
+                                            ColumnSpacing="8">
+
+                                            <VerticalStackLayout
+                                                Spacing="8"
+                                                VerticalOptions="Center">
+
+                                                <Label
+                                                    Text="Monthly Budget Progress"
+                                                    TextColor="#183D33"
+                                                    FontSize="10"
+                                                    FontAttributes="Bold"/>
+
+                                                <Label
+                                                    Text="78%"
+                                                    TextColor="#009F70"
+                                                    FontSize="29"
+                                                    FontAttributes="Bold"
+                                                    HorizontalTextAlignment="Center"/>
+
+                                                <ProgressBar
+                                                    Progress="0.78"
+                                                    ProgressColor="#00B982"
+                                                    BackgroundColor="#E4EEE9"/>
+                                            </VerticalStackLayout>
+
+                                            <Image
+                                                Grid.Column="1"
+                                                Source="grocery_trolley.png"
+                                                Aspect="AspectFit"
+                                                HeightRequest="110"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Transactions and grocery list -->
+                                    <Grid
+                                        ColumnDefinitions="*,*"
+                                        ColumnSpacing="8">
+
+                                        <Border
+                                            BackgroundColor="White"
+                                            Stroke="#E4ECE8"
+                                            Padding="9">
+
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="10"/>
+                                            </Border.StrokeShape>
+
+                                            <VerticalStackLayout Spacing="9">
+
+                                                <Label
+                                                    Text="Recent Transactions"
+                                                    TextColor="#183D33"
+                                                    FontAttributes="Bold"
+                                                    FontSize="10"/>
+
+                                                <Label
+                                                    Text="🛒  Woolworths     -R450"
+                                                    TextColor="#344D45"
+                                                    FontSize="9"/>
+
+                                                <Label
+                                                    Text="⚡  Electricity    -R1200"
+                                                    TextColor="#344D45"
+                                                    FontSize="9"/>
+                                            </VerticalStackLayout>
+                                        </Border>
+
+                                        <Border
+                                            Grid.Column="1"
+                                            BackgroundColor="White"
+                                            Stroke="#E4ECE8"
+                                            Padding="9">
+
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="10"/>
+                                            </Border.StrokeShape>
+
+                                            <VerticalStackLayout Spacing="9">
+
+                                                <Label
+                                                    Text="Grocery List"
+                                                    TextColor="#183D33"
+                                                    FontAttributes="Bold"
+                                                    FontSize="10"/>
+
+                                                <Label
+                                                    Text="✓  Milk"
+                                                    TextColor="#344D45"
+                                                    FontSize="10"/>
+
+                                                <Label
+                                                    Text="✓  Bread"
+                                                    TextColor="#344D45"
+                                                    FontSize="10"/>
+
+                                                <Label
+                                                    Text="✓  Bananas"
+                                                    TextColor="#344D45"
+                                                    FontSize="10"/>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Border>
+            </Grid>
+
+            <!-- Features section -->
+            <Grid
+                x:Name="FeaturesSection"
+                Padding="55,15,55,45"
+                ColumnDefinitions="*,*,*"
+                ColumnSpacing="18">
+
+                <!-- Plan groceries -->
+                <Border
+                    Grid.Column="0"
+                    BackgroundColor="White"
+                    Stroke="#E4ECE8"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="17"/>
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="15">
+
+                        <Label
+                            Text="📝"
+                            FontSize="34"
+                            VerticalOptions="Center"/>
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="7"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="Plan Groceries"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#102F27"/>
+
+                            <Label
+                                Text="Build smart lists &amp; set category limits."
+                                FontSize="13"
+                                TextColor="#455B53"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Track expenses -->
+                <Border
+                    Grid.Column="1"
+                    BackgroundColor="White"
+                    Stroke="#E4ECE8"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="17"/>
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="15">
+
+                        <Label
+                            Text="👛"
+                            FontSize="34"
+                            VerticalOptions="Center"/>
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="7"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="Track Expenses"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#102F27"/>
+
+                            <Label
+                                Text="Log every rand and monitor spending trends."
+                                FontSize="13"
+                                TextColor="#455B53"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Save money -->
+                <Border
+                    Grid.Column="2"
+                    BackgroundColor="White"
+                    Stroke="#E4ECE8"
+                    Padding="18">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="17"/>
+                    </Border.StrokeShape>
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="15">
+
+                        <Label
+                            Text="🌱"
+                            FontSize="34"
+                            VerticalOptions="Center"/>
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="7"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="Save Money"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#102F27"/>
+
+                            <Label
+                                Text="Identify savings opportunities and achieve financial goals."
+                                FontSize="13"
+                                TextColor="#455B53"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Footer -->
+            <Grid
+                Padding="35,22"
+                ColumnDefinitions="*,Auto"
+                BackgroundColor="#003629">
+
+                <Label
+                    Text="© 2026 SpendWise Inc. All rights reserved."
+                    TextColor="#B9D1C8"
+                    FontSize="12"
+                    VerticalOptions="Center"/>
+
+                <Label
+                    Grid.Column="1"
+                    Text="Privacy"
+                    TextColor="#B9D1C8"
+                    FontSize="12"
+                    VerticalOptions="Center"
+                    Margin="15,0"/>
+            </Grid>
 
         </VerticalStackLayout>
-
-    </Grid>
+    </ScrollView>
 
 </ContentPage>

@@ -5,228 +5,411 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Shell.NavBarIsVisible="False"
-    BackgroundColor="{StaticResource PageBackground}">
+    NavigationPage.HasNavigationBar="False"
+    BackgroundColor="#F1F5F3">
 
-    <ScrollView>
+    <!-- ROOT GRID -->
+    <Grid>
 
-        <Grid
-            Padding="25"
-            RowDefinitions="Auto,*">
+        <!-- MAIN LOGIN SCREEN -->
+        <Grid RowDefinitions="Auto,*,Auto"
+              Padding="32,24">
 
-            <!-- BACK BUTTON -->
-            <Button
+            <!-- Back Navigation -->
+            <HorizontalStackLayout
                 Grid.Row="0"
-                Text="←"
-                FontSize="24"
-                TextColor="{StaticResource Primary}"
-                BackgroundColor="Transparent"
-                WidthRequest="50"
-                HeightRequest="50"
-                HorizontalOptions="Start"
-                Clicked="BackButton_Clicked" />
+                HorizontalOptions="Start">
 
-            <!-- LOGIN CONTENT -->
-            <VerticalStackLayout
-                Grid.Row="1"
-                MaximumWidthRequest="500"
-                WidthRequest="450"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                Spacing="18">
-
-                <!-- LOGO -->
-                <Border
-                    WidthRequest="80"
-                    HeightRequest="80"
-                    HorizontalOptions="Center"
-                    BackgroundColor="{StaticResource PrimaryLight}"
-                    StrokeThickness="0">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="40" />
-                    </Border.StrokeShape>
-
-                    <Label
-                        Text="👤"
-                        FontSize="38"
-                        HorizontalTextAlignment="Center"
-                        VerticalTextAlignment="Center" />
-
-                </Border>
-
-                <!-- HEADING -->
-                <Label
-                    Text="Welcome Back"
-                    Style="{StaticResource PageTitleStyle}"
-                    HorizontalTextAlignment="Center" />
-
-                <Label
-                    Text="Sign in to your Martin SpendWise account"
-                    Style="{StaticResource BodyTextStyle}"
-                    HorizontalTextAlignment="Center"
-                    Margin="0,0,0,15" />
-
-                <!-- EMAIL -->
-                <Label
-                    Text="Email"
-                    FontAttributes="Bold"
-                    TextColor="{StaticResource TextPrimary}" />
-
-                <Border
-                    BackgroundColor="#F1F3F2"
-                    Stroke="#8A9690"
-                    StrokeThickness="1.5"
-                    HeightRequest="56"
-                    Padding="12,0">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="12" />
-                    </Border.StrokeShape>
-
-                    <Entry
-                        x:Name="EmailEntry"
-                        Placeholder="Enter your email"
-                        PlaceholderColor="#777777"
-                        TextColor="#1E1E1E"
-                        BackgroundColor="Transparent"
-                        Keyboard="Email"
-                        FontSize="15"
-                        VerticalOptions="Center"
-                        VerticalTextAlignment="Center" />
-
-                </Border>
-
-                <!-- PASSWORD -->
-                <Label
-                    Text="Password"
-                    FontAttributes="Bold"
-                    TextColor="{StaticResource TextPrimary}" />
-
-                <Border
-                    BackgroundColor="#F1F3F2"
-                    Stroke="#8A9690"
-                    StrokeThickness="1.5"
-                    HeightRequest="56"
-                    Padding="12,0">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="12" />
-                    </Border.StrokeShape>
-
-                    <Grid
-                        ColumnDefinitions="*,Auto"
-                        ColumnSpacing="5">
-
-                        <Entry
-                            x:Name="PasswordEntry"
-                            Grid.Column="0"
-                            Placeholder="Enter your password"
-                            PlaceholderColor="#777777"
-                            TextColor="#1E1E1E"
-                            BackgroundColor="Transparent"
-                            IsPassword="True"
-                            FontSize="15"
-                            VerticalOptions="Center"
-                            VerticalTextAlignment="Center" />
-
-                        <Button
-                            x:Name="ShowPasswordButton"
-                            Grid.Column="1"
-                            Text="Show"
-                            FontSize="12"
-                            FontAttributes="Bold"
-                            TextColor="{StaticResource Primary}"
-                            BackgroundColor="Transparent"
-                            Padding="8,0"
-                            VerticalOptions="Center"
-                            Clicked="ShowPasswordButton_Clicked" />
-
-                    </Grid>
-
-                </Border>
-
-                <!-- FORGOT PASSWORD -->
                 <Button
-                    Text="Forgot Password?"
-                    TextColor="{StaticResource Primary}"
+                    Text="←  Back to Home"
                     BackgroundColor="Transparent"
-                    HorizontalOptions="End"
-                    Padding="0"
-                    Clicked="ForgotPasswordButton_Clicked" />
-
-                <!-- ERROR -->
-                <Label
-                    x:Name="ErrorLabel"
-                    Text=""
-                    TextColor="{StaticResource ExpenseRed}"
-                    FontSize="13"
-                    HorizontalTextAlignment="Center"
-                    IsVisible="False" />
-
-                <!-- LOGIN -->
-                <Button
-                    x:Name="LoginButton"
-                    Text="Login →"
-                    BackgroundColor="{StaticResource Primary}"
-                    TextColor="White"
-                    HeightRequest="52"
-                    CornerRadius="26"
-                    FontSize="16"
+                    TextColor="#1E293B"
                     FontAttributes="Bold"
-                    HorizontalOptions="Fill"
-                    Clicked="LoginButton_Clicked" />
+                    FontSize="14"
+                    Padding="8,4"
+                    Clicked="BackButton_Clicked"/>
 
-                <!-- DIVIDER -->
-                <Grid
-                    ColumnDefinitions="*,Auto,*"
-                    ColumnSpacing="12"
-                    Margin="0,10">
+            </HorizontalStackLayout>
 
-                    <BoxView
-                        Grid.Column="0"
-                        HeightRequest="1"
-                        BackgroundColor="{StaticResource BorderColor}"
-                        VerticalOptions="Center" />
+            <!-- Login Card Container -->
+            <Grid
+                Grid.Row="1"
+                MaximumWidthRequest="440"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+
+                <!-- White Login Card -->
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E2E8F0"
+                    StrokeThickness="1"
+                    Margin="0,38,0,0"
+                    Padding="36,56,36,36">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="#063B2C"
+                            Offset="0,12"
+                            Radius="28"
+                            Opacity="0.08"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="18">
+
+                        <!-- Heading -->
+                        <VerticalStackLayout
+                            Spacing="6"
+                            HorizontalOptions="Center">
+
+                            <Label
+                                Text="Welcome Back"
+                                TextColor="#0F172A"
+                                FontSize="28"
+                                FontAttributes="Bold"
+                                HorizontalTextAlignment="Center"/>
+
+                            <Label
+                                Text="Sign in to your SpendWise account"
+                                TextColor="#64748B"
+                                FontSize="14"
+                                HorizontalTextAlignment="Center"/>
+
+                        </VerticalStackLayout>
+
+                        <!-- Email -->
+                        <VerticalStackLayout
+                            Spacing="6"
+                            Margin="0,8,0,0">
+
+                            <Label
+                                Text="Email"
+                                TextColor="#0F172A"
+                                FontSize="13"
+                                FontAttributes="Bold"/>
+
+                            <Border
+                                BackgroundColor="#EDF2F4"
+                                Stroke="#CBD5E1"
+                                StrokeThickness="1"
+                                Padding="14,2">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10"/>
+                                </Border.StrokeShape>
+
+                                <Entry
+                                    x:Name="EmailEntry"
+                                    Placeholder="Enter your email"
+                                    PlaceholderColor="#94A3B8"
+                                    TextColor="#0F172A"
+                                    Keyboard="Email"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"/>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+                        <!-- Password -->
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label
+                                Text="Password"
+                                TextColor="#0F172A"
+                                FontSize="13"
+                                FontAttributes="Bold"/>
+
+                            <Border
+                                BackgroundColor="#EDF2F4"
+                                Stroke="#CBD5E1"
+                                StrokeThickness="1"
+                                Padding="14,2,8,2">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10"/>
+                                </Border.StrokeShape>
+
+                                <Grid ColumnDefinitions="*,Auto">
+
+                                    <Entry
+                                        x:Name="PasswordEntry"
+                                        Grid.Column="0"
+                                        Placeholder="Enter your password"
+                                        PlaceholderColor="#94A3B8"
+                                        TextColor="#0F172A"
+                                        IsPassword="True"
+                                        FontSize="14"
+                                        BackgroundColor="Transparent"/>
+
+                                    <Button
+                                        x:Name="ShowPasswordButton"
+                                        Grid.Column="1"
+                                        Text="Show"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#0F172A"
+                                        FontAttributes="Bold"
+                                        FontSize="12"
+                                        Padding="10,0"
+                                        Clicked="ShowPasswordButton_Clicked"/>
+
+                                </Grid>
+
+                            </Border>
+
+                            <!-- Forgot Password -->
+                            <Button
+                                Text="Forgot Password?"
+                                TextColor="#065F46"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                BackgroundColor="Transparent"
+                                HorizontalOptions="End"
+                                Padding="0"
+                                Margin="0,2,0,0"
+                                Clicked="ForgotPasswordButton_Clicked"/>
+
+                        </VerticalStackLayout>
+
+                        <!-- Error Message -->
+                        <Label
+                            x:Name="ErrorLabel"
+                            Text=""
+                            TextColor="#DC2626"
+                            FontSize="13"
+                            HorizontalTextAlignment="Center"
+                            IsVisible="False"/>
+
+                        <!-- Login Button -->
+                        <Button
+                            x:Name="LoginButton"
+                            Text="Login  →"
+                            BackgroundColor="#065F46"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            HeightRequest="48"
+                            CornerRadius="24"
+                            Margin="0,6,0,0"
+                            Clicked="LoginButton_Clicked"/>
+
+                        <!-- OR Divider -->
+                        <Grid
+                            ColumnDefinitions="*,Auto,*"
+                            ColumnSpacing="12"
+                            Margin="0,4,0,0">
+
+                            <BoxView
+                                Grid.Column="0"
+                                HeightRequest="1"
+                                Color="#E2E8F0"
+                                VerticalOptions="Center"/>
+
+                            <Label
+                                Grid.Column="1"
+                                Text="or"
+                                TextColor="#64748B"
+                                FontSize="12"
+                                VerticalOptions="Center"/>
+
+                            <BoxView
+                                Grid.Column="2"
+                                HeightRequest="1"
+                                Color="#E2E8F0"
+                                VerticalOptions="Center"/>
+
+                        </Grid>
+
+                        <!-- Create Account -->
+                        <HorizontalStackLayout
+                            HorizontalOptions="Center"
+                            Spacing="5">
+
+                            <Label
+                                Text="Don't have an account?"
+                                TextColor="#475569"
+                                FontSize="13"
+                                VerticalOptions="Center"/>
+
+                            <Label
+                                Text="Create Account"
+                                TextColor="#065F46"
+                                FontAttributes="Bold"
+                                FontSize="13"
+                                VerticalOptions="Center">
+
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Tapped="CreateAccountButton_Clicked"/>
+                                </Label.GestureRecognizers>
+
+                            </Label>
+
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- Overlapping S Emblem -->
+                <Border
+                    BackgroundColor="#063B2C"
+                    Stroke="#10B981"
+                    StrokeThickness="3"
+                    WidthRequest="76"
+                    HeightRequest="76"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Start">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="38"/>
+                    </Border.StrokeShape>
+
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="#063B2C"
+                            Offset="0,4"
+                            Radius="12"
+                            Opacity="0.25"/>
+                    </Border.Shadow>
 
                     <Label
-                        Grid.Column="1"
-                        Text="or"
-                        TextColor="{StaticResource TextSecondary}" />
+                        Text="S"
+                        TextColor="#6EE7B7"
+                        FontSize="36"
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"/>
 
-                    <BoxView
-                        Grid.Column="2"
-                        HeightRequest="1"
-                        BackgroundColor="{StaticResource BorderColor}"
-                        VerticalOptions="Center" />
+                </Border>
 
-                </Grid>
+            </Grid>
 
-                <!-- REGISTER -->
-                <Button
-                    Text="Create Account →"
-                    BackgroundColor="White"
-                    TextColor="{StaticResource Primary}"
-                    BorderColor="{StaticResource Primary}"
-                    BorderWidth="1.5"
-                    HeightRequest="52"
-                    CornerRadius="26"
-                    FontSize="16"
-                    FontAttributes="Bold"
-                    HorizontalOptions="Fill"
-                    Clicked="CreateAccountButton_Clicked" />
-
-                <!-- FOOTER -->
-                <Label
-                    Text="Martin SpendWise"
-                    FontSize="12"
-                    TextColor="{StaticResource TextSecondary}"
-                    HorizontalTextAlignment="Center"
-                    Margin="0,10,0,0" />
-
-            </VerticalStackLayout>
+            <!-- Bottom Tagline -->
+            <Label
+                Grid.Row="2"
+                Text="Your Money. A Smarter Tomorrow."
+                TextColor="#64748B"
+                FontSize="12"
+                HorizontalOptions="Center"/>
 
         </Grid>
 
-    </ScrollView>
+        <!-- ================================= -->
+        <!-- WELCOME SUCCESS MODAL OVERLAY     -->
+        <!-- ================================= -->
+
+        <Grid
+            x:Name="WelcomeModalOverlay"
+            BackgroundColor="#800F172A"
+            IsVisible="False"
+            Padding="24"
+            ZIndex="10">
+
+            <Grid
+                MaximumWidthRequest="420"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+
+                <!-- Dark Green Modal Card -->
+                <Border
+                    BackgroundColor="#0C3B2A"
+                    Stroke="#165B43"
+                    StrokeThickness="1"
+                    Margin="0,24,0,0"
+                    Padding="28,44,28,24">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="#000000"
+                            Offset="0,16"
+                            Radius="36"
+                            Opacity="0.35"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="18">
+
+                        <!-- Welcome Heading -->
+                        <VerticalStackLayout
+                            Spacing="8"
+                            HorizontalOptions="Center">
+
+                            <Label
+                                Text="Welcome"
+                                TextColor="White"
+                                FontSize="22"
+                                FontAttributes="Bold"
+                                HorizontalTextAlignment="Center"/>
+
+                            <!-- Dynamic User Name -->
+                            <Label
+                                x:Name="WelcomeMessageLabel"
+                                Text="Welcome back!"
+                                TextColor="#D1FAE5"
+                                FontSize="15"
+                                HorizontalTextAlignment="Center"/>
+
+                        </VerticalStackLayout>
+
+                        <!-- Modal Bottom Action Area -->
+                        <Grid
+                            BackgroundColor="#092E21"
+                            Margin="-28,4,-28,-24"
+                            Padding="24,18">
+
+                            <Button
+                                Text="Continue  →"
+                                BackgroundColor="#10B981"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                HeightRequest="42"
+                                CornerRadius="21"
+                                HorizontalOptions="End"
+                                Padding="24,0"
+                                Clicked="OnContinueClicked"/>
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- Emerald Checkmark Badge -->
+                <Border
+                    BackgroundColor="#10B981"
+                    Stroke="#0C3B2A"
+                    StrokeThickness="4"
+                    WidthRequest="52"
+                    HeightRequest="52"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Start">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="26"/>
+                    </Border.StrokeShape>
+
+                    <Label
+                        Text="✓"
+                        TextColor="#06281C"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"/>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
 
 </ContentPage>

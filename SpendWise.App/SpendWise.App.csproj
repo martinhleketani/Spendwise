@@ -32,38 +32,28 @@
 	<!-- MAUI RESOURCES -->
 	<ItemGroup>
 
-		<MauiIcon Include="Resources\AppIcon\appicon.svg"
-                  ForegroundFile="Resources\AppIcon\appiconfg.svg"
-                  Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-		<MauiSplashScreen Include="Resources\Splash\splash.svg"
-                          Color="#512BD4"
-                          BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
 		<MauiImage Include="Resources\Images\*" />
 
-		<MauiImage Update="Resources\Images\dotnet_bot.png"
-                   Resize="True"
-                   BaseSize="300,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
 		<MauiFont Include="Resources\Fonts\*" />
 
-		<MauiAsset Include="Resources\Raw\**"
-                   LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
 	</ItemGroup>
 
 	<!-- NUGET PACKAGES -->
 	<ItemGroup>
 
-		<PackageReference Include="Microsoft.Maui.Controls"
-                          Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility"
-                          Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug"
-                          Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 
 	</ItemGroup>
 
@@ -120,6 +110,10 @@
 
 		<MauiXaml Update="Pages\InsightsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Pages\LandingPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 
 		<MauiXaml Update="Pages\LoginPage.xaml">

@@ -1,3 +1,4 @@
+﻿
 using SpendWise.App.Models;
 using SpendWise.App.Services;
 using System.Diagnostics;
@@ -9,11 +10,6 @@ public partial class LoginPage : ContentPage
     private readonly ApiService _apiService;
     private readonly AuthStorageService _authStorageService;
 
-
-    // ==========================================
-    // CONSTRUCTOR
-    // ==========================================
-
     public LoginPage()
     {
         InitializeComponent();
@@ -22,11 +18,7 @@ public partial class LoginPage : ContentPage
         _authStorageService = new AuthStorageService();
     }
 
-
-    // ==========================================
-    // BACK BUTTON
-    // ==========================================
-
+    // Back to Welcome Page
     private async void BackButton_Clicked(
         object sender,
         EventArgs e)
@@ -34,11 +26,7 @@ public partial class LoginPage : ContentPage
         await Navigation.PopAsync();
     }
 
-
-    // ==========================================
-    // SHOW / HIDE PASSWORD
-    // ==========================================
-
+    // Show / Hide Password
     private void ShowPasswordButton_Clicked(
         object sender,
         EventArgs e)
@@ -52,11 +40,7 @@ public partial class LoginPage : ContentPage
                 : "Hide";
     }
 
-
-    // ==========================================
-    // FORGOT PASSWORD
-    // ==========================================
-
+    // Forgot Password
     private async void ForgotPasswordButton_Clicked(
         object sender,
         EventArgs e)
@@ -67,11 +51,7 @@ public partial class LoginPage : ContentPage
             new ForgotPasswordPage());
     }
 
-
-    // ==========================================
-    // CREATE ACCOUNT
-    // ==========================================
-
+    // Create Account
     private async void CreateAccountButton_Clicked(
         object sender,
         EventArgs e)
@@ -80,11 +60,7 @@ public partial class LoginPage : ContentPage
             new RegisterPage());
     }
 
-
-    // ==========================================
-    // LOGIN
-    // ==========================================
-
+    // Login
     private async void LoginButton_Clicked(
         object sender,
         EventArgs e)
@@ -97,11 +73,7 @@ public partial class LoginPage : ContentPage
         string password =
             PasswordEntry.Text ?? "";
 
-
-        // ======================================
-        // VALIDATION
-        // ======================================
-
+        // Validate Email
         if (string.IsNullOrWhiteSpace(email))
         {
             ShowError(
@@ -110,7 +82,7 @@ public partial class LoginPage : ContentPage
             return;
         }
 
-
+        // Validate Password
         if (string.IsNullOrWhiteSpace(password))
         {
             ShowError(
@@ -119,54 +91,31 @@ public partial class LoginPage : ContentPage
             return;
         }
 
-
         try
         {
             LoginButton.IsEnabled = false;
+            LoginButton.Text = "Signing in...";
 
-            LoginButton.Text =
-                "Signing in...";
+            // Create Login Request
+            var request = new LoginRequest
+            {
+                Email = email,
+                Password = password
+            };
 
-
-            // ==================================
-            // CREATE LOGIN REQUEST
-            // ==================================
-
-            var request =
-                new LoginRequest
-                {
-                    Email = email,
-                    Password = password
-                };
-
-
-            // ==================================
-            // SEND LOGIN TO API
-            // ==================================
-
+            // Send Login Request to API
             var result =
-                await _apiService
-                    .LoginAsync(request);
+                await _apiService.LoginAsync(request);
 
-
-            // ==================================
-            // CHECK LOGIN RESULT
-            // ==================================
-
+            // Check Login Result
             if (!result.Success ||
                 result.Data == null)
             {
-                ShowError(
-                    result.Message);
-
+                ShowError(result.Message);
                 return;
             }
 
-
-            // ==================================
-            // CHECK USER INFORMATION
-            // ==================================
-
+            // Check User Information
             if (result.Data.User == null)
             {
                 ShowError(
@@ -175,36 +124,18 @@ public partial class LoginPage : ContentPage
                 return;
             }
 
+            // Save Authentication Information
+            await _authStorageService.SaveLoginAsync(
+                result.Data.Token,
+                result.Data.User.Id,
+                result.Data.User.FullName,
+                result.Data.User.Email);
 
-            // ==================================
-            // STORE AUTHENTICATION
-            // ==================================
+            // Display Personalised Welcome Modal
+            WelcomeMessageLabel.Text =
+                $"Welcome back, {result.Data.User.FullName}!";
 
-            await _authStorageService
-                .SaveLoginAsync(
-                    result.Data.Token,
-                    result.Data.User.Id,
-                    result.Data.User.FullName,
-                    result.Data.User.Email);
-
-
-            // ==================================
-            // WELCOME MESSAGE
-            // ==================================
-
-            await DisplayAlert(
-                "Welcome",
-                $"Welcome back, {result.Data.User.FullName}!",
-                "Continue");
-
-
-            // ==================================
-            // OPEN DASHBOARD
-            // ==================================
-
-            Application.Current!.MainPage =
-                new NavigationPage(
-                    new DashboardPage());
+            WelcomeModalOverlay.IsVisible = true;
         }
         catch (Exception ex)
         {
@@ -218,23 +149,26 @@ public partial class LoginPage : ContentPage
         {
             LoginButton.IsEnabled = true;
 
-            LoginButton.Text =
-                "Login";
+            LoginButton.Text = "Login  →";
         }
     }
 
-
-    // ==========================================
-    // DISPLAY ERROR
-    // ==========================================
-
-    private void ShowError(
-        string message)
+    // Continue to Dashboard
+    private void OnContinueClicked(
+        object sender,
+        EventArgs e)
     {
-        ErrorLabel.Text =
-            message;
+        WelcomeModalOverlay.IsVisible = false;
 
-        ErrorLabel.IsVisible =
-            true;
+        Application.Current!.MainPage =
+            new NavigationPage(
+                new DashboardPage());
+    }
+
+    // Display Error Message
+    private void ShowError(string message)
+    {
+        ErrorLabel.Text = message;
+        ErrorLabel.IsVisible = true;
     }
 }
